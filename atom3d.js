@@ -134,7 +134,7 @@ function atom3dPackNucleus(count){
 
 function atom3dBuildNucleus(ctx, Z, A){
   const { nucleusGroup, glowTex } = ctx;
-  const nucleonGeo = new THREE.SphereGeometry(ATOM3D_NUCLEON_R, 24, 24);
+  const nucleonGeo = new THREE.SphereGeometry(ATOM3D_NUCLEON_R, 18, 18);
   const N = A - Z;
   const total = Z + N;
   const positions = atom3dPackNucleus(total);
@@ -187,31 +187,28 @@ function atom3dBuildRing(radius, parent, glowTex, sparkles){
   const twinCurve  = atom3dThreadCurve(radius, 0.014, 5, Math.random()*Math.PI*2);
 
   const mainLayers = [
-    { r:0.02,  opacity:1.0,  color:0xfff4d9 },
-    { r:0.045, opacity:0.9,  color:0xffb133 },
-    { r:0.09,  opacity:0.55, color:0xff7a02 },
-    { r:0.16,  opacity:0.3,  color:0xe85600 },
-    { r:0.28,  opacity:0.14, color:0xc44a00 },
-    { r:0.44,  opacity:0.06, color:0xa63c00 },
+    { r:0.022, opacity:1.0,  color:0xfff4d9 },
+    { r:0.06,  opacity:0.7,  color:0xffb133 },
+    { r:0.13,  opacity:0.32, color:0xe85600 },
+    { r:0.24,  opacity:0.12, color:0xa63c00 },
   ];
   mainLayers.forEach(layer => {
-    const geo = new THREE.TubeGeometry(mainCurve, 240, layer.r, 8, true);
+    const geo = new THREE.TubeGeometry(mainCurve, 160, layer.r, 6, true);
     const mat = new THREE.MeshBasicMaterial({ color:layer.color, transparent:true, opacity:layer.opacity, blending:THREE.AdditiveBlending, depthWrite:false });
     parent.add(new THREE.Mesh(geo, mat));
   });
 
   const twinLayers = [
-    { r:0.013, opacity:0.9,  color:0xffe3a8 },
-    { r:0.032, opacity:0.5,  color:0xff9a2e },
-    { r:0.06,  opacity:0.22, color:0xe85600 },
+    { r:0.015, opacity:0.8, color:0xffe3a8 },
+    { r:0.04,  opacity:0.35, color:0xe85600 },
   ];
   twinLayers.forEach(layer => {
-    const geo = new THREE.TubeGeometry(twinCurve, 240, layer.r, 6, true);
+    const geo = new THREE.TubeGeometry(twinCurve, 160, layer.r, 5, true);
     const mat = new THREE.MeshBasicMaterial({ color:layer.color, transparent:true, opacity:layer.opacity, blending:THREE.AdditiveBlending, depthWrite:false });
     parent.add(new THREE.Mesh(geo, mat));
   });
 
-  const emberCount = Math.max(90, Math.round(radius*30));
+  const emberCount = Math.min(45, Math.max(18, Math.round(radius*5)));
   for (let i=0;i<emberCount;i++){
     const theta = Math.random()*Math.PI*2;
     const flyingOff = Math.random() < 0.35;
@@ -232,7 +229,7 @@ function atom3dBuildRing(radius, parent, glowTex, sparkles){
     parent.add(sprite);
   }
 
-  for (let i=0;i<7;i++){
+  for (let i=0;i<4;i++){
     const sc = 0.14 + Math.random()*0.12;
     const mat = new THREE.SpriteMaterial({ map:glowTex, color:0xfff6e0, transparent:true, blending:THREE.AdditiveBlending, depthWrite:false, opacity:0.85 });
     const sprite = new THREE.Sprite(mat);
@@ -244,7 +241,7 @@ function atom3dBuildRing(radius, parent, glowTex, sparkles){
 
 function atom3dBuildElectrons(ctx, Z){
   const { electronsGroup, glowTex } = ctx;
-  const electronGeo = new THREE.SphereGeometry(ATOM3D_ELECTRON_R, 20, 20);
+  const electronGeo = new THREE.SphereGeometry(ATOM3D_ELECTRON_R, 16, 16);
   const spinGroups = [], sparkles = [], electronMeshes = [];
   let maxOrbitRadius = 6;
 
@@ -364,11 +361,21 @@ function drawAtom3D(symbol, elData) {
 
   const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 500);
   const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(width, height);
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.NoToneMapping; // keeps the saturated emissive colors punchy
   host.appendChild(renderer.domElement);
+
+  renderer.domElement.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault();
+    console.warn('atom3d: WebGL context lost, will rebuild on restore');
+  }, false);
+  renderer.domElement.addEventListener('webglcontextrestored', () => {
+    if (typeof currentSubject !== 'undefined' && currentSubject) {
+      showSubject(currentSubject);
+    }
+  }, false);
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.08));
   const keyLight = new THREE.DirectionalLight(0xffffff, 0.35);
@@ -460,21 +467,25 @@ function drawAtom3D(symbol, elData) {
   let sparkleClock = 0;
   let animId;
   function animate(t) {
-    controls.update();
-    if (!reducedMotion){
-      spinGroups.forEach(g => g.rotation.z += g.userData.speed * 0.03);
-      sparkleClock += 0.006;
-      sparkles.forEach(s => {
-        const u = ((sparkleClock*s.speed + s.phase) % 1 + 1) % 1;
-        const pt = s.curve.getPointAt(u);
-        s.sprite.position.set(pt.x, pt.y, 0);
-      });
+    try {
+      controls.update();
+      if (!reducedMotion){
+        spinGroups.forEach(g => g.rotation.z += g.userData.speed * 0.03);
+        sparkleClock += 0.006;
+        sparkles.forEach(s => {
+          const u = ((sparkleClock*s.speed + s.phase) % 1 + 1) % 1;
+          const pt = s.curve.getPointAt(u);
+          s.sprite.position.set(pt.x, pt.y, 0);
+        });
+      }
+      if (selected){
+        const pulse = 1 + Math.sin((t||0)*0.005)*0.15;
+        selected.userData.glow.material.opacity = 0.85*pulse;
+      }
+      renderer.render(scene, camera);
+    } catch (err) {
+      console.error('atom3d render error (recovered):', err);
     }
-    if (selected){
-      const pulse = 1 + Math.sin((t||0)*0.005)*0.15;
-      selected.userData.glow.material.opacity = 0.85*pulse;
-    }
-    renderer.render(scene, camera);
     animId = requestAnimationFrame(animate);
   }
   animate();
