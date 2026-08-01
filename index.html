@@ -1,12 +1,70 @@
-MatAI
-Search an element or a molecule. Watch its structure form. Ask what it means.
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MatAI — materials science, explained</title>
+<meta name="description" content="Search any element or molecule. See its structure. Ask MatAI what it means." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-Try “carbon”, “H2O”, or “iron”
-— —
-Ask MatAIgroq · llama-3.3-70b
-Search something on the left, then ask me anything about it — bonding, structure, why it behaves the way it does.
-Why is this molecule bent?
- Ask
-Nothing pulled in yet. Search an element (H, iron, oxygen…) or a small molecule (H2O, CO2, CH4…) to begin.
+<canvas id="starfield"></canvas>
 
-MatAI — a free, open materials science explorer
+<main>
+  <header class="hero">
+    <div class="wordmark">Mat<span>AI</span></div>
+    <p class="tagline">Search an element or a molecule. Watch its structure form. Ask what it means.</p>
+  </header>
+
+  <section class="search-wrap">
+    <div class="horizon">
+      <input id="search" type="search" inputmode="search" enterkeyhint="search" placeholder="Try “carbon”, “H2O”, or “iron”" autocomplete="off" spellcheck="false" />
+      <div class="ring"></div>
+    </div>
+    <div id="suggestions" class="suggestions"></div>
+  </section>
+
+  <section id="results" class="results hidden">
+    <div class="panel viewer-panel">
+      <div class="panel-head">
+        <span id="subjectName">—</span>
+        <span id="subjectMeta" class="mono">—</span>
+      </div>
+      <div id="viewerHost" class="viewer-host">
+        <canvas id="bohrCanvas"></canvas>
+        <div id="threeHost"></div>
+      </div>
+      <p id="viewerNote" class="viewer-note"></p>
+    </div>
+
+    <div class="panel chat-panel">
+      <div class="panel-head"><span>Ask MatAI</span><span class="mono" id="chatModel">groq · llama-3.3-70b</span></div>
+      <div id="chatLog" class="chat-log">
+        <div class="chat-msg ai">Search something on the left, then ask me anything about it — bonding, structure, why it behaves the way it does.</div>
+      </div>
+      <form id="chatForm" class="chat-form">
+        <input id="chatInput" type="text" placeholder="Why is this molecule bent?" autocomplete="off" />
+        <button type="submit">Ask</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="empty" class="empty-state">
+    <p>Nothing pulled in yet. Search an element (H, iron, oxygen…) or a small molecule (H2O, CO2, CH4…) to begin.</p>
+  </section>
+</main>
+
+<footer>
+  <span>MatAI — a free, open materials science explorer</span>
+</footer>
+
+<script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="atom3d.js"></script>
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

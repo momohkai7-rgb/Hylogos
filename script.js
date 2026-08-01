@@ -92,13 +92,14 @@ function showSubject(hit) {
   clearThree();
 
   if (hit.type === "element") {
+    const a = ATOM_MASS[hit.key] || Math.round(hit.data.z * 2.05);
     els.subjectName.textContent = `${hit.data.name} (${hit.key})`;
-    els.subjectMeta.textContent = `Z=${hit.data.z} · shells ${hit.data.shells.join("-")}`;
-    els.bohrCanvas.style.display = "block";
-    els.threeHost.style.display = "none";
+    els.subjectMeta.textContent = `Z=${hit.data.z} · N=${a - hit.data.z} · A=${a}`;
+    els.bohrCanvas.style.display = "none";
+    els.threeHost.style.display = "block";
     els.viewerNote.textContent =
-      `Simplified Bohr model — each ring is an electron shell, filled 2, 8, 8, 18 outward. Real orbitals are probability clouds, not neat circles, but this is the standard teaching picture.`;
-    drawBohr(hit.data);
+      `3D atom model — magenta protons and orange neutrons packed in the nucleus, blue electrons circling on glowing shells. Drag to rotate, pinch/scroll to zoom, tap a particle to inspect it. Not to true relative scale.`;
+    drawAtom3D(hit.key, hit.data);
   } else {
     els.subjectName.textContent = `${hit.data.name} (${hit.data.formula})`;
     els.subjectMeta.textContent = `${hit.data.atoms.length} atoms · ${hit.data.bonds.length} bonds`;
