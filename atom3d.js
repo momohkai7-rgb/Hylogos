@@ -457,7 +457,10 @@ function drawAtom3D(symbol, elData) {
       ndc.x = ((e.clientX-rect.left)/rect.width)*2 - 1;
       ndc.y = -((e.clientY-rect.top)/rect.height)*2 + 1;
       raycaster.setFromCamera(ndc, camera);
-      const hits = raycaster.intersectObjects(nucleonMeshes.concat(electronMeshes));
+      // recursive:false — glow sprites are children of each mesh and are much
+      // bigger than the sphere itself; without this the raycaster was hitting
+      // those sprites (which lack userData.glow etc.) and crashing on click.
+      const hits = raycaster.intersectObjects(nucleonMeshes.concat(electronMeshes), false);
       if (hits.length) selectMesh(hits[0].object); else clearSelection();
     }
     downPos = null;
