@@ -300,13 +300,17 @@ function atom3dMakeInfoPanel(host){
   const panel = document.createElement('div');
   panel.id = 'atom3d-info';
   Object.assign(panel.style, {
-    position:'absolute', right:'12px', bottom:'12px', width:'180px',
+    position:'absolute', right:'10px', bottom:'10px', width:'150px',
     background:'var(--panel)', border:'1px solid var(--line)', borderRadius:'10px',
-    padding:'10px 12px', fontFamily:'var(--font-mono)', fontSize:'11px', lineHeight:'1.6',
-    color:'var(--text-main)', maxHeight:'55%', overflowY:'auto', pointerEvents:'none', zIndex:'2'
+    padding:'8px 10px', fontFamily:'var(--font-mono)', fontSize:'10.5px', lineHeight:'1.55',
+    color:'var(--text-main)', maxHeight:'42%', overflowY:'auto', pointerEvents:'none',
+    zIndex:'2', display:'none', opacity:'0.94'
   });
   host.appendChild(panel);
   return panel;
+}
+function atom3dCloseBtn(){
+  return `<div class="atom3d-close" style="position:absolute;top:4px;right:6px;pointer-events:auto;cursor:pointer;color:var(--text-dim);font-size:13px;line-height:1">×</div>`;
 }
 function atom3dRow(label, value){
   return `<div style="display:flex;justify-content:space-between;gap:8px;color:var(--text-dim)"><span>${label}</span><b style="color:var(--text-main);font-weight:500">${value}</b></div>`;
@@ -324,20 +328,22 @@ function atom3dShowOverview(panel, symbol, name, z, a){
 function atom3dShowNucleon(panel, m, name){
   const kind = m.userData.kind;
   panel.innerHTML = `
-    <div style="font-family:var(--font-display);font-weight:600;font-size:13px">${kind==='proton'?'Proton':'Neutron'}</div>
-    <div style="color:var(--text-dim);font-size:10px;margin-bottom:6px">part of the ${name} nucleus</div>
+    ${atom3dCloseBtn()}
+    <div style="font-family:var(--font-display);font-weight:600;font-size:12.5px">${kind==='proton'?'Proton':'Neutron'}</div>
+    <div style="color:var(--text-dim);font-size:9.5px;margin-bottom:6px">part of the ${name} nucleus</div>
     ${atom3dRow('Charge', kind==='proton'?'+1':'0')}`;
 }
 function atom3dShowElectron(panel, m, symbol, name){
   const d = m.userData;
   panel.innerHTML = `
-    <div style="font-family:var(--font-display);font-weight:600;font-size:13px">Electron · ${d.label}</div>
-    <div style="color:var(--text-dim);font-size:10px;margin-bottom:6px">${name} (${symbol})</div>
+    ${atom3dCloseBtn()}
+    <div style="font-family:var(--font-display);font-weight:600;font-size:12.5px">Electron · ${d.label}</div>
+    <div style="color:var(--text-dim);font-size:9.5px;margin-bottom:6px">${name} (${symbol})</div>
     ${atom3dRow('Shell', 'n = ' + d.n)}
     ${atom3dRow('Subshell', d.label)}
     ${atom3dRow('mₗ', d.ml)}
     ${atom3dRow('Spin', d.spin)}
-    ${d.isValence ? '<div style="margin-top:4px;font-size:10px;color:#ffb84d">valence shell</div>' : ''}`;
+    ${d.isValence ? '<div style="margin-top:4px;font-size:9.5px;color:#ffb84d">valence shell</div>' : ''}`;
 }
 
 /* =========================================================================
@@ -396,7 +402,6 @@ function drawAtom3D(symbol, elData) {
   // click-to-select (OrbitControls owns drag-to-rotate; this just tells a
   // real click from the end of a drag before raycasting)
   const infoPanel = atom3dMakeInfoPanel(host);
-  atom3dShowOverview(infoPanel, symbol, name, z, a);
 
   const raycaster = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
@@ -413,7 +418,8 @@ function drawAtom3D(symbol, elData) {
       selected.scale.set(1,1,1);
     }
     selected = null;
-    atom3dShowOverview(infoPanel, symbol, name, z, a);
+    infoPanel.style.display = 'none';
+    infoPanel.innerHTML = '';
   }
   function selectMesh(m){
     if (selected) clearSelection();
@@ -427,8 +433,11 @@ function drawAtom3D(symbol, elData) {
     g.material.opacity = 0.95;
     go.scale.set(m.userData.glowOuterBaseScale*1.6, m.userData.glowOuterBaseScale*1.6, m.userData.glowOuterBaseScale*1.6);
     go.material.opacity = 0.55;
+    infoPanel.style.display = 'block';
     if (isElectron) atom3dShowElectron(infoPanel, m, symbol, name);
     else atom3dShowNucleon(infoPanel, m, name);
+    const closeBtn = infoPanel.querySelector('.atom3d-close');
+    if (closeBtn) closeBtn.addEventListener('click', (e) => { e.stopPropagation(); clearSelection(); });
   }
 
   renderer.domElement.addEventListener('pointerdown', e => {
