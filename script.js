@@ -69,138 +69,127 @@
   }
 
   /* ── Black hole ─────────────────────────────────────────────────────────
-     The disk is a SOLID FILLED lens shape (intersection of two large
-     circles), not ellipse strokes. It glows from white-hot center →
-     orange → deep violet at the edges. The whole lens rotates around
-     the black event horizon circle.
+     Flat neon "poster" style, matching the reference art directly: a
+     tilted glowing ring blended magenta → orange → amber, a solid black
+     event horizon on top, and a bright thin streak where the near edge
+     of the disk crosses in front of the sphere. The ring itself never
+     rotates as a rigid shape — motion instead comes from slow, softly
+     drifting glow clumps along its path plus a gentle breathing pulse,
+     so the material reads as hovering/flowing rather than spinning.
   ─────────────────────────────────────────────────────────────────────── */
 
-  // Build a lens-shaped path: intersection of two offset circles.
-  // cx/cy = center of lens, half-width W, half-height H
-  function lensPath(cx, cy, W, H) {
-    // The lens is defined by two circular arcs meeting at the tips.
-    // We derive the circle radius and center offset from W and H.
-    // Circle radius R and center offset D: R² = W² + D², H = R - D => D = R - H
-    // Solving: R = (W² + H²) / (2H), D = R - H
-    const R = (W * W + H * H) / (2 * H);
-    const D = R - H;
-
-    ctx.beginPath();
-    // Top circle arc (center below the lens center)
-    ctx.arc(cx, cy + D, R, -Math.PI + Math.asin(W / R), -Math.asin(W / R), false);
-    // Bottom circle arc (center above the lens center)
-    ctx.arc(cx, cy - D, R,  Math.asin(W / R), Math.PI - Math.asin(W / R), false);
-    ctx.closePath();
-  }
+  const RING_TILT = -20 * Math.PI / 180;
 
   function drawBlackHole(t) {
     const { cx, cy, r } = hole;
     if (r <= 0) return;
 
-    const angle = reducedMotion ? 0 : t * 0.00022;
+    const drift   = reducedMotion ? 0 : t * 0.00006;                 // very slow circulation, not a spin
+    const breathe = reducedMotion ? 0.5 : Math.sin(t * 0.00035) * 0.5 + 0.5;
 
-    // Lens dimensions — wide and tall enough to look like the image
-    const W = r * 2.45;  // half-width (tip to tip)
-    const H = r * 0.82;  // half-height (thickest point)
+    const outerR = r * 2.7;
+    const innerR = r * 1.02;   // event horizon sits just inside the ring's bright inner edge
+    const squash = 0.4;        // perspective foreshortening of the tilted ring
 
-    /* 1 ── Big soft outer glow ────────────────────────────────────────── */
-    const bloom = ctx.createRadialGradient(cx, cy, r * 0.1, cx, cy, r * 4.5);
-    bloom.addColorStop(0,    "rgba(255,140,20,0.30)");
-    bloom.addColorStop(0.25, "rgba(220,80,0,0.14)");
-    bloom.addColorStop(0.55, "rgba(140,20,200,0.07)");
-    bloom.addColorStop(1,    "rgba(60,0,100,0)");
+    /* 1 ── Wide ambient bloom — the soft magenta/orange haze around everything */
+    const bloomR = outerR * 1.65;
+    const bloom = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, bloomR);
+    bloom.addColorStop(0,    "rgba(255,120,40,0.28)");
+    bloom.addColorStop(0.35, "rgba(230,50,140,0.16)");
+    bloom.addColorStop(0.7,  "rgba(120,20,180,0.09)");
+    bloom.addColorStop(1,    "rgba(60,0,90,0)");
     ctx.fillStyle = bloom;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 4.5, 0, Math.PI * 2);
+    ctx.arc(cx, cy, bloomR, 0, Math.PI * 2);
     ctx.fill();
 
-    /* 2 ── Rotate everything around the hole center ───────────────────── */
+    /* 2 ── The ring: a tilted, squashed circle filled with a single radial
+       gradient. Its centre is covered by the event horizon drawn later,
+       so the ring "wraps" around the sphere with no extra clip geometry. */
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.rotate(angle);
+    ctx.rotate(RING_TILT);
+    ctx.scale(1, squash);
 
-    /* 3 ── Back half of disk (clip to bottom half, draw behind void) ──── */
-    ctx.save();
+    const frac = innerR / outerR;
+    const wobble = 0.015 * breathe; // gentle breathing right at the inner edge
+
+    const ring = ctx.createRadialGradient(0, 0, 0, 0, 0, outerR);
+    ring.addColorStop(0,                          "rgba(255,70,190,1)");
+    ring.addColorStop(Math.max(0, frac - 0.06),   "rgba(255,70,190,1)");
+    ring.addColorStop(Math.min(1, frac + wobble), "rgba(255,115,208,1)");
+    ring.addColorStop(Math.min(1, frac + 0.07),   "rgba(255,90,40,1)");
+    ring.addColorStop(Math.min(1, frac + 0.20),   "rgba(255,178,40,1)");
+    ring.addColorStop(Math.min(1, frac + 0.38),   "rgba(226,80,15,0.95)");
+    ring.addColorStop(Math.min(1, frac + 0.58),   "rgba(120,25,75,0.55)");
+    ring.addColorStop(1,                          "rgba(60,10,60,0)");
+
+    ctx.fillStyle = ring;
     ctx.beginPath();
-    ctx.rect(-W * 1.2, 0, W * 2.4, H * 6);  // bottom half only
-    ctx.clip();
-    drawLensLayers(W, H);
-    ctx.restore();
-
-    ctx.restore(); // end rotation
-
-    /* 4 ── Event horizon — solid black circle ─────────────────────────── */
-    ctx.fillStyle = "rgb(5,4,10)";
-    ctx.beginPath();
-    ctx.arc(cx, cy, r * 0.97, 0, Math.PI * 2);
-    ctx.fill();
-
-    /* 5 ── Front half of disk (clip to top half, draws over void) ──────── */
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(angle);
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(-W * 1.2, -H * 6, W * 2.4, H * 6);  // top half only
-    ctx.clip();
-    drawLensLayers(W, H);
-    ctx.restore();
-
-    ctx.restore();
-
-    /* 6 ── Photon ring — crisp bright edge right at the horizon ─────────── */
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(angle);
-    const photon = ctx.createRadialGradient(0, 0, r * 0.88, 0, 0, r * 1.05);
-    photon.addColorStop(0,   "rgba(255,200,80,0.60)");
-    photon.addColorStop(0.5, "rgba(255,240,180,0.25)");
-    photon.addColorStop(1,   "rgba(255,200,80,0)");
-    ctx.fillStyle = photon;
-    ctx.beginPath();
-    ctx.arc(0, 0, r * 1.05, 0, Math.PI * 2);
+    ctx.arc(0, 0, outerR, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
-  }
 
-  // Draw the filled lens glow layers at origin (use after translate+rotate)
-  function drawLensLayers(W, H) {
-    // Layer 1 — outermost, widest, most transparent: deep violet
-    // Use a slightly larger lens for the outer glow, filled with a
-    // radial gradient from orange center → violet edges
-    function filledLens(w, h, gradient) {
-      lensPath(0, 0, w, h);
-      ctx.fillStyle = gradient;
+    /* 3 ── Soft glow clumps drifting slowly along the ring — gas gently
+       circulating, not the ring spinning as one rigid piece. */
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(RING_TILT);
+    ctx.globalCompositeOperation = "lighter";
+    const CLUMPS = 6;
+    for (let i = 0; i < CLUMPS; i++) {
+      const a   = drift * (0.4 + 0.15 * (i % 3)) + (i / CLUMPS) * Math.PI * 2;
+      const rad = outerR * (0.62 + 0.28 * ((i * 37) % 5) / 5);
+      const px  = Math.cos(a) * rad;
+      const py  = Math.sin(a) * rad * squash;
+      const cR  = r * (0.5 + 0.25 * ((i * 53) % 4) / 4);
+      const g = ctx.createRadialGradient(px, py, 0, px, py, cR);
+      g.addColorStop(0, "rgba(255,210,150,0.35)");
+      g.addColorStop(1, "rgba(255,210,150,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(px, py, cR, 0, Math.PI * 2);
       ctx.fill();
     }
+    ctx.globalCompositeOperation = "source-over";
+    ctx.restore();
 
-    // Build radial gradient centered on the lens center
-    const g1 = ctx.createRadialGradient(0, 0, 0, 0, 0, W);
-    g1.addColorStop(0,    "rgba(255,245,180,0.0)");
-    g1.addColorStop(0.25, "rgba(255,140,20,0.55)");
-    g1.addColorStop(0.60, "rgba(190,40,220,0.70)");
-    g1.addColorStop(0.85, "rgba(120,10,180,0.50)");
-    g1.addColorStop(1,    "rgba(60,0,100,0)");
-    filledLens(W * 1.05, H * 1.05, g1);
+    /* 4 ── Event horizon — solid black circle on top of the ring */
+    ctx.fillStyle = "rgb(5,4,10)";
+    ctx.beginPath();
+    ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Layer 2 — mid lens, orange-dominant
-    const g2 = ctx.createRadialGradient(0, 0, 0, 0, 0, W * 0.75);
-    g2.addColorStop(0,    "rgba(255,255,200,0.0)");
-    g2.addColorStop(0.20, "rgba(255,200,60,0.65)");
-    g2.addColorStop(0.55, "rgba(255,90,10,0.80)");
-    g2.addColorStop(0.80, "rgba(180,30,220,0.60)");
-    g2.addColorStop(1,    "rgba(100,0,160,0)");
-    filledLens(W * 0.80, H * 0.80, g2);
+    /* 5 ── Crisp bright rim right at the horizon's edge */
+    const rim = ctx.createRadialGradient(cx, cy, innerR * 0.9, cx, cy, innerR * 1.18);
+    rim.addColorStop(0,    "rgba(255,170,230,0)");
+    rim.addColorStop(0.55, "rgba(255,150,225,0.85)");
+    rim.addColorStop(1,    "rgba(255,150,225,0)");
+    ctx.fillStyle = rim;
+    ctx.beginPath();
+    ctx.arc(cx, cy, innerR * 1.18, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Layer 3 — bright inner core, white-hot
-    const g3 = ctx.createRadialGradient(0, 0, 0, 0, 0, W * 0.45);
-    g3.addColorStop(0,    "rgba(255,255,240,1)");
-    g3.addColorStop(0.30, "rgba(255,230,120,0.95)");
-    g3.addColorStop(0.65, "rgba(255,130,20,0.80)");
-    g3.addColorStop(1,    "rgba(200,60,255,0)");
-    filledLens(W * 0.50, H * 0.50, g3);
+    /* 6 ── Bright streak — the near edge of the disk slicing in front of
+       the sphere, matching the reference image */
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(RING_TILT);
+    const streakW = innerR * 2.3;
+    const streakH = r * 0.11 * (1 + 0.2 * breathe);
+    const streak = ctx.createLinearGradient(-streakW / 2, 0, streakW / 2, 0);
+    streak.addColorStop(0,    "rgba(210,150,255,0)");
+    streak.addColorStop(0.18, "rgba(230,190,255,0.65)");
+    streak.addColorStop(0.5,  "rgba(255,240,255,0.95)");
+    streak.addColorStop(0.82, "rgba(230,190,255,0.65)");
+    streak.addColorStop(1,    "rgba(210,150,255,0)");
+    ctx.fillStyle = streak;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, streakW / 2, streakH / 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
+
 
   /* ── Motes ──────────────────────────────────────────────────────────── */
   function roundRect(x, y, w, h, rad) {
