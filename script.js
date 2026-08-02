@@ -10,21 +10,30 @@
   const HOT = "255,242,214";
   const BLUE = "127,217,255";
   const VOID = "5,4,10";
+  const VOID2 = "13,10,24";
 
   const rmQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   let reducedMotion = rmQuery.matches;
   rmQuery.addEventListener("change", e => { reducedMotion = e.matches; });
 
-  const MOTE_COUNT = 16;
-  const SYMBOLS = ["H", "He", "O", "C", "Fe", "Na", "Si", "N", "Al", "Ca", "Au", "Ti"];
+  const ELEMENT_SYMBOLS = (typeof ELEMENTS !== "undefined") ? Object.keys(ELEMENTS) : ["H", "O", "Fe", "Na", "C", "Au"];
+  const MOTE_COUNT = 14;
+
+  function moteColor(sym) {
+    if (typeof ELEMENTS === "undefined" || !ELEMENTS[sym]) return "#8b84a3";
+    const meta = (typeof CATEGORY_META !== "undefined") && CATEGORY_META[ELEMENTS[sym].category];
+    return meta ? meta.color : "#8b84a3";
+  }
 
   function spawnMote() {
+    const sym = ELEMENT_SYMBOLS[Math.floor(Math.random() * ELEMENT_SYMBOLS.length)];
     return {
       angle: Math.random() * Math.PI * 2,
-      radius: hole.r * (2.2 + Math.random() * 2.2),
-      speed: 0.15 + Math.random() * 0.15,
-      symbol: Math.random() < 0.35 ? SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)] : null,
-      size: Math.random() * 1.6 + 1,
+      radius: hole.r * (2.9 + Math.random() * 1.6),
+      speed: 0.16 + Math.random() * 0.14,
+      symbol: sym,
+      color: moteColor(sym),
+      box: 15 + Math.random() * 5,
     };
   }
 
@@ -41,9 +50,9 @@
       speed: Math.random() * 0.02 + 0.005,
     }));
 
-    hole.cx = canvas.width * 0.86;
-    hole.cy = canvas.height * 0.05;
-    hole.r = Math.min(canvas.width, canvas.height) * 0.16;
+    hole.r = canvas.width * 0.115;
+    hole.cx = canvas.width * 0.80;
+    hole.cy = canvas.height * 0.15;
 
     motes = Array.from({ length: MOTE_COUNT }, spawnMote);
   }
@@ -64,12 +73,22 @@
     const { cx, cy, r } = hole;
     if (r <= 0) return;
 
-    const glow = ctx.createRadialGradient(cx, cy, r * 0.6, cx, cy, r * 3.2);
-    glow.addColorStop(0, `rgba(${AMBER},0.10)`);
-    glow.addColorStop(1, `rgba(${AMBER},0)`);
-    ctx.fillStyle = glow;
+    // wide soft ambient bloom
+    const outerGlow = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 2.3);
+    outerGlow.addColorStop(0, `rgba(${AMBER},0.22)`);
+    outerGlow.addColorStop(1, `rgba(${AMBER},0)`);
+    ctx.fillStyle = outerGlow;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 3.2, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 2.3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // tighter, brighter bloom right around the disk
+    const innerGlow = ctx.createRadialGradient(cx, cy, r * 0.7, cx, cy, r * 1.5);
+    innerGlow.addColorStop(0, `rgba(${HOT},0.30)`);
+    innerGlow.addColorStop(1, `rgba(${HOT},0)`);
+    ctx.fillStyle = innerGlow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 1.5, 0, Math.PI * 2);
     ctx.fill();
 
     const spin = reducedMotion ? 0 : t * 0.00006;
@@ -78,27 +97,46 @@
     ctx.rotate(spin);
     const disk = ctx.createLinearGradient(-r * 1.7, 0, r * 1.7, 0);
     disk.addColorStop(0, `rgba(${AMBER},0)`);
-    disk.addColorStop(0.16, `rgba(${AMBER},0.5)`);
-    disk.addColorStop(0.32, `rgba(${HOT},0.7)`);
-    disk.addColorStop(0.5, `rgba(${BLUE},0.7)`);
-    disk.addColorStop(0.68, `rgba(${HOT},0.7)`);
-    disk.addColorStop(0.84, `rgba(${AMBER},0.5)`);
+    disk.addColorStop(0.14, `rgba(${AMBER},0.85)`);
+    disk.addColorStop(0.32, `rgba(${HOT},1)`);
+    disk.addColorStop(0.5, `rgba(${BLUE},1)`);
+    disk.addColorStop(0.68, `rgba(${HOT},1)`);
+    disk.addColorStop(0.86, `rgba(${AMBER},0.85)`);
     disk.addColorStop(1, `rgba(${AMBER},0)`);
     ctx.strokeStyle = disk;
-    ctx.lineWidth = r * 0.14;
+    ctx.lineWidth = r * 0.22;
     ctx.beginPath();
     ctx.ellipse(0, 0, r * 1.55, r * 1.55 * 0.34, 0, 0, Math.PI * 2);
     ctx.stroke();
+    // a slimmer, brighter core line on top for a hot inner edge
+    ctx.lineWidth = r * 0.06;
+    ctx.globalAlpha = 0.9;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
     ctx.restore();
 
     const voidGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
     voidGrad.addColorStop(0, `rgba(${VOID},1)`);
-    voidGrad.addColorStop(0.85, `rgba(${VOID},1)`);
+    voidGrad.addColorStop(0.82, `rgba(${VOID},1)`);
     voidGrad.addColorStop(1, `rgba(${VOID},0)`);
     ctx.fillStyle = voidGrad;
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fill();
+  }
+
+  function roundRectPath(x, y, w, h, rad) {
+    ctx.beginPath();
+    ctx.moveTo(x + rad, y);
+    ctx.lineTo(x + w - rad, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + rad);
+    ctx.lineTo(x + w, y + h - rad);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - rad, y + h);
+    ctx.lineTo(x + rad, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - rad);
+    ctx.lineTo(x, y + rad);
+    ctx.quadraticCurveTo(x, y, x + rad, y);
+    ctx.closePath();
   }
 
   function drawMotes() {
@@ -107,28 +145,30 @@
     ctx.textBaseline = "middle";
     for (const m of motes) {
       if (!reducedMotion) {
-        const pull = 1 + (hole.r * 2.5 - m.radius) / (hole.r * 5);
+        const pull = 1 + (hole.r * 2.2 - m.radius) / (hole.r * 4);
         m.radius -= m.speed * Math.max(pull, 0.3);
         m.angle += 0.006 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.4));
-        if (m.radius < hole.r * 0.75) Object.assign(m, spawnMote());
+        if (m.radius < hole.r * 0.7) Object.assign(m, spawnMote());
       }
       const x = hole.cx + Math.cos(m.angle) * m.radius;
       const y = hole.cy + Math.sin(m.angle) * m.radius * 0.34;
-      const fadeIn = Math.max(0, Math.min(1, (hole.r * 4 - m.radius) / (hole.r * 2)));
-      const fadeOut = Math.max(0, Math.min(1, (m.radius - hole.r * 0.7) / (hole.r * 0.6)));
-      const alpha = Math.max(0, Math.min(0.85, fadeIn * fadeOut));
-      if (alpha <= 0.02) continue;
+      const fadeIn = Math.max(0, Math.min(1, (hole.r * 4.5 - m.radius) / (hole.r * 1.3)));
+      const fadeOut = Math.max(0, Math.min(1, (m.radius - hole.r * 0.65) / (hole.r * 0.45)));
+      const alpha = Math.max(0, Math.min(1, fadeIn * fadeOut));
+      if (alpha <= 0.03) continue;
+
       ctx.globalAlpha = alpha;
-      if (m.symbol) {
-        ctx.fillStyle = `rgba(${HOT},1)`;
-        ctx.font = `${(m.size + 5).toFixed(1)}px monospace`;
-        ctx.fillText(m.symbol, x, y);
-      } else {
-        ctx.fillStyle = `rgba(${BLUE},1)`;
-        ctx.beginPath();
-        ctx.arc(x, y, m.size, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      const s = m.box;
+      roundRectPath(x - s / 2, y - s / 2, s, s, 3);
+      ctx.fillStyle = `rgba(${VOID2},0.9)`;
+      ctx.fill();
+      ctx.strokeStyle = m.color;
+      ctx.lineWidth = 1.3;
+      ctx.stroke();
+
+      ctx.fillStyle = m.color;
+      ctx.font = "700 9px var(--font-mono), monospace";
+      ctx.fillText(m.symbol, x, y + 0.5);
     }
     ctx.globalAlpha = 1;
   }
