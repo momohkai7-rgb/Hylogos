@@ -69,98 +69,99 @@
     ctx.globalAlpha = 1;
   }
 
-  /* ---- Spiral-thread black hole ----
-     A handful of luminous filaments spiral in from the outer dark toward
-     the event horizon and continuously rotate, with small embers riding
-     each strand down into the core — matter being reeled in along glowing
-     threads rather than a flat textured disk. Pure 2D canvas: it renders
-     at native resolution (no small offscreen texture getting scaled up
-     and going soft) and there's no shader that can fail to compile. */
-  const SPIRAL_STRANDS = 6;
-  const SPIRAL_TURNS = 2.6;    // how many times a strand wraps before reaching the core
-  const SPIRAL_SEGMENTS = 72;  // points per strand — smoothness of the curve
-  const SPIRAL_BANDS = 8;      // colour bands per strand per layer
-
-  function spiralPoint(u, phase, rot) {
-    // u: 0 at the outer edge -> 1 at the core
-    const outerR = hole.r * 3.4;
-    const innerR = hole.r * 0.86;
-    const wind = u * SPIRAL_TURNS * Math.PI * 2;
-    const radius = outerR * Math.pow(innerR / outerR, u); // logarithmic inward spiral
-    const angle = phase + rot - wind;
-    return {
-      x: hole.cx + Math.cos(angle) * radius,
-      y: hole.cy + Math.sin(angle) * radius * 0.4,
-    };
-  }
+  /* ---- Woven-ring black hole (TON 618 / Gargantua style) ----
+     Many thin concentric threads (not a few arms spiralling to a point)
+     form a wide, tilted halo around the event horizon, each one gently
+     warped by a couple of overlaid sine wobbles so the ring reads as
+     woven/fibrous rather than a smooth painted band. Inner threads spin
+     faster than outer ones (Keplerian-style differential rotation), which
+     is what sells the "spinning" motion — the wobble pattern itself
+     rotates rigidly with each thread rather than just drifting through it.
+     Pure 2D canvas: native resolution, no offscreen texture to blur, no
+     shader that can fail to compile. */
+  const THREAD_COUNT = 32;
+  const THREAD_SEGMENTS = 110;
+  const DISK_SQUASH = 0.6; // ry/rx — wide, fairly open tilt like the reference
 
   function lerp(a, b, k) { return a + (b - a) * k; }
-  function strandColor(u, alpha) {
-    // dark rust near the outside (u→0), through gold, to white-hot at the core (u→1)
-    const cool = [140, 18, 5], mid = [255, 140, 31], hot = [255, 247, 224];
-    const from = u < 0.5 ? cool : mid, to = u < 0.5 ? mid : hot;
+
+  const threads = Array.from({ length: THREAD_COUNT }, (_, k) => ({
+    u: k / (THREAD_COUNT - 1), // 0 = innermost/hottest, 1 = outermost/coolest
+    wobFreq1: 2 + Math.floor(Math.random() * 3),
+    wobAmp1: 0.035 + Math.random() * 0.035,
+    wobFreq2: 6 + Math.floor(Math.random() * 5),
+    wobAmp2: 0.012 + Math.random() * 0.014,
+    phase1: Math.random() * Math.PI * 2,
+    phase2: Math.random() * Math.PI * 2,
+  }));
+
+  function threadColor(u, alpha) {
+    // innermost = white-hot, mid = gold, outermost = dark rust
+    const hot = [255, 247, 224], mid = [255, 140, 31], cool = [140, 18, 5];
+    const from = u < 0.5 ? hot : mid, to = u < 0.5 ? mid : cool;
     const k = u < 0.5 ? u / 0.5 : (u - 0.5) / 0.5;
     const c = [lerp(from[0], to[0], k), lerp(from[1], to[1], k), lerp(from[2], to[2], k)];
     return `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${alpha})`;
   }
 
-  function drawStrands(rot) {
+  function threadPoints(th, t, motionRate) {
+    const innerR = hole.r * 1.05;
+    const outerR = hole.r * 3.2;
+    const baseR = lerp(innerR, outerR, th.u);
+    // inner threads orbit faster than outer ones, like real accretion flow
+    const rot = t * 0.00035 * motionRate / (0.45 + 0.75 * th.u);
+    const pts = [];
+    for (let i = 0; i <= THREAD_SEGMENTS; i++) {
+      const theta = (i / THREAD_SEGMENTS) * Math.PI * 2 + rot;
+      const wob = th.wobAmp1 * Math.sin(th.wobFreq1 * theta + th.phase1)
+                + th.wobAmp2 * Math.sin(th.wobFreq2 * theta + th.phase2);
+      const rad = baseR * (1 + wob);
+      pts.push({ x: hole.cx + Math.cos(theta) * rad, y: hole.cy + Math.sin(theta) * rad * DISK_SQUASH });
+    }
+    return pts;
+  }
+
+  function drawThreads(t, motionRate) {
     ctx.save();
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.globalCompositeOperation = "lighter";
 
-    const layers = [
-      { w: hole.r * 0.22,  a: 0.09 },
-      { w: hole.r * 0.12,  a: 0.20 },
-      { w: hole.r * 0.055, a: 0.5 },
-      { w: hole.r * 0.02,  a: 1.0 },
-    ];
+    for (const th of threads) {
+      const pts = threadPoints(th, t, motionRate);
+      const glowAlpha = lerp(0.5, 0.1, th.u);
+      const coreAlpha = lerp(0.95, 0.25, th.u);
 
-    for (let s = 0; s < SPIRAL_STRANDS; s++) {
-      const phase = (s / SPIRAL_STRANDS) * Math.PI * 2 + s * 0.9;
-      const pts = [];
-      for (let i = 0; i <= SPIRAL_SEGMENTS; i++) pts.push(spiralPoint(i / SPIRAL_SEGMENTS, phase, rot));
+      ctx.strokeStyle = threadColor(th.u, glowAlpha);
+      ctx.lineWidth = Math.max(1, hole.r * lerp(0.05, 0.03, th.u));
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.stroke();
 
-      layers.forEach(layer => {
-        ctx.lineWidth = Math.max(0.6, layer.w);
-        const perBand = Math.ceil(pts.length / SPIRAL_BANDS);
-        for (let b = 0; b < pts.length - 1; b += perBand) {
-          const end = Math.min(b + perBand, pts.length - 1);
-          ctx.strokeStyle = strandColor(((b + end) / 2) / pts.length, layer.a);
-          ctx.beginPath();
-          ctx.moveTo(pts[b].x, pts[b].y);
-          for (let i = b + 1; i <= end; i++) ctx.lineTo(pts[i].x, pts[i].y);
-          ctx.stroke();
-        }
-      });
+      ctx.strokeStyle = threadColor(th.u, coreAlpha);
+      ctx.lineWidth = Math.max(0.5, hole.r * 0.012);
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.stroke();
     }
     ctx.restore();
   }
 
-  const strandEmbers = Array.from({ length: SPIRAL_STRANDS * 3 }, (_, i) => ({
-    strand: i % SPIRAL_STRANDS,
-    phase: Math.random(),
-    speedMul: 0.7 + Math.random() * 0.6,
-  }));
-
-  function drawEmbers(t, rot) {
-    if (reducedMotion) return;
+  function drawBeamGlow(cx, cy, r) {
+    // soft one-sided brightening, like the approaching-limb glow in the
+    // reference — cheap stand-in for true Doppler beaming
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-    for (const e of strandEmbers) {
-      const u = ((t * 0.00018 * e.speedMul + e.phase) % 1 + 1) % 1;
-      const phase = (e.strand / SPIRAL_STRANDS) * Math.PI * 2 + e.strand * 0.9;
-      const p = spiralPoint(u, phase, rot);
-      const size = hole.r * (0.05 + 0.05 * (1 - u));
-      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size);
-      g.addColorStop(0, strandColor(u, 0.9));
-      g.addColorStop(1, strandColor(u, 0));
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    const bx = cx - r * 0.9, by = cy + r * 0.15;
+    const g = ctx.createRadialGradient(bx, by, 0, bx, by, r * 2.6);
+    g.addColorStop(0, "rgba(255,240,210,0.20)");
+    g.addColorStop(1, "rgba(255,240,210,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(bx, by, r * 2.6, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 
@@ -168,10 +169,9 @@
     const { cx, cy, r } = hole;
     if (r <= 0) return;
 
-    // spiral keeps turning under reduced-motion too, just slower — it's
-    // the core visual, not a decorative flourish
+    // keeps turning under reduced-motion too, just slower — it's the core
+    // visual, not a decorative flourish
     const motionRate = reducedMotion ? 0.4 : 1;
-    const rot = t * 0.00022 * motionRate;
 
     // ── 1. Wide diffuse bloom ──────────────────────────────────────────
     const bloom = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 5);
@@ -184,9 +184,9 @@
     ctx.arc(cx, cy, r * 5, 0, Math.PI * 2);
     ctx.fill();
 
-    // ── 2. Spiral filaments, plus embers riding them into the core ─────
-    drawStrands(rot);
-    drawEmbers(t, rot);
+    // ── 2. The woven ring itself, plus a one-sided brightness boost ────
+    drawThreads(t, motionRate);
+    drawBeamGlow(cx, cy, r);
 
     // ── 3. Photon-sphere rim — crisp bright edge right at the horizon ──
     const photon = ctx.createRadialGradient(cx, cy, r * 0.78, cx, cy, r * 0.92);
@@ -198,7 +198,7 @@
     ctx.arc(cx, cy, r * 0.92, 0, Math.PI * 2);
     ctx.fill();
 
-    // ── 4. Event horizon — absolute black core the strands vanish into ─
+    // ── 4. Event horizon — absolute black core the ring wraps around ───
     ctx.fillStyle = "#000";
     ctx.beginPath();
     ctx.arc(cx, cy, r * 0.8, 0, Math.PI * 2);
