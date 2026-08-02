@@ -177,7 +177,7 @@
             if (cr > diskInner && cr < diskOuter) {
               float ang = atan(crossPos.z, crossPos.x);
               float speed = 1.35 / pow(cr, 0.55);
-              float flow = ang - iTime * speed * 0.16;
+              float flow = ang - iTime * speed * 0.34;
               float n = fbm(vec2(flow * 2.1, cr * 0.85));
               float n2 = fbm(vec2(flow * 5.3 + 4.1, cr * 1.7 - iTime * 0.05));
               float turb = 0.55 + 0.55 * n + 0.25 * n2;
@@ -295,9 +295,12 @@
     ctx.arc(cx, cy, r * 4.8, 0, Math.PI * 2);
     ctx.fill();
 
-    const glTime = reducedMotion ? 0 : t * 0.00035;
+    // Keep the disk turning even with prefers-reduced-motion on — freezing
+    // it entirely is what made this read as a still image instead of a
+    // simulation. Reduced-motion users get a gentler pace, not a full stop.
+    const glTime = t * (reducedMotion ? 0.00013 : 0.00035);
     const size = Math.max(64, Math.min(680, r * 6.2));
-    const frame = blackHoleGL.render(glTime, size, reducedMotion);
+    const frame = blackHoleGL.render(glTime, size, false);
     if (!frame) { drawHoleFallback2D(t); return; }
 
     ctx.save();
@@ -312,8 +315,11 @@
     const { cx, cy, r } = hole;
     if (r <= 0) return;
 
-    const spin = reducedMotion ? 0 : t * 0.00014;      // halo rotation
-    const spinOuter = reducedMotion ? 0 : t * 0.00009;  // outer disk rotates slower (differential rotation)
+    // core rotation keeps running in reduced-motion (just slower) — it's
+    // the whole point of the viewer, not a decorative flourish
+    const motionRate = reducedMotion ? 0.4 : 1;
+    const spin = t * 0.00028 * motionRate;      // halo rotation
+    const spinOuter = t * 0.00018 * motionRate;  // outer disk rotates slower (differential rotation)
     const hasConic = typeof ctx.createConicGradient === "function";
 
     // conic gradient = true 360° angular colour, so the ring can stay bright
@@ -458,12 +464,14 @@
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     for (const m of motes) {
-      if (!reducedMotion) {
-        const pull = 1 + (hole.r * 2.2 - m.radius) / (hole.r * 4);
-        m.radius -= m.speed * Math.max(pull, 0.3);
-        m.angle += 0.006 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.4));
-        if (m.radius < hole.r * 0.7) Object.assign(m, spawnMote());
-      }
+      // orbiting-then-falling-in is the actual point of this visual, so it
+      // keeps running under reduced-motion too, just gentler — only the
+      // flickery bits (star twinkle, turbulence flecks) get fully muted.
+      const motionRate = reducedMotion ? 0.4 : 1;
+      const pull = 1 + (hole.r * 2.2 - m.radius) / (hole.r * 4);
+      m.radius -= m.speed * Math.max(pull, 0.3) * motionRate;
+      m.angle += 0.006 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.4)) * motionRate;
+      if (m.radius < hole.r * 0.7) Object.assign(m, spawnMote());
       const x = hole.cx + Math.cos(m.angle) * m.radius;
       const y = hole.cy + Math.sin(m.angle) * m.radius * 0.34;
       const fadeIn = Math.max(0, Math.min(1, (hole.r * 4.5 - m.radius) / (hole.r * 1.3)));
