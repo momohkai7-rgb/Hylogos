@@ -7,9 +7,6 @@
   let motes = [];
   const hole = { cx: 0, cy: 0, r: 0 };
 
-  const AMBER = "255,180,84";
-  const ORANGE = "255,140,60";
-  const HOT = "255,244,220";
   const VOID = "5,4,10";
 
   const rmQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -63,6 +60,22 @@
     hole.r = rect.width / 2;
   }
 
+  const DEEP_RED = [120, 24, 0];
+  const ORANGE = [255, 106, 20];
+  const HOT = [255, 244, 220];
+
+  function bandColor(frac, alpha) {
+    let c;
+    if (frac < 0.5) {
+      const tt = frac / 0.5;
+      c = [0, 1, 2].map(i => HOT[i] + (ORANGE[i] - HOT[i]) * tt);
+    } else {
+      const tt = (frac - 0.5) / 0.5;
+      c = [0, 1, 2].map(i => ORANGE[i] + (DEEP_RED[i] - ORANGE[i]) * tt);
+    }
+    return `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${alpha})`;
+  }
+
   function drawStars(t) {
     ctx.fillStyle = "#e8e4f0";
     for (const s of stars) {
@@ -75,27 +88,42 @@
     ctx.globalAlpha = 1;
   }
 
-  // A soft-edged glowing band: several overlapping strokes of the same path,
-  // wide+faint to narrow+bright, so it reads as a thick luminous ring rather
-  // than a hard-edged outline.
-  function glowRing(rx, ry, rotation, layers) {
+  // Turbulent, rotating spiral disk: many concentric elliptical bands, each
+  // broken into a few arc segments with gaps, twisted a little further than
+  // the last as radius grows — the twist is what reads as a spiral when it's
+  // all spinning together, rather than a clean flat ring.
+  const SQUASH = 0.62;
+  const BAND_COUNT = 13;
+  const TWIST_PER_BAND = 0.34;
+
+  function drawSpiralDisk(t) {
+    const { cx, cy, r } = hole;
+    const baseSpin = reducedMotion ? 0 : t * 0.00013;
+    const innerR = r * 1.2;
+    const outerR = r * 2.7;
+
     ctx.save();
-    ctx.translate(hole.cx, hole.cy);
-    ctx.rotate(rotation);
-    for (const layer of layers) {
-      const grad = ctx.createLinearGradient(-rx, 0, rx, 0);
-      grad.addColorStop(0, `rgba(${AMBER},0)`);
-      grad.addColorStop(0.14, `rgba(${AMBER},${layer.a * 0.75})`);
-      grad.addColorStop(0.38, `rgba(${ORANGE},${layer.a})`);
-      grad.addColorStop(0.5, `rgba(${HOT},${Math.min(1, layer.a * 1.15)})`);
-      grad.addColorStop(0.62, `rgba(${ORANGE},${layer.a})`);
-      grad.addColorStop(0.86, `rgba(${AMBER},${layer.a * 0.75})`);
-      grad.addColorStop(1, `rgba(${AMBER},0)`);
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = layer.w;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
-      ctx.stroke();
+    ctx.translate(cx, cy);
+    ctx.lineCap = "round";
+
+    for (let i = BAND_COUNT - 1; i >= 0; i--) {
+      const frac = i / (BAND_COUNT - 1); // 0 = innermost/brightest, 1 = outer/reddest
+      const radius = innerR + (outerR - innerR) * frac;
+      const rot = baseSpin + i * TWIST_PER_BAND;
+      const alpha = 0.82 - frac * 0.42;
+      const width = r * (0.2 - frac * 0.09);
+      const segCount = 3;
+      const segAngle = ((Math.PI * 2) / segCount) * 0.6;
+      const slot = (Math.PI * 2) / segCount;
+
+      ctx.strokeStyle = bandColor(frac, alpha);
+      ctx.lineWidth = width;
+      for (let s = 0; s < segCount; s++) {
+        const start = rot + s * slot + (i % 2) * 0.18;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, radius, radius * SQUASH, 0, start, start + segAngle);
+        ctx.stroke();
+      }
     }
     ctx.restore();
   }
@@ -103,31 +131,33 @@
   function drawHole(t) {
     const { cx, cy, r } = hole;
     if (r <= 0) return;
-    const spin = reducedMotion ? 0 : t * 0.00007;
 
     // wide ambient bloom
-    const glow = ctx.createRadialGradient(cx, cy, r * 0.4, cx, cy, r * 3);
-    glow.addColorStop(0, `rgba(${ORANGE},0.35)`);
-    glow.addColorStop(0.5, `rgba(${AMBER},0.14)`);
-    glow.addColorStop(1, `rgba(${AMBER},0)`);
+    const glow = ctx.createRadialGradient(cx, cy, r * 0.4, cx, cy, r * 3.1);
+    glow.addColorStop(0, `rgba(${ORANGE.join(",")},0.32)`);
+    glow.addColorStop(0.55, `rgba(${DEEP_RED.join(",")},0.14)`);
+    glow.addColorStop(1, `rgba(${DEEP_RED.join(",")},0)`);
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 3, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 3.1, 0, Math.PI * 2);
     ctx.fill();
 
-    // tight halo hugging the sphere — the "wraps over the top" ring
-    glowRing(r * 1.18, r * 1.05, spin * 0.6, [
-      { w: r * 0.55, a: 0.16 },
-      { w: r * 0.3, a: 0.32 },
-      { w: r * 0.12, a: 0.65 },
-    ]);
+    drawSpiralDisk(t);
 
-    // wide flat equatorial disk, extends further out to the sides
-    glowRing(r * 2.05, r * 0.46, spin, [
-      { w: r * 0.6, a: 0.16 },
-      { w: r * 0.34, a: 0.34 },
-      { w: r * 0.14, a: 0.75 },
-    ]);
+    // bright thin rim hugging the void's edge, plus a soft glow just outside it
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.strokeStyle = `rgba(${ORANGE.join(",")},0.45)`;
+    ctx.lineWidth = r * 0.24;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 1.1, r * 1.1 * SQUASH, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = `rgba(${HOT.join(",")},0.95)`;
+    ctx.lineWidth = r * 0.05;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 1.06, r * 1.06 * SQUASH, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
 
     // the void itself — belt-and-suspenders under the real input's own
     // background, so there's never a gap even for a stray frame
@@ -175,16 +205,20 @@
 
       ctx.globalAlpha = alpha;
       const s = m.box;
+      ctx.shadowColor = m.color;
+      ctx.shadowBlur = 9;
       roundRectPath(x - s / 2, y - s / 2, s, s, 3);
-      ctx.fillStyle = "rgba(13,10,24,0.9)";
+      ctx.fillStyle = "rgba(13,10,24,0.92)";
       ctx.fill();
       ctx.strokeStyle = m.color;
-      ctx.lineWidth = 1.3;
+      ctx.lineWidth = 1.6;
       ctx.stroke();
 
+      ctx.shadowBlur = 12;
       ctx.fillStyle = m.color;
       ctx.font = "700 9px var(--font-mono), monospace";
       ctx.fillText(m.symbol, x, y + 0.5);
+      ctx.shadowBlur = 0;
     }
     ctx.globalAlpha = 1;
   }
