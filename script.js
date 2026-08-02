@@ -230,7 +230,8 @@
   }
 
   function tick(t) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = `rgb(5,4,10)`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawStars(t);
     drawHole(t);
     drawMotes();
