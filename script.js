@@ -69,13 +69,14 @@
   }
 
   /* ── Black hole ─────────────────────────────────────────────────────────
-     Flat neon "poster" style, matching the reference art directly: a
-     tilted glowing ring blended magenta → orange → amber, a solid black
-     event horizon on top, and a bright thin streak where the near edge
-     of the disk crosses in front of the sphere. The ring itself never
-     rotates as a rigid shape — motion instead comes from slow, softly
-     drifting glow clumps along its path plus a gentle breathing pulse,
-     so the material reads as hovering/flowing rather than spinning.
+     Flat neon "poster" style, matching the reference art: a tilted glowing
+     ring, white-hot at the inner edge through gold and orange out to
+     magenta-purple at the rim, a solid black event horizon on top, and a
+     bright thin streak where the near edge of the disk crosses in front of
+     the sphere. The ring's own shape stays still (a rigid spin would fight
+     the flat "poster" look), but a soft rotating light-sweep plus a few
+     drifting glow clumps circulate around it continuously, so the gas
+     visibly flows instead of just sitting there like a still image.
   ─────────────────────────────────────────────────────────────────────── */
 
   const RING_TILT = -20 * Math.PI / 180;
@@ -84,54 +85,77 @@
     const { cx, cy, r } = hole;
     if (r <= 0) return;
 
-    const drift   = reducedMotion ? 0 : t * 0.00006;                 // very slow circulation, not a spin
-    const breathe = reducedMotion ? 0.5 : Math.sin(t * 0.00035) * 0.5 + 0.5;
+    // flow keeps running under reduced-motion too, just slower — this IS
+    // the "energy and gases flowing" visual, not a decorative flourish
+    const motionRate = reducedMotion ? 0.35 : 1;
+    const flowRot = t * 0.00028 * motionRate;
+    const drift   = flowRot * 0.8;
+    const breathe = 0.5 + 0.5 * Math.sin(t * 0.00035 * motionRate);
 
-    const outerR = r * 2.7;
+    const outerR = r * 2.9;
     const innerR = r * 1.02;   // event horizon sits just inside the ring's bright inner edge
-    const squash = 0.4;        // perspective foreshortening of the tilted ring
+    const squash = 0.46;       // perspective foreshortening of the tilted ring
 
     /* 1 ── Wide ambient bloom — the soft magenta/orange haze around everything */
-    const bloomR = outerR * 1.65;
+    const bloomR = outerR * 1.6;
     const bloom = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, bloomR);
-    bloom.addColorStop(0,    "rgba(255,120,40,0.28)");
-    bloom.addColorStop(0.35, "rgba(230,50,140,0.16)");
-    bloom.addColorStop(0.7,  "rgba(120,20,180,0.09)");
+    bloom.addColorStop(0,    "rgba(255,150,60,0.28)");
+    bloom.addColorStop(0.35, "rgba(230,60,140,0.15)");
+    bloom.addColorStop(0.7,  "rgba(120,20,180,0.08)");
     bloom.addColorStop(1,    "rgba(60,0,90,0)");
     ctx.fillStyle = bloom;
     ctx.beginPath();
     ctx.arc(cx, cy, bloomR, 0, Math.PI * 2);
     ctx.fill();
 
-    /* 2 ── The ring: a tilted, squashed circle filled with a single radial
-       gradient. Its centre is covered by the event horizon drawn later,
-       so the ring "wraps" around the sphere with no extra clip geometry. */
+    /* 2 ── The ring: a tilted, squashed circle filled with a radial
+       gradient — white-hot inner edge fading through gold, orange, red
+       and out to magenta. Its centre is covered by the event horizon
+       drawn later, so the ring "wraps" around the sphere for free. */
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(RING_TILT);
     ctx.scale(1, squash);
 
     const frac = innerR / outerR;
-    const wobble = 0.015 * breathe; // gentle breathing right at the inner edge
 
     const ring = ctx.createRadialGradient(0, 0, 0, 0, 0, outerR);
-    ring.addColorStop(0,                          "rgba(255,70,190,1)");
-    ring.addColorStop(Math.max(0, frac - 0.06),   "rgba(255,70,190,1)");
-    ring.addColorStop(Math.min(1, frac + wobble), "rgba(255,115,208,1)");
-    ring.addColorStop(Math.min(1, frac + 0.07),   "rgba(255,90,40,1)");
-    ring.addColorStop(Math.min(1, frac + 0.20),   "rgba(255,178,40,1)");
-    ring.addColorStop(Math.min(1, frac + 0.38),   "rgba(226,80,15,0.95)");
-    ring.addColorStop(Math.min(1, frac + 0.58),   "rgba(120,25,75,0.55)");
-    ring.addColorStop(1,                          "rgba(60,10,60,0)");
+    ring.addColorStop(0,                         "rgba(255,250,235,1)");
+    ring.addColorStop(frac,                       "rgba(255,250,235,1)");
+    ring.addColorStop(Math.min(1, frac + 0.09),   "rgba(255,214,140,1)");
+    ring.addColorStop(Math.min(1, frac + 0.20),   "rgba(255,160,60,1)");
+    ring.addColorStop(Math.min(1, frac + 0.32),   "rgba(255,100,40,0.98)");
+    ring.addColorStop(Math.min(1, frac + 0.44),   "rgba(210,55,70,0.85)");
+    ring.addColorStop(Math.min(1, frac + 0.56),   "rgba(150,35,130,0.6)");
+    ring.addColorStop(1,                          "rgba(70,10,80,0)");
 
     ctx.fillStyle = ring;
     ctx.beginPath();
     ctx.arc(0, 0, outerR, 0, Math.PI * 2);
     ctx.fill();
+
+    /* 2b ── Rotating light-sweep — soft bright bands wrapping around the
+       ring so the gas reads as flowing, not a static painted band. */
+    if (ctx.createConicGradient) {
+      const sweep = ctx.createConicGradient(flowRot, 0, 0);
+      sweep.addColorStop(0.00, "rgba(255,255,255,0.22)");
+      sweep.addColorStop(0.09, "rgba(255,255,255,0)");
+      sweep.addColorStop(0.33, "rgba(255,255,255,0.16)");
+      sweep.addColorStop(0.42, "rgba(255,255,255,0)");
+      sweep.addColorStop(0.63, "rgba(255,255,255,0.20)");
+      sweep.addColorStop(0.73, "rgba(255,255,255,0)");
+      sweep.addColorStop(1.00, "rgba(255,255,255,0.22)");
+      ctx.globalCompositeOperation = "lighter";
+      ctx.fillStyle = sweep;
+      ctx.beginPath();
+      ctx.arc(0, 0, outerR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalCompositeOperation = "source-over";
+    }
     ctx.restore();
 
-    /* 3 ── Soft glow clumps drifting slowly along the ring — gas gently
-       circulating, not the ring spinning as one rigid piece. */
+    /* 3 ── Soft glow clumps drifting around the ring — extra sparkle
+       riding along on top of the light-sweep. */
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(RING_TILT);
@@ -139,13 +163,13 @@
     const CLUMPS = 6;
     for (let i = 0; i < CLUMPS; i++) {
       const a   = drift * (0.4 + 0.15 * (i % 3)) + (i / CLUMPS) * Math.PI * 2;
-      const rad = outerR * (0.62 + 0.28 * ((i * 37) % 5) / 5);
+      const rad = outerR * (0.55 + 0.3 * ((i * 37) % 5) / 5);
       const px  = Math.cos(a) * rad;
       const py  = Math.sin(a) * rad * squash;
-      const cR  = r * (0.5 + 0.25 * ((i * 53) % 4) / 4);
+      const cR  = r * (0.55 + 0.3 * ((i * 53) % 4) / 4);
       const g = ctx.createRadialGradient(px, py, 0, px, py, cR);
-      g.addColorStop(0, "rgba(255,210,150,0.35)");
-      g.addColorStop(1, "rgba(255,210,150,0)");
+      g.addColorStop(0, "rgba(255,225,180,0.4)");
+      g.addColorStop(1, "rgba(255,225,180,0)");
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(px, py, cR, 0, Math.PI * 2);
@@ -160,11 +184,11 @@
     ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
     ctx.fill();
 
-    /* 5 ── Crisp bright rim right at the horizon's edge */
+    /* 5 ── Crisp bright white rim right at the horizon's edge */
     const rim = ctx.createRadialGradient(cx, cy, innerR * 0.9, cx, cy, innerR * 1.18);
-    rim.addColorStop(0,    "rgba(255,170,230,0)");
-    rim.addColorStop(0.55, "rgba(255,150,225,0.85)");
-    rim.addColorStop(1,    "rgba(255,150,225,0)");
+    rim.addColorStop(0,    "rgba(255,250,235,0)");
+    rim.addColorStop(0.55, "rgba(255,250,235,0.9)");
+    rim.addColorStop(1,    "rgba(255,250,235,0)");
     ctx.fillStyle = rim;
     ctx.beginPath();
     ctx.arc(cx, cy, innerR * 1.18, 0, Math.PI * 2);
@@ -178,11 +202,11 @@
     const streakW = innerR * 2.3;
     const streakH = r * 0.11 * (1 + 0.2 * breathe);
     const streak = ctx.createLinearGradient(-streakW / 2, 0, streakW / 2, 0);
-    streak.addColorStop(0,    "rgba(210,150,255,0)");
-    streak.addColorStop(0.18, "rgba(230,190,255,0.65)");
-    streak.addColorStop(0.5,  "rgba(255,240,255,0.95)");
-    streak.addColorStop(0.82, "rgba(230,190,255,0.65)");
-    streak.addColorStop(1,    "rgba(210,150,255,0)");
+    streak.addColorStop(0,    "rgba(255,245,255,0)");
+    streak.addColorStop(0.18, "rgba(255,250,255,0.65)");
+    streak.addColorStop(0.5,  "rgba(255,255,255,0.95)");
+    streak.addColorStop(0.82, "rgba(255,250,255,0.65)");
+    streak.addColorStop(1,    "rgba(255,245,255,0)");
     ctx.fillStyle = streak;
     ctx.beginPath();
     ctx.ellipse(0, 0, streakW / 2, streakH / 2, 0, 0, Math.PI * 2);
@@ -211,12 +235,13 @@
     ctx.textAlign    = "center";
     ctx.textBaseline = "middle";
     for (const m of motes) {
-      if (!reducedMotion) {
-        const pull = 1 + Math.max(0, (hole.r * 3.5 - m.radius) / (hole.r * 2.5));
-        m.radius -= m.speed * pull * 0.5;
-        m.angle  += 0.005 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.5));
-        if (m.radius < hole.r * 1.2) Object.assign(m, spawnMote());
-      }
+      // orbiting-then-falling-in is the whole point of this visual, so it
+      // keeps running under reduced-motion too, just gentler.
+      const motionRate = reducedMotion ? 0.4 : 1;
+      const pull = 1 + Math.max(0, (hole.r * 3.5 - m.radius) / (hole.r * 2.5));
+      m.radius -= m.speed * pull * 0.5 * motionRate;
+      m.angle  += 0.005 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.5)) * motionRate;
+      if (m.radius < hole.r * 1.2) Object.assign(m, spawnMote());
       const x = hole.cx + Math.cos(m.angle) * m.radius;
       const y = hole.cy + Math.sin(m.angle) * m.radius * 0.45;
 
