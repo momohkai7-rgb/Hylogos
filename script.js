@@ -53,11 +53,26 @@
 
   // The black hole is centered exactly on the real search input, so it always
   // lines up with it — including through scrolling, since this runs every frame.
+  // Position hole in center of viewport, sized appropriately
   function updateHolePosition() {
     const rect = searchEl.getBoundingClientRect();
     hole.cx = rect.left + rect.width / 2;
     hole.cy = rect.top + rect.height / 2;
-    hole.r = rect.width / 2;
+    // Use a fixed comfortable radius — input is transparent so rect.width
+    // is correct but let's ensure a minimum visible size
+    hole.r = Math.max(rect.width / 2, Math.min(canvas.width * 0.22, 220));
+  }
+
+  function drawStars(t) {
+    ctx.fillStyle = "#e8e4f0";
+    for (const s of stars) {
+      const twinkle = reducedMotion ? 0.5 : Math.abs(Math.sin(s.phase + t * s.speed));
+      ctx.globalAlpha = 0.28 + 0.4 * twinkle;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
   }
 
   const PURPLE = "180,60,255";
