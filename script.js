@@ -58,8 +58,6 @@
     const rect = searchEl.getBoundingClientRect();
     hole.cx = rect.left + rect.width / 2;
     hole.cy = rect.top + rect.height / 2;
-    // Use a fixed comfortable radius — input is transparent so rect.width
-    // is correct but let's ensure a minimum visible size
     hole.r = Math.max(rect.width / 2, Math.min(canvas.width * 0.22, 220));
   }
 
@@ -75,148 +73,164 @@
     ctx.globalAlpha = 1;
   }
 
-  const PURPLE = "180,60,255";
-  const ORANGE = "255,120,20";
-  const HOT    = "255,248,220";
-  const PURPLEDIM = "120,30,200";
+  // ── Black hole drawing ─────────────────────────────────────────────────────
+  // The disk SHAPE is static (like Kurzgesagt / Interstellar).
+  // The texture INSIDE the disk flows using animated gradient stops — this
+  // makes it look like the material is swirling without rotating the shape.
+  // We draw: back disk → motes → void → front disk → photon ring
+  // so motes disappear behind the void naturally.
 
-  // Draws the back half of the accretion disk (below the void)
-  function drawHoleDiskBack(t) {
+  function drawBlackHole(t) {
     const { cx, cy, r } = hole;
     if (r <= 0) return;
-    const spin = reducedMotion ? 0 : t * 0.00018;
-    _drawDisk(cx, cy, r, spin, false);
-  }
 
-  // Draws the void circle + front half of the disk (on top)
-  function drawHoleFront(t) {
-    const { cx, cy, r } = hole;
-    if (r <= 0) return;
-    const spin = reducedMotion ? 0 : t * 0.00018;
+    // Disk geometry: wide lens shape tapering to sharp side-points
+    const RX = r * 2.5;   // half-width of disk
+    const RY = r * 0.48;  // half-height (flat perspective)
 
-    // ── Wide ambient bloom ─────────────────────────────────────────────
-    const bloom = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r * 3.8);
-    bloom.addColorStop(0,    `rgba(${ORANGE},0.35)`);
-    bloom.addColorStop(0.25, `rgba(${ORANGE},0.18)`);
-    bloom.addColorStop(0.55, `rgba(${PURPLE},0.10)`);
-    bloom.addColorStop(1,    `rgba(${PURPLE},0)`);
+    // Animated offset — moves the color bands inside the disk to simulate flow
+    const flow = reducedMotion ? 0 : (t * 0.00014) % 1;
+
+    // ── 1. Outer bloom / nebula glow ────────────────────────────────────
+    const bloom = ctx.createRadialGradient(cx, cy, r * 0.1, cx, cy, r * 4.2);
+    bloom.addColorStop(0,    "rgba(255,130,20,0.30)");
+    bloom.addColorStop(0.18, "rgba(255,90,5,0.18)");
+    bloom.addColorStop(0.45, "rgba(160,30,220,0.10)");
+    bloom.addColorStop(1,    "rgba(80,0,120,0)");
     ctx.fillStyle = bloom;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 3.8, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 4.2, 0, Math.PI * 2);
     ctx.fill();
 
-    // ── Front half of disk (top arc, over the void) ────────────────────
-    _drawDisk(cx, cy, r, spin, true);
+    // ── 2. Back half of disk (drawn first, behind void and motes) ───────
+    _diskHalf(cx, cy, RX, RY, r, flow, false);
+  }
 
-    // ── Event horizon void ─────────────────────────────────────────────
-    // Draw AFTER front disk so the very inner edge is clean
-    const vg = ctx.createRadialGradient(cx, cy, r * 0.82, cx, cy, r);
-    vg.addColorStop(0,   "rgb(5,4,10)");
-    vg.addColorStop(0.9, "rgb(5,4,10)");
-    vg.addColorStop(1,   "rgba(5,4,10,0)");
-    ctx.fillStyle = vg;
+  function drawBlackHoleTop(t) {
+    const { cx, cy, r } = hole;
+    if (r <= 0) return;
+    const RX = r * 2.5;
+    const RY = r * 0.48;
+    const flow = reducedMotion ? 0 : (t * 0.00014) % 1;
+
+    // ── 3. Event horizon (void) ──────────────────────────────────────────
+    ctx.fillStyle = "rgb(5,4,10)";
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 0.97, 0, Math.PI * 2);
     ctx.fill();
 
-    // ── Bright photon ring right at the event horizon edge ─────────────
+    // ── 4. Front half of disk (top arc, over the void) ───────────────────
+    _diskHalf(cx, cy, RX, RY, r, flow, true);
+
+    // ── 5. Photon ring — bright rim right at horizon edge ────────────────
+    // This is the thin glowing line you see in every BH illustration.
     ctx.save();
     ctx.translate(cx, cy);
-    const rimGrad = ctx.createLinearGradient(-r, 0, r, 0);
-    rimGrad.addColorStop(0,    `rgba(${PURPLEDIM},0)`);
-    rimGrad.addColorStop(0.18, `rgba(${PURPLE},0.9)`);
-    rimGrad.addColorStop(0.50, `rgba(${HOT},1)`);
-    rimGrad.addColorStop(0.82, `rgba(${PURPLE},0.9)`);
-    rimGrad.addColorStop(1,    `rgba(${PURPLEDIM},0)`);
-    ctx.strokeStyle = rimGrad;
-    ctx.lineWidth = r * 0.055;
+    const rim = ctx.createLinearGradient(-RX * 0.55, 0, RX * 0.55, 0);
+    rim.addColorStop(0,    "rgba(180,60,255,0)");
+    rim.addColorStop(0.15, "rgba(200,80,255,0.85)");
+    rim.addColorStop(0.40, "rgba(255,160,40,1)");
+    rim.addColorStop(0.50, "rgba(255,255,220,1)");
+    rim.addColorStop(0.60, "rgba(255,160,40,1)");
+    rim.addColorStop(0.85, "rgba(200,80,255,0.85)");
+    rim.addColorStop(1,    "rgba(180,60,255,0)");
+    ctx.strokeStyle = rim;
+    ctx.lineWidth = r * 0.05;
     ctx.beginPath();
-    ctx.ellipse(0, 0, r * 1.02, r * 1.02 * 0.60, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, r * 1.01, r * 1.01 * (RY / RX) * 1.1, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
   }
 
-  // Shared disk drawing — clipTop=true draws only top half (front), false = bottom half (back)
-  function _drawDisk(cx, cy, r, spin, clipTop) {
-    const rx = r * 2.25;
-    const ry = r * 0.50;
-
+  // Draw top or bottom half of the accretion disk.
+  // The gradient is animated via `flow` offset so colors stream through it.
+  function _diskHalf(cx, cy, RX, RY, r, flow, top) {
     ctx.save();
     ctx.translate(cx, cy);
 
-    // Clip to top or bottom half only
+    // Clip to the correct half
     ctx.beginPath();
-    if (clipTop) {
-      ctx.rect(-rx * 1.2, -ry * 4, rx * 2.4, ry * 4);
+    if (top) {
+      ctx.rect(-RX * 1.2, -RY * 5, RX * 2.4, RY * 5);
     } else {
-      ctx.rect(-rx * 1.2, 0, rx * 2.4, ry * 4);
+      ctx.rect(-RX * 1.2, 0,       RX * 2.4, RY * 5);
     }
     ctx.clip();
 
-    // Rotate for spin
-    ctx.rotate(spin);
+    // The flow offset shifts the gradient stops so colors move left→right
+    // across the disk, simulating material swirling around the hole.
+    const f = flow; // 0..1 cycling
 
-    // Layer 1 — outermost wide glow (purple edges → orange → white center)
-    const g1 = ctx.createLinearGradient(-rx, 0, rx, 0);
-    g1.addColorStop(0,    `rgba(${PURPLEDIM},0)`);
-    g1.addColorStop(0.08, `rgba(${PURPLE},0.55)`);
-    g1.addColorStop(0.28, `rgba(${ORANGE},0.85)`);
-    g1.addColorStop(0.50, `rgba(${HOT},1)`);
-    g1.addColorStop(0.72, `rgba(${ORANGE},0.85)`);
-    g1.addColorStop(0.92, `rgba(${PURPLE},0.55)`);
-    g1.addColorStop(1,    `rgba(${PURPLEDIM},0)`);
-    ctx.strokeStyle = g1;
-    ctx.lineWidth = r * 0.72;
+    // Layer A — widest, faintest outer glow (purple → orange → white → orange → purple)
+    function makeGrad(x0, x1, stops) {
+      const g = ctx.createLinearGradient(x0, 0, x1, 0);
+      stops.forEach(([p, c]) => g.addColorStop(Math.min(1, Math.max(0, p)), c));
+      return g;
+    }
+
+    // Shift the bright peak across the disk with `f`
+    const peak = 0.25 + f * 0.5; // oscillates left↔right
+
+    ctx.strokeStyle = makeGrad(-RX, RX, [
+      [0,          "rgba(100,0,180,0)"],
+      [0.05,       "rgba(150,40,220,0.45)"],
+      [peak - 0.2, "rgba(200,80,10,0.55)"],
+      [peak,       "rgba(255,220,80,0.90)"],
+      [peak + 0.2, "rgba(200,80,10,0.55)"],
+      [0.95,       "rgba(150,40,220,0.45)"],
+      [1,          "rgba(100,0,180,0)"],
+    ]);
+    ctx.lineWidth = r * 0.70;
     ctx.beginPath();
-    ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, RX, RY, 0, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Layer 2 — mid ring, punchy orange
-    const g2 = ctx.createLinearGradient(-rx * 0.85, 0, rx * 0.85, 0);
-    g2.addColorStop(0,    `rgba(${PURPLE},0)`);
-    g2.addColorStop(0.12, `rgba(${PURPLE},0.80)`);
-    g2.addColorStop(0.38, `rgba(${ORANGE},0.95)`);
-    g2.addColorStop(0.50, `rgba(${HOT},1)`);
-    g2.addColorStop(0.62, `rgba(${ORANGE},0.95)`);
-    g2.addColorStop(0.88, `rgba(${PURPLE},0.80)`);
-    g2.addColorStop(1,    `rgba(${PURPLE},0)`);
-    ctx.strokeStyle = g2;
-    ctx.lineWidth = r * 0.34;
+    // Layer B — tighter, brighter mid-band
+    const peak2 = 0.2 + ((f + 0.35) % 1) * 0.6;
+    ctx.strokeStyle = makeGrad(-RX * 0.88, RX * 0.88, [
+      [0,           "rgba(140,30,220,0)"],
+      [0.08,        "rgba(180,50,255,0.65)"],
+      [peak2 - 0.18,"rgba(255,120,20,0.80)"],
+      [peak2,       "rgba(255,240,160,1)"],
+      [peak2 + 0.18,"rgba(255,120,20,0.80)"],
+      [0.92,        "rgba(180,50,255,0.65)"],
+      [1,           "rgba(140,30,220,0)"],
+    ]);
+    ctx.lineWidth = r * 0.32;
     ctx.beginPath();
-    ctx.ellipse(0, 0, rx * 0.82, ry * 0.82, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, RX * 0.82, RY * 0.82, 0, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Layer 3 — bright inner core, white-hot
-    const g3 = ctx.createLinearGradient(-rx * 0.60, 0, rx * 0.60, 0);
-    g3.addColorStop(0,    `rgba(${ORANGE},0)`);
-    g3.addColorStop(0.20, `rgba(${ORANGE},0.90)`);
-    g3.addColorStop(0.50, `rgba(${HOT},1)`);
-    g3.addColorStop(0.80, `rgba(${ORANGE},0.90)`);
-    g3.addColorStop(1,    `rgba(${ORANGE},0)`);
-    ctx.strokeStyle = g3;
-    ctx.lineWidth = r * 0.14;
+    // Layer C — bright inner core, always white-hot center
+    ctx.strokeStyle = makeGrad(-RX * 0.60, RX * 0.60, [
+      [0,    "rgba(200,80,255,0)"],
+      [0.12, "rgba(255,140,30,0.90)"],
+      [0.50, "rgba(255,255,230,1)"],
+      [0.88, "rgba(255,140,30,0.90)"],
+      [1,    "rgba(200,80,255,0)"],
+    ]);
+    ctx.lineWidth = r * 0.15;
     ctx.beginPath();
-    ctx.ellipse(0, 0, rx * 0.60, ry * 0.60, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, RX * 0.58, RY * 0.58, 0, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Layer 4 — thin bright filament at photon sphere
-    const g4 = ctx.createLinearGradient(-rx * 0.44, 0, rx * 0.44, 0);
-    g4.addColorStop(0,    `rgba(${PURPLE},0)`);
-    g4.addColorStop(0.25, `rgba(${PURPLE},0.85)`);
-    g4.addColorStop(0.50, `rgba(${HOT},1)`);
-    g4.addColorStop(0.75, `rgba(${PURPLE},0.85)`);
-    g4.addColorStop(1,    `rgba(${PURPLE},0)`);
-    ctx.strokeStyle = g4;
-    ctx.lineWidth = r * 0.038;
+    // Layer D — thin hot filament
+    ctx.strokeStyle = makeGrad(-RX * 0.46, RX * 0.46, [
+      [0,    "rgba(220,160,255,0)"],
+      [0.20, "rgba(255,200,80,0.90)"],
+      [0.50, "rgba(255,255,255,1)"],
+      [0.80, "rgba(255,200,80,0.90)"],
+      [1,    "rgba(220,160,255,0)"],
+    ]);
+    ctx.lineWidth = r * 0.040;
     ctx.beginPath();
-    ctx.ellipse(0, 0, rx * 0.44, ry * 0.44, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, RX * 0.44, RY * 0.44, 0, 0, Math.PI * 2);
     ctx.stroke();
 
     ctx.restore();
   }
 
-  function drawHole(t) {} // kept for compat, not used
-
+  // ── Motes (element tiles spiralling in) ────────────────────────────────────
   function roundRectPath(x, y, w, h, rad) {
     ctx.beginPath();
     ctx.moveTo(x + rad, y);
@@ -231,60 +245,55 @@
     ctx.closePath();
   }
 
-  function drawMotes(t) {
+  function drawMotes() {
     if (hole.r <= 0) return;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     for (const m of motes) {
       if (!reducedMotion) {
-        // Accelerate inward as they get closer (gravity well effect)
+        // Accelerate as they spiral inward
         const pull = 1 + Math.max(0, (hole.r * 3.5 - m.radius) / (hole.r * 2.5));
         m.radius -= m.speed * pull * 0.55;
-        // Orbit faster when closer
-        m.angle += 0.005 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.5));
-        // Respawn when they've fully faded out near the hole
-        if (m.radius < hole.r * 1.35) Object.assign(m, spawnMote());
+        m.angle  += 0.005 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.5));
+        if (m.radius < hole.r * 1.3) Object.assign(m, spawnMote());
       }
-
       const x = hole.cx + Math.cos(m.angle) * m.radius;
       const y = hole.cy + Math.sin(m.angle) * m.radius * 0.45;
 
-      // Fade in from outer edge
+      // Fade in from outer edge, fade out well before the void
       const fadeIn  = Math.min(1, (m.radius - hole.r * 2.5) / (hole.r * 0.8));
-      // Fade out well before the hole edge so they dissolve into it
-      const fadeOut = Math.min(1, (m.radius - hole.r * 1.35) / (hole.r * 1.0));
-      const alpha = Math.max(0, Math.min(fadeIn, fadeOut));
+      const fadeOut = Math.min(1, (m.radius - hole.r * 1.3)  / (hole.r * 1.1));
+      const alpha   = Math.max(0, Math.min(fadeIn, fadeOut));
       if (alpha <= 0.01) continue;
 
       ctx.globalAlpha = alpha;
       const s = m.box;
       ctx.shadowColor = m.color;
-      ctx.shadowBlur = 9;
+      ctx.shadowBlur  = 9;
       roundRectPath(x - s / 2, y - s / 2, s, s, 3);
-      ctx.fillStyle = "rgba(13,10,24,0.92)";
+      ctx.fillStyle   = "rgba(13,10,24,0.92)";
       ctx.fill();
       ctx.strokeStyle = m.color;
-      ctx.lineWidth = 1.6;
+      ctx.lineWidth   = 1.6;
       ctx.stroke();
-
-      ctx.shadowBlur = 12;
-      ctx.fillStyle = m.color;
-      ctx.font = "700 9px var(--font-mono), monospace";
+      ctx.shadowBlur  = 12;
+      ctx.fillStyle   = m.color;
+      ctx.font        = "700 9px var(--font-mono), monospace";
       ctx.fillText(m.symbol, x, y + 0.5);
-      ctx.shadowBlur = 0;
+      ctx.shadowBlur  = 0;
     }
     ctx.globalAlpha = 1;
   }
 
+  // ── Main loop ──────────────────────────────────────────────────────────────
   function tick(t) {
     updateHolePosition();
-    // Solid fill so canvas has its own dark background
     ctx.fillStyle = "rgb(5,4,10)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawStars(t);
-    drawHoleDiskBack(t);  // back half of disk (behind void)
-    drawMotes(t);         // motes drawn BEFORE void — fade via alpha only
-    drawHoleFront(t);     // void circle + front disk half on top
+    drawBlackHole(t);   // bloom + back disk half
+    drawMotes();        // motes fade out before they hit the void
+    drawBlackHoleTop(t); // void + front disk half + photon ring on top
     rafId = requestAnimationFrame(tick);
   }
 
