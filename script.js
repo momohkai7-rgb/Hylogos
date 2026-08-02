@@ -60,21 +60,10 @@
     hole.r = rect.width / 2;
   }
 
-  const DEEP_RED = [120, 24, 0];
-  const ORANGE = [255, 106, 20];
-  const HOT = [255, 244, 220];
-
-  function bandColor(frac, alpha) {
-    let c;
-    if (frac < 0.5) {
-      const tt = frac / 0.5;
-      c = [0, 1, 2].map(i => HOT[i] + (ORANGE[i] - HOT[i]) * tt);
-    } else {
-      const tt = (frac - 0.5) / 0.5;
-      c = [0, 1, 2].map(i => ORANGE[i] + (DEEP_RED[i] - ORANGE[i]) * tt);
-    }
-    return `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${alpha})`;
-  }
+  const PURPLE = "150,50,200";
+  const ORANGE = "255,120,40";
+  const HOT = "255,246,225";
+  const RIM = "235,225,255";
 
   function drawStars(t) {
     ctx.fillStyle = "#e8e4f0";
@@ -88,42 +77,27 @@
     ctx.globalAlpha = 1;
   }
 
-  // Turbulent, rotating spiral disk: many concentric elliptical bands, each
-  // broken into a few arc segments with gaps, twisted a little further than
-  // the last as radius grows — the twist is what reads as a spiral when it's
-  // all spinning together, rather than a clean flat ring.
-  const SQUASH = 0.62;
-  const BAND_COUNT = 13;
-  const TWIST_PER_BAND = 0.34;
-
-  function drawSpiralDisk(t) {
-    const { cx, cy, r } = hole;
-    const baseSpin = reducedMotion ? 0 : t * 0.00013;
-    const innerR = r * 1.2;
-    const outerR = r * 2.7;
-
+  // A clean, smooth glowing band: several full-ellipse strokes of the same
+  // path, wide+faint to narrow+bright, so it reads as a soft luminous ring
+  // with no hard edges and no turbulence/noise — deliberately simple.
+  function glowRing(rx, ry, rotation, layers) {
     ctx.save();
-    ctx.translate(cx, cy);
-    ctx.lineCap = "round";
-
-    for (let i = BAND_COUNT - 1; i >= 0; i--) {
-      const frac = i / (BAND_COUNT - 1); // 0 = innermost/brightest, 1 = outer/reddest
-      const radius = innerR + (outerR - innerR) * frac;
-      const rot = baseSpin + i * TWIST_PER_BAND;
-      const alpha = 0.82 - frac * 0.42;
-      const width = r * (0.2 - frac * 0.09);
-      const segCount = 3;
-      const segAngle = ((Math.PI * 2) / segCount) * 0.6;
-      const slot = (Math.PI * 2) / segCount;
-
-      ctx.strokeStyle = bandColor(frac, alpha);
-      ctx.lineWidth = width;
-      for (let s = 0; s < segCount; s++) {
-        const start = rot + s * slot + (i % 2) * 0.18;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, radius, radius * SQUASH, 0, start, start + segAngle);
-        ctx.stroke();
-      }
+    ctx.translate(hole.cx, hole.cy);
+    ctx.rotate(rotation);
+    for (const layer of layers) {
+      const grad = ctx.createLinearGradient(-rx, 0, rx, 0);
+      grad.addColorStop(0, `rgba(${PURPLE},0)`);
+      grad.addColorStop(0.15, `rgba(${PURPLE},${layer.a * 0.85})`);
+      grad.addColorStop(0.36, `rgba(${ORANGE},${layer.a})`);
+      grad.addColorStop(0.5, `rgba(${HOT},${Math.min(1, layer.a * 1.15)})`);
+      grad.addColorStop(0.64, `rgba(${ORANGE},${layer.a})`);
+      grad.addColorStop(0.85, `rgba(${PURPLE},${layer.a * 0.85})`);
+      grad.addColorStop(1, `rgba(${PURPLE},0)`);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = layer.w;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+      ctx.stroke();
     }
     ctx.restore();
   }
@@ -131,31 +105,44 @@
   function drawHole(t) {
     const { cx, cy, r } = hole;
     if (r <= 0) return;
+    const spin = reducedMotion ? 0 : t * 0.00012;
 
     // wide ambient bloom
-    const glow = ctx.createRadialGradient(cx, cy, r * 0.4, cx, cy, r * 3.1);
-    glow.addColorStop(0, `rgba(${ORANGE.join(",")},0.32)`);
-    glow.addColorStop(0.55, `rgba(${DEEP_RED.join(",")},0.14)`);
-    glow.addColorStop(1, `rgba(${DEEP_RED.join(",")},0)`);
+    const glow = ctx.createRadialGradient(cx, cy, r * 0.4, cx, cy, r * 3);
+    glow.addColorStop(0, `rgba(${ORANGE},0.3)`);
+    glow.addColorStop(0.55, `rgba(${PURPLE},0.13)`);
+    glow.addColorStop(1, `rgba(${PURPLE},0)`);
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 3.1, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 3, 0, Math.PI * 2);
     ctx.fill();
 
-    drawSpiralDisk(t);
+    // tight halo hugging the sphere — wraps over the top, nearly circular
+    glowRing(r * 1.32, r * 1.16, spin * 0.7, [
+      { w: r * 0.5, a: 0.18 },
+      { w: r * 0.27, a: 0.38 },
+      { w: r * 0.1, a: 0.8 },
+    ]);
 
-    // bright thin rim hugging the void's edge, plus a soft glow just outside it
+    // wide flat equatorial disk, extends further out to the sides
+    glowRing(r * 2.15, r * 0.5, spin, [
+      { w: r * 0.55, a: 0.16 },
+      { w: r * 0.3, a: 0.36 },
+      { w: r * 0.12, a: 0.82 },
+    ]);
+
+    // crisp bright rim right at the void's edge, slightly cool/pale for contrast
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.strokeStyle = `rgba(${ORANGE.join(",")},0.45)`;
-    ctx.lineWidth = r * 0.24;
+    ctx.strokeStyle = `rgba(${ORANGE},0.4)`;
+    ctx.lineWidth = r * 0.22;
     ctx.beginPath();
-    ctx.ellipse(0, 0, r * 1.1, r * 1.1 * SQUASH, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, r * 1.08, r * 1.08 * 0.62, 0, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.strokeStyle = `rgba(${HOT.join(",")},0.95)`;
-    ctx.lineWidth = r * 0.05;
+    ctx.strokeStyle = `rgba(${RIM},0.95)`;
+    ctx.lineWidth = r * 0.045;
     ctx.beginPath();
-    ctx.ellipse(0, 0, r * 1.06, r * 1.06 * SQUASH, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, r * 1.04, r * 1.04 * 0.62, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
@@ -194,12 +181,12 @@
         const pull = 1 + (hole.r * 2.2 - m.radius) / (hole.r * 4);
         m.radius -= m.speed * Math.max(pull, 0.3);
         m.angle += 0.006 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.4));
-        if (m.radius < hole.r * 1.05) Object.assign(m, spawnMote());
+        if (m.radius < hole.r * 1.55) Object.assign(m, spawnMote());
       }
       const x = hole.cx + Math.cos(m.angle) * m.radius;
       const y = hole.cy + Math.sin(m.angle) * m.radius * 0.4;
       const fadeIn = Math.max(0, Math.min(1, (hole.r * 4 - m.radius) / (hole.r * 1.2)));
-      const fadeOut = Math.max(0, Math.min(1, (m.radius - hole.r * 1.0) / (hole.r * 0.4)));
+      const fadeOut = Math.max(0, Math.min(1, (m.radius - hole.r * 1.6) / (hole.r * 0.55)));
       const alpha = Math.max(0, Math.min(1, fadeIn * fadeOut));
       if (alpha <= 0.03) continue;
 
