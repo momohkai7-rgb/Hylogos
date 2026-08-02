@@ -73,111 +73,130 @@
     const { cx, cy, r } = hole;
     if (r <= 0) return;
 
-    // ── 1. Wide diffuse bloom ────────────────────────────────────────────
-    const bloom = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 4.5);
-    bloom.addColorStop(0,    `rgba(255,150,50,0.20)`);
-    bloom.addColorStop(0.3,  `rgba(255,110,30,0.10)`);
-    bloom.addColorStop(0.7,  `rgba(180,60,5,0.04)`);
-    bloom.addColorStop(1,    `rgba(180,60,5,0)`);
-    ctx.fillStyle = bloom;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r * 4.5, 0, Math.PI * 2);
-    ctx.fill();
+    const spin = reducedMotion ? 0 : t * 0.00014;      // halo rotation
+    const spinOuter = reducedMotion ? 0 : t * 0.00009;  // outer disk rotates slower (differential rotation)
+    const hasConic = typeof ctx.createConicGradient === "function";
 
-    // ── 2. Accretion disk — static flat ellipse, asymmetric brightness ───
-    // Disk does NOT rotate. The gradient is asymmetric: left side is
-    // Doppler-boosted (brighter, hotter), right side dimmer. This is exactly
-    // how Gargantua looks in Interstellar.
-    const diskRx = r * 2.2;
-    const diskRy = r * 0.36;
+    // conic gradient = true 360° angular colour, so the ring can stay bright
+    // at every angle instead of the old left/right-only linear gradient.
+    // Falls back to a flat mid-tone colour on ancient browsers.
+    function angularStroke(stops, rotation, fallback) {
+      if (!hasConic) return fallback;
+      const g = ctx.createConicGradient(rotation, cx, cy);
+      stops.forEach(([pos, col]) => g.addColorStop(pos, col));
+      return g;
+    }
 
-    function diskPass(rx, ry, lw, stops) {
+    function ring(rx, ry, lw, stops, rotation) {
       ctx.save();
       ctx.translate(cx, cy);
-      const g = ctx.createLinearGradient(-rx, 0, rx, 0);
-      stops.forEach(([pos, col]) => g.addColorStop(pos, col));
-      ctx.strokeStyle = g;
+      ctx.strokeStyle = angularStroke(stops, rotation, stops[Math.floor(stops.length / 2)][1]);
       ctx.lineWidth = lw;
-      ctx.globalAlpha = 1;
       ctx.beginPath();
-      ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, Math.max(rx, 0.1), Math.max(ry, 0.1), 0, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
     }
 
-    // Outer body — warm amber, bright left / dim right
-    diskPass(diskRx, diskRy, r * 0.42, [
-      [0,    `rgba(180,70,5,0)`],
-      [0.05, `rgba(220,100,15,0.60)`],
-      [0.20, `rgba(255,160,50,0.92)`],
-      [0.38, `rgba(255,220,150,1)`],
-      [0.50, `rgba(255,245,210,1)`],   // top arc — brightest
-      [0.65, `rgba(255,160,50,0.60)`],
-      [0.82, `rgba(200,90,15,0.30)`],
-      [1,    `rgba(180,70,5,0)`],
-    ]);
-
-    // Mid ring — slightly tighter, punchier orange
-    diskPass(diskRx * 0.80, diskRy * 0.80, r * 0.20, [
-      [0,    `rgba(200,80,10,0)`],
-      [0.10, `rgba(255,140,40,0.75)`],
-      [0.35, `rgba(255,210,120,0.90)`],
-      [0.50, `rgba(255,250,220,0.95)`],
-      [0.68, `rgba(255,140,40,0.50)`],
-      [0.88, `rgba(200,80,10,0.20)`],
-      [1,    `rgba(200,80,10,0)`],
-    ]);
-
-    // Inner hot edge — white-hot
-    diskPass(diskRx * 0.60, diskRy * 0.60, r * 0.09, [
-      [0,    `rgba(255,200,100,0)`],
-      [0.15, `rgba(255,230,160,0.85)`],
-      [0.50, `rgba(255,255,240,1)`],
-      [0.80, `rgba(255,210,120,0.55)`],
-      [1,    `rgba(255,200,100,0)`],
-    ]);
-
-    // Photon ring filament — thin, bluish-white
-    diskPass(diskRx * 0.48, diskRy * 0.48, r * 0.025, [
-      [0,    `rgba(200,225,255,0)`],
-      [0.20, `rgba(220,238,255,0.80)`],
-      [0.50, `rgba(255,255,255,0.95)`],
-      [0.78, `rgba(200,220,255,0.50)`],
-      [1,    `rgba(200,225,255,0)`],
-    ]);
-
-    // ── 3. Gravitational lensing arc (top ghost) ─────────────────────────
-    // The back of the disk bends over the top of the hole — thin bright arc.
-    ctx.save();
-    ctx.translate(cx, cy);
+    // ── 1. Wide diffuse bloom — brighter & more saturated ────────────────
+    const bloom = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 5);
+    bloom.addColorStop(0,    `rgba(255,205,120,0.34)`);
+    bloom.addColorStop(0.25, `rgba(255,150,50,0.18)`);
+    bloom.addColorStop(0.6,  `rgba(230,90,15,0.08)`);
+    bloom.addColorStop(1,    `rgba(230,90,15,0)`);
+    ctx.fillStyle = bloom;
     ctx.beginPath();
-    ctx.ellipse(0, -r * 0.10, diskRx * 0.50, diskRy * 0.44, 0, Math.PI, Math.PI * 2);
-    const lens = ctx.createLinearGradient(-diskRx * 0.50, 0, diskRx * 0.50, 0);
-    lens.addColorStop(0,    `rgba(255,170,60,0)`);
-    lens.addColorStop(0.12, `rgba(255,210,120,0.55)`);
-    lens.addColorStop(0.42, `rgba(255,250,210,0.85)`);
-    lens.addColorStop(0.58, `rgba(255,250,210,0.85)`);
-    lens.addColorStop(0.88, `rgba(255,210,120,0.45)`);
-    lens.addColorStop(1,    `rgba(255,170,60,0)`);
-    ctx.strokeStyle = lens;
-    ctx.lineWidth = r * 0.038;
-    ctx.stroke();
-    ctx.restore();
-
-    // ── 4. Photon sphere glow (ring right at horizon edge) ───────────────
-    const photon = ctx.createRadialGradient(cx, cy, r * 0.90, cx, cy, r * 1.10);
-    photon.addColorStop(0,   `rgba(255,190,80,0.22)`);
-    photon.addColorStop(0.6, `rgba(255,150,40,0.08)`);
-    photon.addColorStop(1,   `rgba(255,150,40,0)`);
-    ctx.fillStyle = photon;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r * 1.10, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 5, 0, Math.PI * 2);
     ctx.fill();
 
-    // ── 5. Event horizon — absolute void, occludes bottom half of disk ───
-    ctx.fillStyle = `rgb(5,4,10)`;
+    // ── 2. Outer disk wings — the physically-thin disk seen edge-on, ─────
+    // flattened way out. Colour profile sampled from a real Gargantua-style
+    // render (dark rust edge -> gold -> white-hot -> gold -> rust).
+    const wingStops = [
+      [0.00, "rgba(129,22,2,0)"],
+      [0.10, "rgba(190,51,2,0.55)"],
+      [0.24, "rgba(247,157,0,0.85)"],
+      [0.37, "rgba(255,222,110,0.95)"],
+      [0.50, "rgba(255,250,235,1)"],
+      [0.63, "rgba(255,222,110,0.95)"],
+      [0.76, "rgba(247,157,0,0.85)"],
+      [0.90, "rgba(190,51,2,0.55)"],
+      [1.00, "rgba(129,22,2,0)"],
+    ];
+    ring(r * 2.15, r * 0.46, r * 0.30, wingStops, spinOuter);
+    ring(r * 1.85, r * 0.32, r * 0.20, wingStops, spinOuter + 0.4);
+
+    // ── 3. Round inner halo — this is what makes it read as a full ring ──
+    // wrapped around the sphere (gravitational lensing bends the far side
+    // of the disk up/over and down/under), instead of two dim wings.
+    const haloOuter = [
+      [0.00, "rgba(180,43,1,0.65)"], [0.5, "rgba(216,75,3,0.9)"], [1.00, "rgba(180,43,1,0.65)"],
+    ];
+    const haloMid = [
+      [0.00, "rgba(251,122,5,0.85)"], [0.5, "rgba(255,157,0,1)"], [1.00, "rgba(251,122,5,0.85)"],
+    ];
+    const haloBright = [
+      [0.00, "rgba(255,212,65,0.9)"], [0.5, "rgba(255,246,232,1)"], [1.00, "rgba(255,212,65,0.9)"],
+    ];
+    const haloCore = [
+      [0.00, "rgba(255,246,150,0.95)"], [0.5, "rgba(255,255,250,1)"], [1.00, "rgba(255,246,150,0.95)"],
+    ];
+    ring(r * 1.42, r * 1.24, r * 0.30, haloOuter,  spin * 0.7);
+
+    // bridge layer — closes the gap between the round halo and the flat
+    // wings so there's no dark seam between the two structures
+    const haloBridge = [
+      [0.00, "rgba(160,38,2,0.4)"], [0.5, "rgba(200,60,3,0.6)"], [1.00, "rgba(160,38,2,0.4)"],
+    ];
+    ring(r * 1.68, r * 1.40, r * 0.30, haloBridge, spin * 0.6);
+
+    ring(r * 1.24, r * 1.08, r * 0.22, haloMid,    spin);
+    ring(r * 1.08, r * 0.95, r * 0.15, haloBright, spin * 1.15);
+    ring(r * 0.95, r * 0.84, r * 0.08, haloCore,   spin * 1.3);
+
+    // ── 4. Turbulence — small bright flecks orbiting within the halo so ──
+    // the disk reads as flowing plasma rather than a smooth painted band.
+    if (!reducedMotion) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.globalCompositeOperation = "lighter";
+      const FLECKS = 22;
+      for (let i = 0; i < FLECKS; i++) {
+        const seed = i * 12.9898;
+        const speed = 0.00016 + (i % 5) * 0.00003;
+        const a = seed + t * speed;
+        const rx = r * (0.9 + 0.5 * ((i * 37) % 10) / 10);
+        const ry = rx * 0.82;
+        const x = Math.cos(a) * rx;
+        const y = Math.sin(a) * ry;
+        const flicker = 0.4 + 0.6 * Math.abs(Math.sin(seed + t * 0.002));
+        const s = r * (0.05 + 0.05 * flicker);
+        const g = ctx.createRadialGradient(x, y, 0, x, y, s);
+        g.addColorStop(0, `rgba(255,244,214,${0.55 * flicker})`);
+        g.addColorStop(1, `rgba(255,244,214,0)`);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, s, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // ── 5. Photon-sphere rim — crisp bright edge right at the horizon ────
+    const photon = ctx.createRadialGradient(cx, cy, r * 0.78, cx, cy, r * 0.92);
+    photon.addColorStop(0,   `rgba(255,250,235,0)`);
+    photon.addColorStop(0.7, `rgba(255,244,214,0.55)`);
+    photon.addColorStop(1,   `rgba(255,244,214,0)`);
+    ctx.fillStyle = photon;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 0.97, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 0.92, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ── 6. Event horizon — absolute black, small enough that the round ───
+    // halo above fully surrounds it at every angle.
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.8, 0, Math.PI * 2);
     ctx.fill();
   }
 
