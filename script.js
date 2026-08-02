@@ -1,7 +1,7 @@
 /* ===================== Cosmic backdrop ===================== */
 (function backdrop() {
-  const canvas = document.getElementById("starfield");
-  const ctx    = canvas.getContext("2d");
+  const canvas  = document.getElementById("starfield");
+  const ctx     = canvas.getContext("2d");
   const searchEl = document.getElementById("search");
 
   let stars = [], motes = [];
@@ -12,7 +12,7 @@
   rmQuery.addEventListener("change", e => { reducedMotion = e.matches; });
 
   const ELEMENT_SYMBOLS = (typeof ELEMENTS !== "undefined")
-    ? Object.keys(ELEMENTS) : ["H","He","Li","C","N","O","Fe","Au","Na","Si"];
+    ? Object.keys(ELEMENTS) : ["H","He","C","O","Fe","Au","Na","Si","Cu","Ar"];
   const MOTE_COUNT = 14;
 
   function moteColor(sym) {
@@ -55,7 +55,7 @@
     hole.r  = Math.max(rect.width / 2, Math.min(canvas.width * 0.20, 200));
   }
 
-  /* ── Stars ── */
+  /* ── Stars ──────────────────────────────────────────────────────────── */
   function drawStars(t) {
     ctx.fillStyle = "#e8e4f0";
     for (const s of stars) {
@@ -68,143 +68,141 @@
     ctx.globalAlpha = 1;
   }
 
-  /* ── Black hole ──────────────────────────────────────────────────────────
-     Exactly like the Kurzgesagt image:
-     • A rotating lens/eye shape made of layered ellipses
-     • Colors: deep violet outer → orange mid → white-yellow hot core
-     • Black circle sits in the center, occluding the inner disk
-     • Front half of the disk drawn OVER the black circle
-     The whole disk rotates slowly. That's all.
-  ────────────────────────────────────────────────────────────────────────── */
+  /* ── Black hole ─────────────────────────────────────────────────────────
+     The disk is a SOLID FILLED lens shape (intersection of two large
+     circles), not ellipse strokes. It glows from white-hot center →
+     orange → deep violet at the edges. The whole lens rotates around
+     the black event horizon circle.
+  ─────────────────────────────────────────────────────────────────────── */
+
+  // Build a lens-shaped path: intersection of two offset circles.
+  // cx/cy = center of lens, half-width W, half-height H
+  function lensPath(cx, cy, W, H) {
+    // The lens is defined by two circular arcs meeting at the tips.
+    // We derive the circle radius and center offset from W and H.
+    // Circle radius R and center offset D: R² = W² + D², H = R - D => D = R - H
+    // Solving: R = (W² + H²) / (2H), D = R - H
+    const R = (W * W + H * H) / (2 * H);
+    const D = R - H;
+
+    ctx.beginPath();
+    // Top circle arc (center below the lens center)
+    ctx.arc(cx, cy + D, R, -Math.PI + Math.asin(W / R), -Math.asin(W / R), false);
+    // Bottom circle arc (center above the lens center)
+    ctx.arc(cx, cy - D, R,  Math.asin(W / R), Math.PI - Math.asin(W / R), false);
+    ctx.closePath();
+  }
+
   function drawBlackHole(t) {
     const { cx, cy, r } = hole;
     if (r <= 0) return;
 
-    const angle = reducedMotion ? 0 : t * 0.00020; // rotation of the whole disk
+    const angle = reducedMotion ? 0 : t * 0.00022;
 
-    // Disk proportions — match the image: wide lens, not too flat
-    const RX = r * 2.40;  // half-width
-    const RY = r * 0.55;  // half-height (gives the lens shape)
+    // Lens dimensions — wide and tall enough to look like the image
+    const W = r * 2.45;  // half-width (tip to tip)
+    const H = r * 0.82;  // half-height (thickest point)
 
-    /* 1 ── Outer ambient glow ───────────────────────────────────────────── */
-    const bloom = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r * 4.0);
-    bloom.addColorStop(0,    "rgba(255,140,30,0.28)");
-    bloom.addColorStop(0.30, "rgba(200,60,220,0.12)");
-    bloom.addColorStop(0.65, "rgba(120,0,180,0.05)");
-    bloom.addColorStop(1,    "rgba(80,0,120,0)");
+    /* 1 ── Big soft outer glow ────────────────────────────────────────── */
+    const bloom = ctx.createRadialGradient(cx, cy, r * 0.1, cx, cy, r * 4.5);
+    bloom.addColorStop(0,    "rgba(255,140,20,0.30)");
+    bloom.addColorStop(0.25, "rgba(220,80,0,0.14)");
+    bloom.addColorStop(0.55, "rgba(140,20,200,0.07)");
+    bloom.addColorStop(1,    "rgba(60,0,100,0)");
     ctx.fillStyle = bloom;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 4.0, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 4.5, 0, Math.PI * 2);
     ctx.fill();
 
-    /* 2 ── Back half of disk (drawn first, void covers it) ─────────────── */
-    drawDiskHalf(cx, cy, RX, RY, angle, false);
+    /* 2 ── Rotate everything around the hole center ───────────────────── */
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
 
-    /* 3 ── Event horizon — solid black circle ───────────────────────────── */
+    /* 3 ── Back half of disk (clip to bottom half, draw behind void) ──── */
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(-W * 1.2, 0, W * 2.4, H * 6);  // bottom half only
+    ctx.clip();
+    drawLensLayers(W, H);
+    ctx.restore();
+
+    ctx.restore(); // end rotation
+
+    /* 4 ── Event horizon — solid black circle ─────────────────────────── */
     ctx.fillStyle = "rgb(5,4,10)";
     ctx.beginPath();
     ctx.arc(cx, cy, r * 0.97, 0, Math.PI * 2);
     ctx.fill();
 
-    /* 4 ── Front half of disk (over the black circle) ───────────────────── */
-    drawDiskHalf(cx, cy, RX, RY, angle, true);
-
-    /* 5 ── Bright photon ring at horizon edge ───────────────────────────── */
+    /* 5 ── Front half of disk (clip to top half, draws over void) ──────── */
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(angle);
-    const photon = ctx.createLinearGradient(-RX * 0.52, 0, RX * 0.52, 0);
-    photon.addColorStop(0,    "rgba(160,40,255,0)");
-    photon.addColorStop(0.18, "rgba(220,80,255,0.90)");
-    photon.addColorStop(0.42, "rgba(255,180,40,1)");
-    photon.addColorStop(0.50, "rgba(255,255,200,1)");
-    photon.addColorStop(0.58, "rgba(255,180,40,1)");
-    photon.addColorStop(0.82, "rgba(220,80,255,0.90)");
-    photon.addColorStop(1,    "rgba(160,40,255,0)");
-    ctx.strokeStyle = photon;
-    ctx.lineWidth   = r * 0.048;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, r * 1.00, r * 1.00 * (RY / RX) * 1.15, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-  }
 
-  /* Draws either the top (front) or bottom (back) half of the disk.
-     The disk is built from 4 layered ellipse-strokes, wide→narrow,
-     faint→bright, purple→orange→white — exactly matching the image. */
-  function drawDiskHalf(cx, cy, RX, RY, angle, front) {
     ctx.save();
-    ctx.translate(cx, cy);
-
-    // Clip to the correct half
     ctx.beginPath();
-    if (front) {
-      // top half: y from -big to 0
-      ctx.rect(-RX * 1.3, -RY * 6, RX * 2.6, RY * 6);
-    } else {
-      // bottom half: y from 0 to +big
-      ctx.rect(-RX * 1.3, 0,       RX * 2.6, RY * 6);
-    }
+    ctx.rect(-W * 1.2, -H * 6, W * 2.4, H * 6);  // top half only
     ctx.clip();
+    drawLensLayers(W, H);
+    ctx.restore();
 
+    ctx.restore();
+
+    /* 6 ── Photon ring — crisp bright edge right at the horizon ─────────── */
+    ctx.save();
+    ctx.translate(cx, cy);
     ctx.rotate(angle);
-
-    function ell(rx, ry, lw, stops) {
-      const g = ctx.createLinearGradient(-rx, 0, rx, 0);
-      stops.forEach(([p, c]) => g.addColorStop(p, c));
-      ctx.strokeStyle = g;
-      ctx.lineWidth   = lw;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-
-    // Layer 1 — widest, faintest: deep violet outer glow
-    ell(RX * 1.00, RY * 1.00, RY * 1.10, [
-      [0,    "rgba(80,0,140,0)"],
-      [0.06, "rgba(130,20,200,0.50)"],
-      [0.22, "rgba(200,60,220,0.75)"],
-      [0.38, "rgba(255,120,20,0.85)"],
-      [0.50, "rgba(255,230,100,0.95)"],
-      [0.62, "rgba(255,120,20,0.85)"],
-      [0.78, "rgba(200,60,220,0.75)"],
-      [0.94, "rgba(130,20,200,0.50)"],
-      [1,    "rgba(80,0,140,0)"],
-    ]);
-
-    // Layer 2 — mid band: orange-dominant
-    ell(RX * 0.82, RY * 0.82, RY * 0.60, [
-      [0,    "rgba(120,10,200,0)"],
-      [0.08, "rgba(180,50,240,0.80)"],
-      [0.30, "rgba(255,130,20,0.95)"],
-      [0.50, "rgba(255,245,150,1)"],
-      [0.70, "rgba(255,130,20,0.95)"],
-      [0.92, "rgba(180,50,240,0.80)"],
-      [1,    "rgba(120,10,200,0)"],
-    ]);
-
-    // Layer 3 — inner bright core: white-hot
-    ell(RX * 0.60, RY * 0.60, RY * 0.30, [
-      [0,    "rgba(220,100,255,0)"],
-      [0.12, "rgba(255,160,40,0.95)"],
-      [0.50, "rgba(255,255,220,1)"],
-      [0.88, "rgba(255,160,40,0.95)"],
-      [1,    "rgba(220,100,255,0)"],
-    ]);
-
-    // Layer 4 — thinnest filament right at center
-    ell(RX * 0.44, RY * 0.44, RY * 0.10, [
-      [0,    "rgba(255,200,100,0)"],
-      [0.20, "rgba(255,230,140,0.95)"],
-      [0.50, "rgba(255,255,255,1)"],
-      [0.80, "rgba(255,230,140,0.95)"],
-      [1,    "rgba(255,200,100,0)"],
-    ]);
-
+    const photon = ctx.createRadialGradient(0, 0, r * 0.88, 0, 0, r * 1.05);
+    photon.addColorStop(0,   "rgba(255,200,80,0.60)");
+    photon.addColorStop(0.5, "rgba(255,240,180,0.25)");
+    photon.addColorStop(1,   "rgba(255,200,80,0)");
+    ctx.fillStyle = photon;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.05, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 
-  /* ── Motes ── */
+  // Draw the filled lens glow layers at origin (use after translate+rotate)
+  function drawLensLayers(W, H) {
+    // Layer 1 — outermost, widest, most transparent: deep violet
+    // Use a slightly larger lens for the outer glow, filled with a
+    // radial gradient from orange center → violet edges
+    function filledLens(w, h, gradient) {
+      lensPath(0, 0, w, h);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+    }
+
+    // Build radial gradient centered on the lens center
+    const g1 = ctx.createRadialGradient(0, 0, 0, 0, 0, W);
+    g1.addColorStop(0,    "rgba(255,245,180,0.0)");
+    g1.addColorStop(0.25, "rgba(255,140,20,0.55)");
+    g1.addColorStop(0.60, "rgba(190,40,220,0.70)");
+    g1.addColorStop(0.85, "rgba(120,10,180,0.50)");
+    g1.addColorStop(1,    "rgba(60,0,100,0)");
+    filledLens(W * 1.05, H * 1.05, g1);
+
+    // Layer 2 — mid lens, orange-dominant
+    const g2 = ctx.createRadialGradient(0, 0, 0, 0, 0, W * 0.75);
+    g2.addColorStop(0,    "rgba(255,255,200,0.0)");
+    g2.addColorStop(0.20, "rgba(255,200,60,0.65)");
+    g2.addColorStop(0.55, "rgba(255,90,10,0.80)");
+    g2.addColorStop(0.80, "rgba(180,30,220,0.60)");
+    g2.addColorStop(1,    "rgba(100,0,160,0)");
+    filledLens(W * 0.80, H * 0.80, g2);
+
+    // Layer 3 — bright inner core, white-hot
+    const g3 = ctx.createRadialGradient(0, 0, 0, 0, 0, W * 0.45);
+    g3.addColorStop(0,    "rgba(255,255,240,1)");
+    g3.addColorStop(0.30, "rgba(255,230,120,0.95)");
+    g3.addColorStop(0.65, "rgba(255,130,20,0.80)");
+    g3.addColorStop(1,    "rgba(200,60,255,0)");
+    filledLens(W * 0.50, H * 0.50, g3);
+  }
+
+  /* ── Motes ──────────────────────────────────────────────────────────── */
   function roundRect(x, y, w, h, rad) {
     ctx.beginPath();
     ctx.moveTo(x + rad, y);
@@ -228,13 +226,13 @@
         const pull = 1 + Math.max(0, (hole.r * 3.5 - m.radius) / (hole.r * 2.5));
         m.radius -= m.speed * pull * 0.5;
         m.angle  += 0.005 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.5));
-        if (m.radius < hole.r * 1.25) Object.assign(m, spawnMote());
+        if (m.radius < hole.r * 1.2) Object.assign(m, spawnMote());
       }
       const x = hole.cx + Math.cos(m.angle) * m.radius;
       const y = hole.cy + Math.sin(m.angle) * m.radius * 0.45;
 
       const fadeIn  = Math.min(1, (m.radius - hole.r * 2.6) / (hole.r * 0.8));
-      const fadeOut = Math.min(1, (m.radius - hole.r * 1.25) / (hole.r * 1.2));
+      const fadeOut = Math.min(1, (m.radius - hole.r * 1.2)  / (hole.r * 1.2));
       const alpha   = Math.max(0, Math.min(fadeIn, fadeOut));
       if (alpha < 0.01) continue;
 
@@ -253,7 +251,7 @@
     ctx.globalAlpha = 1;
   }
 
-  /* ── Main loop ── */
+  /* ── Main loop ──────────────────────────────────────────────────────── */
   function tick(t) {
     updateHole();
     ctx.fillStyle = "rgb(5,4,10)";
