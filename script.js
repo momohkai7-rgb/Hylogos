@@ -29,7 +29,7 @@
     const sym = ELEMENT_SYMBOLS[Math.floor(Math.random() * ELEMENT_SYMBOLS.length)];
     return {
       angle: Math.random() * Math.PI * 2,
-      radius: hole.r * (2.9 + Math.random() * 1.6),
+      radius: hole.r * (2.5 + Math.random() * 2.0),
       speed: 0.16 + Math.random() * 0.14,
       symbol: sym,
       color: moteColor(sym),
@@ -50,9 +50,9 @@
       speed: Math.random() * 0.02 + 0.005,
     }));
 
-    hole.r = canvas.width * 0.115;
-    hole.cx = canvas.width * 0.80;
-    hole.cy = canvas.height * 0.15;
+    hole.r = Math.min(canvas.width * 0.18, 180);
+    hole.cx = canvas.width * 0.5;
+    hole.cy = canvas.height * 0.30;
 
     motes = Array.from({ length: MOTE_COUNT }, spawnMote);
   }
@@ -73,52 +73,95 @@
     const { cx, cy, r } = hole;
     if (r <= 0) return;
 
-    // wide soft ambient bloom
-    const outerGlow = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 2.3);
-    outerGlow.addColorStop(0, `rgba(${AMBER},0.22)`);
-    outerGlow.addColorStop(1, `rgba(${AMBER},0)`);
-    ctx.fillStyle = outerGlow;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r * 2.3, 0, Math.PI * 2);
-    ctx.fill();
-
-    // tighter, brighter bloom right around the disk
-    const innerGlow = ctx.createRadialGradient(cx, cy, r * 0.7, cx, cy, r * 1.5);
-    innerGlow.addColorStop(0, `rgba(${HOT},0.30)`);
-    innerGlow.addColorStop(1, `rgba(${HOT},0)`);
-    ctx.fillStyle = innerGlow;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r * 1.5, 0, Math.PI * 2);
-    ctx.fill();
-
     const spin = reducedMotion ? 0 : t * 0.00006;
+
+    // ── Layer 1: wide diffuse bloom ──────────────────────────────────────
+    const bloom = ctx.createRadialGradient(cx, cy, r * 0.4, cx, cy, r * 3.8);
+    bloom.addColorStop(0,   `rgba(${AMBER},0.28)`);
+    bloom.addColorStop(0.35,`rgba(${AMBER},0.14)`);
+    bloom.addColorStop(0.7, `rgba(255,120,30,0.06)`);
+    bloom.addColorStop(1,   `rgba(${AMBER},0)`);
+    ctx.fillStyle = bloom;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 3.8, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ── Layer 2: tight photon-ring halo ──────────────────────────────────
+    const halo = ctx.createRadialGradient(cx, cy, r * 0.85, cx, cy, r * 1.7);
+    halo.addColorStop(0,   `rgba(${HOT},0.55)`);
+    halo.addColorStop(0.4, `rgba(${AMBER},0.30)`);
+    halo.addColorStop(1,   `rgba(${AMBER},0)`);
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 1.7, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ── Layer 3: accretion disk (4 passes for depth) ─────────────────────
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(spin);
-    const disk = ctx.createLinearGradient(-r * 1.7, 0, r * 1.7, 0);
-    disk.addColorStop(0, `rgba(${AMBER},0)`);
-    disk.addColorStop(0.14, `rgba(${AMBER},0.85)`);
-    disk.addColorStop(0.32, `rgba(${HOT},1)`);
-    disk.addColorStop(0.5, `rgba(${BLUE},1)`);
-    disk.addColorStop(0.68, `rgba(${HOT},1)`);
-    disk.addColorStop(0.86, `rgba(${AMBER},0.85)`);
-    disk.addColorStop(1, `rgba(${AMBER},0)`);
-    ctx.strokeStyle = disk;
-    ctx.lineWidth = r * 0.22;
+
+    // pass A — fat warm disk
+    const diskA = ctx.createLinearGradient(-r * 1.9, 0, r * 1.9, 0);
+    diskA.addColorStop(0,    `rgba(${AMBER},0)`);
+    diskA.addColorStop(0.08, `rgba(255,110,20,0.7)`);
+    diskA.addColorStop(0.28, `rgba(${AMBER},1)`);
+    diskA.addColorStop(0.5,  `rgba(${HOT},1)`);
+    diskA.addColorStop(0.72, `rgba(${AMBER},1)`);
+    diskA.addColorStop(0.92, `rgba(255,110,20,0.7)`);
+    diskA.addColorStop(1,    `rgba(${AMBER},0)`);
+    ctx.strokeStyle = diskA;
+    ctx.lineWidth = r * 0.30;
+    ctx.globalAlpha = 0.95;
     ctx.beginPath();
-    ctx.ellipse(0, 0, r * 1.55, r * 1.55 * 0.34, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, r * 1.65, r * 1.65 * 0.30, 0, 0, Math.PI * 2);
     ctx.stroke();
-    // a slimmer, brighter core line on top for a hot inner edge
-    ctx.lineWidth = r * 0.06;
-    ctx.globalAlpha = 0.9;
+
+    // pass B — slightly counter-rotated for shear effect
+    ctx.rotate(-spin * 0.4);
+    const diskB = ctx.createLinearGradient(-r * 1.7, 0, r * 1.7, 0);
+    diskB.addColorStop(0,   `rgba(${AMBER},0)`);
+    diskB.addColorStop(0.2, `rgba(255,200,120,0.6)`);
+    diskB.addColorStop(0.5, `rgba(${HOT},0.9)`);
+    diskB.addColorStop(0.8, `rgba(255,200,120,0.6)`);
+    diskB.addColorStop(1,   `rgba(${AMBER},0)`);
+    ctx.strokeStyle = diskB;
+    ctx.lineWidth = r * 0.14;
+    ctx.globalAlpha = 0.7;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 1.58, r * 1.58 * 0.28, 0, 0, Math.PI * 2);
     ctx.stroke();
+
+    // pass C — hot blue-white inner edge (photon sphere)
+    ctx.globalAlpha = 0.85;
+    const diskC = ctx.createLinearGradient(-r * 1.3, 0, r * 1.3, 0);
+    diskC.addColorStop(0,   `rgba(${BLUE},0)`);
+    diskC.addColorStop(0.25,`rgba(${BLUE},0.8)`);
+    diskC.addColorStop(0.5, `rgba(255,255,255,1)`);
+    diskC.addColorStop(0.75,`rgba(${BLUE},0.8)`);
+    diskC.addColorStop(1,   `rgba(${BLUE},0)`);
+    ctx.strokeStyle = diskC;
+    ctx.lineWidth = r * 0.045;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 1.15, r * 1.15 * 0.26, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // pass D — thin glowing filament right at the photon ring
+    ctx.globalAlpha = 0.55;
+    ctx.strokeStyle = `rgba(${HOT},0.9)`;
+    ctx.lineWidth = r * 0.018;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 1.05, r * 1.05 * 0.24, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
     ctx.globalAlpha = 1;
     ctx.restore();
 
-    const voidGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    // ── Layer 4: event horizon (pitch black, hard edge with soft fringe) ─
+    const voidGrad = ctx.createRadialGradient(cx, cy, r * 0.72, cx, cy, r);
     voidGrad.addColorStop(0, `rgba(${VOID},1)`);
-    voidGrad.addColorStop(0.82, `rgba(${VOID},1)`);
-    voidGrad.addColorStop(1, `rgba(${VOID},0)`);
+    voidGrad.addColorStop(0.78, `rgba(${VOID},1)`);
+    voidGrad.addColorStop(1, `rgba(${VOID},0.1)`);
     ctx.fillStyle = voidGrad;
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
