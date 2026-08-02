@@ -1,16 +1,16 @@
-/* ===================== Cosmic backdrop (stars + black hole) ===================== */
+/* ===================== Cosmic backdrop (stars + black hole = search) ===================== */
 (function backdrop() {
   const canvas = document.getElementById("starfield");
   const ctx = canvas.getContext("2d");
+  const searchEl = document.getElementById("search");
   let stars = [];
   let motes = [];
   const hole = { cx: 0, cy: 0, r: 0 };
 
   const AMBER = "255,180,84";
-  const HOT = "255,242,214";
-  const BLUE = "127,217,255";
+  const ORANGE = "255,140,60";
+  const HOT = "255,244,220";
   const VOID = "5,4,10";
-  const VOID2 = "13,10,24";
 
   const rmQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   let reducedMotion = rmQuery.matches;
@@ -29,8 +29,8 @@
     const sym = ELEMENT_SYMBOLS[Math.floor(Math.random() * ELEMENT_SYMBOLS.length)];
     return {
       angle: Math.random() * Math.PI * 2,
-      radius: hole.r * (2.5 + Math.random() * 2.0),
-      speed: 0.16 + Math.random() * 0.14,
+      radius: hole.r * (2.6 + Math.random() * 1.5),
+      speed: 0.15 + Math.random() * 0.13,
       symbol: sym,
       color: moteColor(sym),
       box: 15 + Math.random() * 5,
@@ -50,18 +50,24 @@
       speed: Math.random() * 0.02 + 0.005,
     }));
 
-    hole.r = Math.min(canvas.width * 0.21, 210);
-    hole.cx = canvas.width * 0.5;
-    hole.cy = canvas.height * 0.33;
+    updateHolePosition();
+    if (motes.length === 0) motes = Array.from({ length: MOTE_COUNT }, spawnMote);
+  }
 
-    motes = Array.from({ length: MOTE_COUNT }, spawnMote);
+  // The black hole is centered exactly on the real search input, so it always
+  // lines up with it — including through scrolling, since this runs every frame.
+  function updateHolePosition() {
+    const rect = searchEl.getBoundingClientRect();
+    hole.cx = rect.left + rect.width / 2;
+    hole.cy = rect.top + rect.height / 2;
+    hole.r = rect.width / 2;
   }
 
   function drawStars(t) {
     ctx.fillStyle = "#e8e4f0";
     for (const s of stars) {
-      const twinkle = reducedMotion ? 0.55 : Math.abs(Math.sin(s.phase + t * s.speed));
-      ctx.globalAlpha = 0.35 + 0.5 * twinkle;
+      const twinkle = reducedMotion ? 0.5 : Math.abs(Math.sin(s.phase + t * s.speed));
+      ctx.globalAlpha = 0.28 + 0.4 * twinkle;
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fill();
@@ -69,139 +75,69 @@
     ctx.globalAlpha = 1;
   }
 
-  /* ---- Woven-ring black hole (TON 618 / Gargantua style) ----
-     Many thin concentric threads (not a few arms spiralling to a point)
-     form a wide, tilted halo around the event horizon, each one gently
-     warped by a couple of overlaid sine wobbles so the ring reads as
-     woven/fibrous rather than a smooth painted band. Inner threads spin
-     faster than outer ones (Keplerian-style differential rotation), which
-     is what sells the "spinning" motion — the wobble pattern itself
-     rotates rigidly with each thread rather than just drifting through it.
-     Pure 2D canvas: native resolution, no offscreen texture to blur, no
-     shader that can fail to compile. */
-  const THREAD_COUNT = 32;
-  const THREAD_SEGMENTS = 110;
-  const DISK_SQUASH = 0.6; // ry/rx — wide, fairly open tilt like the reference
-
-  function lerp(a, b, k) { return a + (b - a) * k; }
-
-  const threads = Array.from({ length: THREAD_COUNT }, (_, k) => ({
-    u: k / (THREAD_COUNT - 1), // 0 = innermost/hottest, 1 = outermost/coolest
-    wobFreq1: 2 + Math.floor(Math.random() * 3),
-    wobAmp1: 0.035 + Math.random() * 0.035,
-    wobFreq2: 6 + Math.floor(Math.random() * 5),
-    wobAmp2: 0.012 + Math.random() * 0.014,
-    phase1: Math.random() * Math.PI * 2,
-    phase2: Math.random() * Math.PI * 2,
-  }));
-
-  function threadColor(u, alpha) {
-    // innermost = white-hot, mid = gold, outermost = dark rust
-    const hot = [255, 247, 224], mid = [255, 140, 31], cool = [140, 18, 5];
-    const from = u < 0.5 ? hot : mid, to = u < 0.5 ? mid : cool;
-    const k = u < 0.5 ? u / 0.5 : (u - 0.5) / 0.5;
-    const c = [lerp(from[0], to[0], k), lerp(from[1], to[1], k), lerp(from[2], to[2], k)];
-    return `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${alpha})`;
-  }
-
-  function threadPoints(th, t, motionRate) {
-    const innerR = hole.r * 1.05;
-    const outerR = hole.r * 3.2;
-    const baseR = lerp(innerR, outerR, th.u);
-    // inner threads orbit faster than outer ones, like real accretion flow
-    const rot = t * 0.00035 * motionRate / (0.45 + 0.75 * th.u);
-    const pts = [];
-    for (let i = 0; i <= THREAD_SEGMENTS; i++) {
-      const theta = (i / THREAD_SEGMENTS) * Math.PI * 2 + rot;
-      const wob = th.wobAmp1 * Math.sin(th.wobFreq1 * theta + th.phase1)
-                + th.wobAmp2 * Math.sin(th.wobFreq2 * theta + th.phase2);
-      const rad = baseR * (1 + wob);
-      pts.push({ x: hole.cx + Math.cos(theta) * rad, y: hole.cy + Math.sin(theta) * rad * DISK_SQUASH });
-    }
-    return pts;
-  }
-
-  function drawThreads(t, motionRate) {
+  // A soft-edged glowing band: several overlapping strokes of the same path,
+  // wide+faint to narrow+bright, so it reads as a thick luminous ring rather
+  // than a hard-edged outline.
+  function glowRing(rx, ry, rotation, layers) {
     ctx.save();
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.globalCompositeOperation = "lighter";
-
-    for (const th of threads) {
-      const pts = threadPoints(th, t, motionRate);
-      const glowAlpha = lerp(0.5, 0.1, th.u);
-      const coreAlpha = lerp(0.95, 0.25, th.u);
-
-      ctx.strokeStyle = threadColor(th.u, glowAlpha);
-      ctx.lineWidth = Math.max(1, hole.r * lerp(0.05, 0.03, th.u));
+    ctx.translate(hole.cx, hole.cy);
+    ctx.rotate(rotation);
+    for (const layer of layers) {
+      const grad = ctx.createLinearGradient(-rx, 0, rx, 0);
+      grad.addColorStop(0, `rgba(${AMBER},0)`);
+      grad.addColorStop(0.14, `rgba(${AMBER},${layer.a * 0.75})`);
+      grad.addColorStop(0.38, `rgba(${ORANGE},${layer.a})`);
+      grad.addColorStop(0.5, `rgba(${HOT},${Math.min(1, layer.a * 1.15)})`);
+      grad.addColorStop(0.62, `rgba(${ORANGE},${layer.a})`);
+      grad.addColorStop(0.86, `rgba(${AMBER},${layer.a * 0.75})`);
+      grad.addColorStop(1, `rgba(${AMBER},0)`);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = layer.w;
       ctx.beginPath();
-      ctx.moveTo(pts[0].x, pts[0].y);
-      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-      ctx.stroke();
-
-      ctx.strokeStyle = threadColor(th.u, coreAlpha);
-      ctx.lineWidth = Math.max(0.5, hole.r * 0.012);
-      ctx.beginPath();
-      ctx.moveTo(pts[0].x, pts[0].y);
-      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
       ctx.stroke();
     }
-    ctx.restore();
-  }
-
-  function drawBeamGlow(cx, cy, r) {
-    // soft one-sided brightening, like the approaching-limb glow in the
-    // reference — cheap stand-in for true Doppler beaming
-    ctx.save();
-    ctx.globalCompositeOperation = "lighter";
-    const bx = cx - r * 0.9, by = cy + r * 0.15;
-    const g = ctx.createRadialGradient(bx, by, 0, bx, by, r * 2.6);
-    g.addColorStop(0, "rgba(255,240,210,0.20)");
-    g.addColorStop(1, "rgba(255,240,210,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(bx, by, r * 2.6, 0, Math.PI * 2);
-    ctx.fill();
     ctx.restore();
   }
 
   function drawHole(t) {
     const { cx, cy, r } = hole;
     if (r <= 0) return;
+    const spin = reducedMotion ? 0 : t * 0.00007;
 
-    // keeps turning under reduced-motion too, just slower — it's the core
-    // visual, not a decorative flourish
-    const motionRate = reducedMotion ? 0.4 : 1;
-
-    // ── 1. Wide diffuse bloom ──────────────────────────────────────────
-    const bloom = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 5);
-    bloom.addColorStop(0,    "rgba(255,205,120,0.30)");
-    bloom.addColorStop(0.25, "rgba(255,150,50,0.15)");
-    bloom.addColorStop(0.6,  "rgba(230,90,15,0.07)");
-    bloom.addColorStop(1,    "rgba(230,90,15,0)");
-    ctx.fillStyle = bloom;
+    // wide ambient bloom
+    const glow = ctx.createRadialGradient(cx, cy, r * 0.4, cx, cy, r * 3);
+    glow.addColorStop(0, `rgba(${ORANGE},0.35)`);
+    glow.addColorStop(0.5, `rgba(${AMBER},0.14)`);
+    glow.addColorStop(1, `rgba(${AMBER},0)`);
+    ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 5, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 3, 0, Math.PI * 2);
     ctx.fill();
 
-    // ── 2. The woven ring itself, plus a one-sided brightness boost ────
-    drawThreads(t, motionRate);
-    drawBeamGlow(cx, cy, r);
+    // tight halo hugging the sphere — the "wraps over the top" ring
+    glowRing(r * 1.18, r * 1.05, spin * 0.6, [
+      { w: r * 0.55, a: 0.16 },
+      { w: r * 0.3, a: 0.32 },
+      { w: r * 0.12, a: 0.65 },
+    ]);
 
-    // ── 3. Photon-sphere rim — crisp bright edge right at the horizon ──
-    const photon = ctx.createRadialGradient(cx, cy, r * 0.78, cx, cy, r * 0.92);
-    photon.addColorStop(0,   "rgba(255,250,235,0)");
-    photon.addColorStop(0.7, "rgba(255,244,214,0.55)");
-    photon.addColorStop(1,   "rgba(255,244,214,0)");
-    ctx.fillStyle = photon;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r * 0.92, 0, Math.PI * 2);
-    ctx.fill();
+    // wide flat equatorial disk, extends further out to the sides
+    glowRing(r * 2.05, r * 0.46, spin, [
+      { w: r * 0.6, a: 0.16 },
+      { w: r * 0.34, a: 0.34 },
+      { w: r * 0.14, a: 0.75 },
+    ]);
 
-    // ── 4. Event horizon — absolute black core the ring wraps around ───
-    ctx.fillStyle = "#000";
+    // the void itself — belt-and-suspenders under the real input's own
+    // background, so there's never a gap even for a stray frame
+    const voidGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    voidGrad.addColorStop(0, `rgba(${VOID},1)`);
+    voidGrad.addColorStop(0.9, `rgba(${VOID},1)`);
+    voidGrad.addColorStop(1, `rgba(${VOID},0)`);
+    ctx.fillStyle = voidGrad;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 0.8, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 0.99, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -224,25 +160,23 @@
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     for (const m of motes) {
-      // orbiting-then-falling-in is the actual point of this visual, so it
-      // keeps running under reduced-motion too, just gentler — only the
-      // flickery bits (star twinkle, turbulence flecks) get fully muted.
-      const motionRate = reducedMotion ? 0.4 : 1;
-      const pull = 1 + (hole.r * 2.2 - m.radius) / (hole.r * 4);
-      m.radius -= m.speed * Math.max(pull, 0.3) * motionRate;
-      m.angle += 0.006 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.4)) * motionRate;
-      if (m.radius < hole.r * 0.7) Object.assign(m, spawnMote());
+      if (!reducedMotion) {
+        const pull = 1 + (hole.r * 2.2 - m.radius) / (hole.r * 4);
+        m.radius -= m.speed * Math.max(pull, 0.3);
+        m.angle += 0.006 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.4));
+        if (m.radius < hole.r * 1.05) Object.assign(m, spawnMote());
+      }
       const x = hole.cx + Math.cos(m.angle) * m.radius;
-      const y = hole.cy + Math.sin(m.angle) * m.radius * 0.34;
-      const fadeIn = Math.max(0, Math.min(1, (hole.r * 4.5 - m.radius) / (hole.r * 1.3)));
-      const fadeOut = Math.max(0, Math.min(1, (m.radius - hole.r * 0.65) / (hole.r * 0.45)));
+      const y = hole.cy + Math.sin(m.angle) * m.radius * 0.4;
+      const fadeIn = Math.max(0, Math.min(1, (hole.r * 4 - m.radius) / (hole.r * 1.2)));
+      const fadeOut = Math.max(0, Math.min(1, (m.radius - hole.r * 1.0) / (hole.r * 0.4)));
       const alpha = Math.max(0, Math.min(1, fadeIn * fadeOut));
       if (alpha <= 0.03) continue;
 
       ctx.globalAlpha = alpha;
       const s = m.box;
       roundRectPath(x - s / 2, y - s / 2, s, s, 3);
-      ctx.fillStyle = `rgba(${VOID2},0.9)`;
+      ctx.fillStyle = "rgba(13,10,24,0.9)";
       ctx.fill();
       ctx.strokeStyle = m.color;
       ctx.lineWidth = 1.3;
@@ -256,8 +190,8 @@
   }
 
   function tick(t) {
-    ctx.fillStyle = `rgb(5,4,10)`;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    updateHolePosition();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawStars(t);
     drawHole(t);
     drawMotes();
@@ -304,6 +238,8 @@ const els = {
 
 /* ===================== Search handling ===================== */
 let searchDebounce = null;
+
+els.search.placeholder = "search…";
 
 els.search.addEventListener("input", () => {
   const val = els.search.value;
