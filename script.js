@@ -69,376 +69,136 @@
     ctx.globalAlpha = 1;
   }
 
-  /* ---- WebGL fake-gravity raymarched black hole (Interstellar-style lensing) ----
-     Renders into a small offscreen canvas each frame; that image is then
-     composited into the 2D backdrop below via drawImage. The ray for every
-     pixel is bent step-by-step toward the hole (a cheap stand-in for real
-     geodesics), so light from the far side of the disk gets pulled up and
-     around the event horizon into a continuous halo — that's what produces
-     the "wrapped ring" look instead of flat painted rings. Falls back to
-     drawHoleFallback2D() further below if WebGL is unavailable or the
-     shader fails to compile, so the page never breaks. */
-  const blackHoleGL = (function initBlackHoleGL() {
-    const glCanvas = document.createElement("canvas");
-    const gl = glCanvas.getContext("webgl", { alpha: true, premultipliedAlpha: false, antialias: false, preserveDrawingBuffer: true })
-      || glCanvas.getContext("experimental-webgl", { alpha: true, premultipliedAlpha: false, antialias: false, preserveDrawingBuffer: true });
-    if (!gl) return null;
+  /* ---- Spiral-thread black hole ----
+     A handful of luminous filaments spiral in from the outer dark toward
+     the event horizon and continuously rotate, with small embers riding
+     each strand down into the core — matter being reeled in along glowing
+     threads rather than a flat textured disk. Pure 2D canvas: it renders
+     at native resolution (no small offscreen texture getting scaled up
+     and going soft) and there's no shader that can fail to compile. */
+  const SPIRAL_STRANDS = 6;
+  const SPIRAL_TURNS = 2.6;    // how many times a strand wraps before reaching the core
+  const SPIRAL_SEGMENTS = 72;  // points per strand — smoothness of the curve
+  const SPIRAL_BANDS = 8;      // colour bands per strand per layer
 
-    const VERT_SRC = `
-      attribute vec2 aPos;
-      varying vec2 vUv;
-      void main() {
-        vUv = aPos * 0.5 + 0.5;
-        gl_Position = vec4(aPos, 0.0, 1.0);
-      }
-    `;
+  function spiralPoint(u, phase, rot) {
+    // u: 0 at the outer edge -> 1 at the core
+    const outerR = hole.r * 3.4;
+    const innerR = hole.r * 0.86;
+    const wind = u * SPIRAL_TURNS * Math.PI * 2;
+    const radius = outerR * Math.pow(innerR / outerR, u); // logarithmic inward spiral
+    const angle = phase + rot - wind;
+    return {
+      x: hole.cx + Math.cos(angle) * radius,
+      y: hole.cy + Math.sin(angle) * radius * 0.4,
+    };
+  }
 
-    const FRAG_SRC = `
-      precision highp float;
-      varying vec2 vUv;
-      uniform vec2 iResolution;
-      uniform float iTime;
+  function lerp(a, b, k) { return a + (b - a) * k; }
+  function strandColor(u, alpha) {
+    // dark rust near the outside (u→0), through gold, to white-hot at the core (u→1)
+    const cool = [140, 18, 5], mid = [255, 140, 31], hot = [255, 247, 224];
+    const from = u < 0.5 ? cool : mid, to = u < 0.5 ? mid : hot;
+    const k = u < 0.5 ? u / 0.5 : (u - 0.5) / 0.5;
+    const c = [lerp(from[0], to[0], k), lerp(from[1], to[1], k), lerp(from[2], to[2], k)];
+    return `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${alpha})`;
+  }
 
-      float hash21(vec2 p) {
-        p = fract(p * vec2(123.34, 456.21));
-        p += dot(p, p + 45.32);
-        return fract(p.x * p.y);
-      }
+  function drawStrands(rot) {
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.globalCompositeOperation = "lighter";
 
-      float noise2(vec2 p) {
-        vec2 i = floor(p);
-        vec2 f = fract(p);
-        float a = hash21(i);
-        float b = hash21(i + vec2(1.0, 0.0));
-        float c = hash21(i + vec2(0.0, 1.0));
-        float d = hash21(i + vec2(1.0, 1.0));
-        vec2 u = f * f * (3.0 - 2.0 * f);
-        return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
-      }
+    const layers = [
+      { w: hole.r * 0.22,  a: 0.09 },
+      { w: hole.r * 0.12,  a: 0.20 },
+      { w: hole.r * 0.055, a: 0.5 },
+      { w: hole.r * 0.02,  a: 1.0 },
+    ];
 
-      float fbm(vec2 p) {
-        float v = 0.0;
-        float amp = 0.55;
-        for (int i = 0; i < 5; i++) {
-          v += amp * noise2(p);
-          p *= 2.02;
-          amp *= 0.55;
+    for (let s = 0; s < SPIRAL_STRANDS; s++) {
+      const phase = (s / SPIRAL_STRANDS) * Math.PI * 2 + s * 0.9;
+      const pts = [];
+      for (let i = 0; i <= SPIRAL_SEGMENTS; i++) pts.push(spiralPoint(i / SPIRAL_SEGMENTS, phase, rot));
+
+      layers.forEach(layer => {
+        ctx.lineWidth = Math.max(0.6, layer.w);
+        const perBand = Math.ceil(pts.length / SPIRAL_BANDS);
+        for (let b = 0; b < pts.length - 1; b += perBand) {
+          const end = Math.min(b + perBand, pts.length - 1);
+          ctx.strokeStyle = strandColor(((b + end) / 2) / pts.length, layer.a);
+          ctx.beginPath();
+          ctx.moveTo(pts[b].x, pts[b].y);
+          for (let i = b + 1; i <= end; i++) ctx.lineTo(pts[i].x, pts[i].y);
+          ctx.stroke();
         }
-        return v;
-      }
-
-      void main() {
-        vec2 uv = (vUv - 0.5) * 2.0;
-
-        // camera: slow cinematic orbit, tilted above the disk plane like the reference image
-        float az = iTime * 0.05 + 2.0;
-        float el = 0.34;
-        float camDist = 15.0;
-        vec3 camPos = camDist * vec3(cos(el) * cos(az), sin(el), cos(el) * sin(az));
-        vec3 forward = normalize(-camPos);
-        vec3 worldUp = vec3(0.0, 1.0, 0.0);
-        vec3 rightV = normalize(cross(forward, worldUp));
-        vec3 upV = cross(rightV, forward);
-        float fov = 0.8;
-        vec3 rd = normalize(forward + uv.x * fov * rightV + uv.y * fov * upV);
-        vec3 ro = camPos;
-
-        float diskInner = 2.4;
-        float diskOuter = 9.2;
-
-        vec3 pos = ro;
-        vec3 dir = rd;
-        vec3 col = vec3(0.0);
-        float alpha = 0.0;
-
-        const int STEPS = 140;
-        for (int i = 0; i < STEPS; i++) {
-          float r = max(length(pos), 0.05);
-
-          if (r < 1.0) {
-            col = vec3(0.0);
-            alpha = 1.0;
-            break;
-          }
-          if (r > 42.0) {
-            break;
-          }
-
-          float stepSize = clamp(r * 0.10, 0.035, 0.6);
-          vec3 accel = -normalize(pos) * (1.55 / (r * r));
-          vec3 prevPos = pos;
-          dir = normalize(dir + accel * stepSize);
-          pos += dir * stepSize;
-
-          if (prevPos.y * pos.y < 0.0) {
-            float tCross = prevPos.y / (prevPos.y - pos.y);
-            vec3 crossPos = mix(prevPos, pos, tCross);
-            float cr = length(crossPos.xz);
-            if (cr > diskInner && cr < diskOuter) {
-              float ang = atan(crossPos.z, crossPos.x);
-              float speed = 1.35 / pow(cr, 0.55);
-              float flow = ang - iTime * speed * 0.34;
-              float n = fbm(vec2(flow * 2.1, cr * 0.85));
-              float n2 = fbm(vec2(flow * 5.3 + 4.1, cr * 1.7 - iTime * 0.05));
-              float turb = 0.55 + 0.55 * n + 0.25 * n2;
-
-              float edgeFade = smoothstep(diskInner, diskInner + 0.55, cr)
-                              * smoothstep(diskOuter, diskOuter - 2.0, cr);
-
-              float temp = 1.0 - clamp((cr - diskInner) / (diskOuter - diskInner), 0.0, 1.0);
-              vec3 coolC = vec3(0.55, 0.07, 0.02);
-              vec3 midC  = vec3(1.0, 0.55, 0.12);
-              vec3 hotC  = vec3(1.0, 0.97, 0.88);
-              vec3 diskCol = mix(coolC, midC, smoothstep(0.0, 0.55, temp));
-              diskCol = mix(diskCol, hotC, smoothstep(0.55, 1.0, temp));
-
-              vec3 tangent = normalize(vec3(-sin(ang), 0.0, cos(ang)));
-              vec3 toCam = normalize(ro - crossPos);
-              float beam = clamp(dot(tangent, toCam), -1.0, 1.0);
-              float doppler = 1.0 + 0.85 * beam;
-
-              float brightness = (0.85 + 1.9 * temp) * turb * doppler * edgeFade;
-              col = diskCol * brightness;
-              alpha = clamp(brightness * 0.9, 0.0, 1.0);
-              break;
-            }
-          }
-        }
-
-        gl_FragColor = vec4(col, alpha);
-      }
-    `;
-
-    function compile(type, src) {
-      const sh = gl.createShader(type);
-      gl.shaderSource(sh, src);
-      gl.compileShader(sh);
-      if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
-        console.warn("Black hole shader failed to compile:", gl.getShaderInfoLog(sh));
-        return null;
-      }
-      return sh;
+      });
     }
+    ctx.restore();
+  }
 
-    const vs = compile(gl.VERTEX_SHADER, VERT_SRC);
-    const fs = compile(gl.FRAGMENT_SHADER, FRAG_SRC);
-    if (!vs || !fs) return null;
+  const strandEmbers = Array.from({ length: SPIRAL_STRANDS * 3 }, (_, i) => ({
+    strand: i % SPIRAL_STRANDS,
+    phase: Math.random(),
+    speedMul: 0.7 + Math.random() * 0.6,
+  }));
 
-    const program = gl.createProgram();
-    gl.attachShader(program, vs);
-    gl.attachShader(program, fs);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.warn("Black hole shader failed to link:", gl.getProgramInfoLog(program));
-      return null;
+  function drawEmbers(t, rot) {
+    if (reducedMotion) return;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (const e of strandEmbers) {
+      const u = ((t * 0.00018 * e.speedMul + e.phase) % 1 + 1) % 1;
+      const phase = (e.strand / SPIRAL_STRANDS) * Math.PI * 2 + e.strand * 0.9;
+      const p = spiralPoint(u, phase, rot);
+      const size = hole.r * (0.05 + 0.05 * (1 - u));
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size);
+      g.addColorStop(0, strandColor(u, 0.9));
+      g.addColorStop(1, strandColor(u, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+      ctx.fill();
     }
-
-    const posLoc = gl.getAttribLocation(program, "aPos");
-    const buf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-
-    const uRes = gl.getUniformLocation(program, "iResolution");
-    const uTime = gl.getUniformLocation(program, "iTime");
-
-    let size = 0;
-    let hasRendered = false;
-
-    function setSize(px) {
-      px = Math.max(1, Math.round(px));
-      if (px === size) return false;
-      size = px;
-      glCanvas.width = size;
-      glCanvas.height = size;
-      gl.viewport(0, 0, size, size);
-      return true;
-    }
-
-    // skipIfUnchanged lets callers reuse last frame's pixels (cheaply, via
-    // preserveDrawingBuffer) instead of re-running the shader — used when
-    // prefers-reduced-motion is on, so a static hole doesn't re-raymarch
-    // every frame for no visual change.
-    function render(time, sizePx, skipIfUnchanged) {
-      const changed = setSize(sizePx);
-      if (skipIfUnchanged && hasRendered && !changed) return glCanvas;
-
-      gl.useProgram(program);
-      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-      gl.enableVertexAttribArray(posLoc);
-      gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
-      gl.uniform2f(uRes, size, size);
-      gl.uniform1f(uTime, time);
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-      hasRendered = true;
-      return glCanvas;
-    }
-
-    return { render };
-  })();
+    ctx.restore();
+  }
 
   function drawHole(t) {
     const { cx, cy, r } = hole;
     if (r <= 0) return;
 
-    if (!blackHoleGL) { drawHoleFallback2D(t); return; }
-
-    // soft ambient bloom bleeding into the starfield, drawn behind the
-    // raymarched image so the square render target has no visible edge
-    const bloom = ctx.createRadialGradient(cx, cy, r * 1.3, cx, cy, r * 4.8);
-    bloom.addColorStop(0,    "rgba(255,190,110,0.22)");
-    bloom.addColorStop(0.45, "rgba(255,130,40,0.10)");
-    bloom.addColorStop(1,    "rgba(255,130,40,0)");
-    ctx.fillStyle = bloom;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r * 4.8, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Keep the disk turning even with prefers-reduced-motion on — freezing
-    // it entirely is what made this read as a still image instead of a
-    // simulation. Reduced-motion users get a gentler pace, not a full stop.
-    const glTime = t * (reducedMotion ? 0.00013 : 0.00035);
-    const size = Math.max(64, Math.min(680, r * 6.2));
-    const frame = blackHoleGL.render(glTime, size, false);
-    if (!frame) { drawHoleFallback2D(t); return; }
-
-    ctx.save();
-    ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(frame, cx - size / 2, cy - size / 2, size, size);
-    ctx.restore();
-  }
-
-  // Original flat 2D rendering, kept as a safety-net fallback for browsers
-  // without WebGL support (or if shader compilation fails for any reason).
-  function drawHoleFallback2D(t) {
-    const { cx, cy, r } = hole;
-    if (r <= 0) return;
-
-    // core rotation keeps running in reduced-motion (just slower) — it's
-    // the whole point of the viewer, not a decorative flourish
+    // spiral keeps turning under reduced-motion too, just slower — it's
+    // the core visual, not a decorative flourish
     const motionRate = reducedMotion ? 0.4 : 1;
-    const spin = t * 0.00028 * motionRate;      // halo rotation
-    const spinOuter = t * 0.00018 * motionRate;  // outer disk rotates slower (differential rotation)
-    const hasConic = typeof ctx.createConicGradient === "function";
+    const rot = t * 0.00022 * motionRate;
 
-    // conic gradient = true 360° angular colour, so the ring can stay bright
-    // at every angle instead of the old left/right-only linear gradient.
-    // Falls back to a flat mid-tone colour on ancient browsers.
-    function angularStroke(stops, rotation, fallback) {
-      if (!hasConic) return fallback;
-      const g = ctx.createConicGradient(rotation, cx, cy);
-      stops.forEach(([pos, col]) => g.addColorStop(pos, col));
-      return g;
-    }
-
-    function ring(rx, ry, lw, stops, rotation) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.strokeStyle = angularStroke(stops, rotation, stops[Math.floor(stops.length / 2)][1]);
-      ctx.lineWidth = lw;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, Math.max(rx, 0.1), Math.max(ry, 0.1), 0, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // ── 1. Wide diffuse bloom — brighter & more saturated ────────────────
+    // ── 1. Wide diffuse bloom ──────────────────────────────────────────
     const bloom = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 5);
-    bloom.addColorStop(0,    `rgba(255,205,120,0.34)`);
-    bloom.addColorStop(0.25, `rgba(255,150,50,0.18)`);
-    bloom.addColorStop(0.6,  `rgba(230,90,15,0.08)`);
-    bloom.addColorStop(1,    `rgba(230,90,15,0)`);
+    bloom.addColorStop(0,    "rgba(255,205,120,0.30)");
+    bloom.addColorStop(0.25, "rgba(255,150,50,0.15)");
+    bloom.addColorStop(0.6,  "rgba(230,90,15,0.07)");
+    bloom.addColorStop(1,    "rgba(230,90,15,0)");
     ctx.fillStyle = bloom;
     ctx.beginPath();
     ctx.arc(cx, cy, r * 5, 0, Math.PI * 2);
     ctx.fill();
 
-    // ── 2. Outer disk wings — the physically-thin disk seen edge-on, ─────
-    // flattened way out. Colour profile sampled from a real Gargantua-style
-    // render (dark rust edge -> gold -> white-hot -> gold -> rust).
-    const wingStops = [
-      [0.00, "rgba(129,22,2,0)"],
-      [0.10, "rgba(190,51,2,0.55)"],
-      [0.24, "rgba(247,157,0,0.85)"],
-      [0.37, "rgba(255,222,110,0.95)"],
-      [0.50, "rgba(255,250,235,1)"],
-      [0.63, "rgba(255,222,110,0.95)"],
-      [0.76, "rgba(247,157,0,0.85)"],
-      [0.90, "rgba(190,51,2,0.55)"],
-      [1.00, "rgba(129,22,2,0)"],
-    ];
-    ring(r * 2.15, r * 0.46, r * 0.30, wingStops, spinOuter);
-    ring(r * 1.85, r * 0.32, r * 0.20, wingStops, spinOuter + 0.4);
+    // ── 2. Spiral filaments, plus embers riding them into the core ─────
+    drawStrands(rot);
+    drawEmbers(t, rot);
 
-    // ── 3. Round inner halo — this is what makes it read as a full ring ──
-    // wrapped around the sphere (gravitational lensing bends the far side
-    // of the disk up/over and down/under), instead of two dim wings.
-    const haloOuter = [
-      [0.00, "rgba(180,43,1,0.65)"], [0.5, "rgba(216,75,3,0.9)"], [1.00, "rgba(180,43,1,0.65)"],
-    ];
-    const haloMid = [
-      [0.00, "rgba(251,122,5,0.85)"], [0.5, "rgba(255,157,0,1)"], [1.00, "rgba(251,122,5,0.85)"],
-    ];
-    const haloBright = [
-      [0.00, "rgba(255,212,65,0.9)"], [0.5, "rgba(255,246,232,1)"], [1.00, "rgba(255,212,65,0.9)"],
-    ];
-    const haloCore = [
-      [0.00, "rgba(255,246,150,0.95)"], [0.5, "rgba(255,255,250,1)"], [1.00, "rgba(255,246,150,0.95)"],
-    ];
-    ring(r * 1.42, r * 1.24, r * 0.30, haloOuter,  spin * 0.7);
-
-    // bridge layer — closes the gap between the round halo and the flat
-    // wings so there's no dark seam between the two structures
-    const haloBridge = [
-      [0.00, "rgba(160,38,2,0.4)"], [0.5, "rgba(200,60,3,0.6)"], [1.00, "rgba(160,38,2,0.4)"],
-    ];
-    ring(r * 1.68, r * 1.40, r * 0.30, haloBridge, spin * 0.6);
-
-    ring(r * 1.24, r * 1.08, r * 0.22, haloMid,    spin);
-    ring(r * 1.08, r * 0.95, r * 0.15, haloBright, spin * 1.15);
-    ring(r * 0.95, r * 0.84, r * 0.08, haloCore,   spin * 1.3);
-
-    // ── 4. Turbulence — small bright flecks orbiting within the halo so ──
-    // the disk reads as flowing plasma rather than a smooth painted band.
-    if (!reducedMotion) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.globalCompositeOperation = "lighter";
-      const FLECKS = 22;
-      for (let i = 0; i < FLECKS; i++) {
-        const seed = i * 12.9898;
-        const speed = 0.00016 + (i % 5) * 0.00003;
-        const a = seed + t * speed;
-        const rx = r * (0.9 + 0.5 * ((i * 37) % 10) / 10);
-        const ry = rx * 0.82;
-        const x = Math.cos(a) * rx;
-        const y = Math.sin(a) * ry;
-        const flicker = 0.4 + 0.6 * Math.abs(Math.sin(seed + t * 0.002));
-        const s = r * (0.05 + 0.05 * flicker);
-        const g = ctx.createRadialGradient(x, y, 0, x, y, s);
-        g.addColorStop(0, `rgba(255,244,214,${0.55 * flicker})`);
-        g.addColorStop(1, `rgba(255,244,214,0)`);
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(x, y, s, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-    }
-
-    // ── 5. Photon-sphere rim — crisp bright edge right at the horizon ────
+    // ── 3. Photon-sphere rim — crisp bright edge right at the horizon ──
     const photon = ctx.createRadialGradient(cx, cy, r * 0.78, cx, cy, r * 0.92);
-    photon.addColorStop(0,   `rgba(255,250,235,0)`);
-    photon.addColorStop(0.7, `rgba(255,244,214,0.55)`);
-    photon.addColorStop(1,   `rgba(255,244,214,0)`);
+    photon.addColorStop(0,   "rgba(255,250,235,0)");
+    photon.addColorStop(0.7, "rgba(255,244,214,0.55)");
+    photon.addColorStop(1,   "rgba(255,244,214,0)");
     ctx.fillStyle = photon;
     ctx.beginPath();
     ctx.arc(cx, cy, r * 0.92, 0, Math.PI * 2);
     ctx.fill();
 
-    // ── 6. Event horizon — absolute black, small enough that the round ───
-    // halo above fully surrounds it at every angle.
+    // ── 4. Event horizon — absolute black core the strands vanish into ─
     ctx.fillStyle = "#000";
     ctx.beginPath();
     ctx.arc(cx, cy, r * 0.8, 0, Math.PI * 2);
