@@ -54,6 +54,11 @@ const els = {
   chatLog: document.getElementById("chatLog"),
   chatForm: document.getElementById("chatForm"),
   chatInput: document.getElementById("chatInput"),
+  factsSection: document.getElementById("factsSection"),
+  factsTitle: document.getElementById("factsTitle"),
+  factsCategory: document.getElementById("factsCategory"),
+  factsGrid: document.getElementById("factsGrid"),
+  factsBlurb: document.getElementById("factsBlurb"),
 };
 
 /* ===================== Search handling ===================== */
@@ -108,6 +113,58 @@ function showSubject(hit) {
     els.viewerNote.textContent =
       `Ball-and-stick model — drag to rotate. Bond lengths and angles are idealized for shape, not to exact scale.`;
     drawMolecule(hit.data);
+  }
+
+  showFacts(hit);
+}
+
+/* ===================== Facts panel ===================== */
+function factStat(label, value, muted) {
+  return `<div class="fact-stat"><div class="label">${label}</div><div class="value${muted ? " muted" : ""}">${value}</div></div>`;
+}
+
+function showFacts(hit) {
+  els.factsSection.classList.remove("hidden");
+
+  if (hit.type === "element") {
+    const e = hit.data;
+    const meta = CATEGORY_META[e.category] || { label: e.category, color: "var(--text-dim)" };
+    els.factsTitle.textContent = `${e.name} — facts`;
+    els.factsCategory.textContent = meta.label;
+    els.factsCategory.style.borderColor = meta.color;
+    els.factsCategory.style.color = meta.color;
+
+    const massStr = e.stableWeight ? `${e.mass} u` : `[${e.mass}] u`;
+    const meltStr = e.melt === null ? "not measured" : `${e.melt} °C${e.theoretical ? " (predicted)" : ""}`;
+    const boilStr = e.boil === null ? "not measured" : `${e.boil} °C${e.theoretical ? " (predicted)" : ""}`;
+    const densStr = e.density === null ? "not measured" : `${e.density} ${e.densityUnit}${e.theoretical ? " (predicted)" : ""}`;
+    const enStr = e.en === null ? "not established" : e.en;
+
+    els.factsGrid.innerHTML = [
+      factStat("Atomic mass", massStr, !e.stableWeight),
+      factStat("Melting point", meltStr, e.melt === null),
+      factStat("Boiling point", boilStr, e.boil === null),
+      factStat("Density", densStr, e.density === null),
+      factStat("Electronegativity", enStr, e.en === null),
+      factStat("Phase at room temp", e.phase),
+    ].join("");
+    els.factsBlurb.textContent = e.blurb;
+  } else {
+    const m = hit.data;
+    let molarMass = 0;
+    m.atoms.forEach(a => { molarMass += (ELEMENTS[a.el] && ELEMENTS[a.el].mass) || 0; });
+
+    els.factsTitle.textContent = `${m.name} — facts`;
+    els.factsCategory.textContent = "Molecule";
+    els.factsCategory.style.borderColor = "var(--line)";
+    els.factsCategory.style.color = "var(--text-dim)";
+
+    els.factsGrid.innerHTML = [
+      factStat("Molar mass", `${molarMass.toFixed(2)} g/mol`),
+      factStat("Atoms", m.atoms.length),
+      factStat("Bonds", m.bonds.length),
+    ].join("");
+    els.factsBlurb.textContent = MOLECULE_BLURBS[hit.key] || "";
   }
 }
 
