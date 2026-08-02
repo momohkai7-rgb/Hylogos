@@ -1,39 +1,157 @@
-/* ===================== Starfield ===================== */
-(function starfield() {
+/* ===================== Cosmic backdrop (stars + black hole) ===================== */
+(function backdrop() {
   const canvas = document.getElementById("starfield");
   const ctx = canvas.getContext("2d");
   let stars = [];
+  let motes = [];
+  const hole = { cx: 0, cy: 0, r: 0 };
+
+  const AMBER = "255,180,84";
+  const HOT = "255,242,214";
+  const BLUE = "127,217,255";
+  const VOID = "5,4,10";
+
+  const rmQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let reducedMotion = rmQuery.matches;
+  rmQuery.addEventListener("change", e => { reducedMotion = e.matches; });
+
+  const MOTE_COUNT = 16;
+  const SYMBOLS = ["H", "He", "O", "C", "Fe", "Na", "Si", "N", "Al", "Ca", "Au", "Ti"];
+
+  function spawnMote() {
+    return {
+      angle: Math.random() * Math.PI * 2,
+      radius: hole.r * (2.2 + Math.random() * 2.2),
+      speed: 0.15 + Math.random() * 0.15,
+      symbol: Math.random() < 0.35 ? SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)] : null,
+      size: Math.random() * 1.6 + 1,
+    };
+  }
 
   function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    const count = Math.floor((canvas.width * canvas.height) / 9000);
-    stars = Array.from({ length: count }, () => ({
+
+    const starCount = Math.floor((canvas.width * canvas.height) / 9000);
+    stars = Array.from({ length: starCount }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       r: Math.random() * 1.2 + 0.2,
       phase: Math.random() * Math.PI * 2,
       speed: Math.random() * 0.02 + 0.005,
     }));
+
+    hole.cx = canvas.width * 0.86;
+    hole.cy = canvas.height * 0.05;
+    hole.r = Math.min(canvas.width, canvas.height) * 0.16;
+
+    motes = Array.from({ length: MOTE_COUNT }, spawnMote);
   }
 
-  function tick(t) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  function drawStars(t) {
     ctx.fillStyle = "#e8e4f0";
     for (const s of stars) {
-      const alpha = 0.35 + 0.5 * Math.abs(Math.sin(s.phase + t * s.speed));
-      ctx.globalAlpha = alpha;
+      const twinkle = reducedMotion ? 0.55 : Math.abs(Math.sin(s.phase + t * s.speed));
+      ctx.globalAlpha = 0.35 + 0.5 * twinkle;
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
-    requestAnimationFrame(tick);
   }
+
+  function drawHole(t) {
+    const { cx, cy, r } = hole;
+    if (r <= 0) return;
+
+    const glow = ctx.createRadialGradient(cx, cy, r * 0.6, cx, cy, r * 3.2);
+    glow.addColorStop(0, `rgba(${AMBER},0.10)`);
+    glow.addColorStop(1, `rgba(${AMBER},0)`);
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 3.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    const spin = reducedMotion ? 0 : t * 0.00006;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(spin);
+    const disk = ctx.createLinearGradient(-r * 1.7, 0, r * 1.7, 0);
+    disk.addColorStop(0, `rgba(${AMBER},0)`);
+    disk.addColorStop(0.16, `rgba(${AMBER},0.5)`);
+    disk.addColorStop(0.32, `rgba(${HOT},0.7)`);
+    disk.addColorStop(0.5, `rgba(${BLUE},0.7)`);
+    disk.addColorStop(0.68, `rgba(${HOT},0.7)`);
+    disk.addColorStop(0.84, `rgba(${AMBER},0.5)`);
+    disk.addColorStop(1, `rgba(${AMBER},0)`);
+    ctx.strokeStyle = disk;
+    ctx.lineWidth = r * 0.14;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 1.55, r * 1.55 * 0.34, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    const voidGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    voidGrad.addColorStop(0, `rgba(${VOID},1)`);
+    voidGrad.addColorStop(0.85, `rgba(${VOID},1)`);
+    voidGrad.addColorStop(1, `rgba(${VOID},0)`);
+    ctx.fillStyle = voidGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawMotes() {
+    if (hole.r <= 0) return;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    for (const m of motes) {
+      if (!reducedMotion) {
+        const pull = 1 + (hole.r * 2.5 - m.radius) / (hole.r * 5);
+        m.radius -= m.speed * Math.max(pull, 0.3);
+        m.angle += 0.006 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.4));
+        if (m.radius < hole.r * 0.75) Object.assign(m, spawnMote());
+      }
+      const x = hole.cx + Math.cos(m.angle) * m.radius;
+      const y = hole.cy + Math.sin(m.angle) * m.radius * 0.34;
+      const fadeIn = Math.max(0, Math.min(1, (hole.r * 4 - m.radius) / (hole.r * 2)));
+      const fadeOut = Math.max(0, Math.min(1, (m.radius - hole.r * 0.7) / (hole.r * 0.6)));
+      const alpha = Math.max(0, Math.min(0.85, fadeIn * fadeOut));
+      if (alpha <= 0.02) continue;
+      ctx.globalAlpha = alpha;
+      if (m.symbol) {
+        ctx.fillStyle = `rgba(${HOT},1)`;
+        ctx.font = `${(m.size + 5).toFixed(1)}px monospace`;
+        ctx.fillText(m.symbol, x, y);
+      } else {
+        ctx.fillStyle = `rgba(${BLUE},1)`;
+        ctx.beginPath();
+        ctx.arc(x, y, m.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function tick(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawStars(t);
+    drawHole(t);
+    drawMotes();
+    rafId = requestAnimationFrame(tick);
+  }
+
+  let rafId = null;
+  function start() { if (rafId === null) rafId = requestAnimationFrame(tick); }
+  function stop() { if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; } }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stop(); else start();
+  });
 
   window.addEventListener("resize", resize);
   resize();
-  requestAnimationFrame(tick);
+  start();
 })();
 
 /* ===================== State ===================== */
