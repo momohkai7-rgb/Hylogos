@@ -73,44 +73,31 @@
     const { cx, cy, r } = hole;
     if (r <= 0) return;
 
-    // ── Outer diffuse bloom (wide warm glow around entire system) ──────────
-    const bloom = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 4.2);
-    bloom.addColorStop(0,    `rgba(255,160,60,0.22)`);
-    bloom.addColorStop(0.25, `rgba(255,130,40,0.12)`);
-    bloom.addColorStop(0.6,  `rgba(200,80,10,0.05)`);
-    bloom.addColorStop(1,    `rgba(200,80,10,0)`);
+    // ── 1. Wide diffuse bloom ────────────────────────────────────────────
+    const bloom = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 4.5);
+    bloom.addColorStop(0,    `rgba(255,150,50,0.20)`);
+    bloom.addColorStop(0.3,  `rgba(255,110,30,0.10)`);
+    bloom.addColorStop(0.7,  `rgba(180,60,5,0.04)`);
+    bloom.addColorStop(1,    `rgba(180,60,5,0)`);
     ctx.fillStyle = bloom;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 4.2, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 4.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // ── Accretion disk — drawn as layered flat ellipses, NOT rotating ─────
-    // The disk is static. We draw it in segments using arc sweeps so we can
-    // apply asymmetric brightness (left side = approaching = brighter).
-    // Bottom half will be occluded by the void circle drawn after.
-    const diskRx = r * 2.1;   // disk semi-major (horizontal)
-    const diskRy = r * 0.38;  // disk semi-minor (vertical, flat perspective)
+    // ── 2. Accretion disk — static flat ellipse, asymmetric brightness ───
+    // Disk does NOT rotate. The gradient is asymmetric: left side is
+    // Doppler-boosted (brighter, hotter), right side dimmer. This is exactly
+    // how Gargantua looks in Interstellar.
+    const diskRx = r * 2.2;
+    const diskRy = r * 0.36;
 
-    // Helper: draw one ellipse stroke with a left/right brightness gradient
-    function diskRing(rx, ry, lineW, innerAlpha, outerAlpha, colorInner, colorOuter) {
+    function diskPass(rx, ry, lw, stops) {
       ctx.save();
       ctx.translate(cx, cy);
-      // Clip to only the part of the disk that should be visible.
-      // We'll handle occlusion by drawing void on top later.
-      const grad = ctx.createLinearGradient(-rx, 0, rx, 0);
-      // Left side (approaching, Doppler-boosted): hot white-orange
-      grad.addColorStop(0,    `rgba(${colorOuter},0)`);
-      grad.addColorStop(0.05, `rgba(${colorOuter},${outerAlpha * 0.5})`);
-      grad.addColorStop(0.22, `rgba(${colorInner},${innerAlpha})`);
-      grad.addColorStop(0.42, `rgba(255,255,220,${innerAlpha * 0.85})`);
-      // Center top (the part bending over the hole) — brightest point
-      grad.addColorStop(0.5,  `rgba(255,245,200,${innerAlpha})`);
-      // Right side (receding, dimmer)
-      grad.addColorStop(0.65, `rgba(${colorInner},${innerAlpha * 0.55})`);
-      grad.addColorStop(0.85, `rgba(${colorOuter},${outerAlpha * 0.35})`);
-      grad.addColorStop(1,    `rgba(${colorOuter},0)`);
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = lineW;
+      const g = ctx.createLinearGradient(-rx, 0, rx, 0);
+      stops.forEach(([pos, col]) => g.addColorStop(pos, col));
+      ctx.strokeStyle = g;
+      ctx.lineWidth = lw;
       ctx.globalAlpha = 1;
       ctx.beginPath();
       ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
@@ -118,49 +105,79 @@
       ctx.restore();
     }
 
-    // Layer 1 — thick outer disk body (warm amber/orange)
-    diskRing(diskRx,        diskRy,        r * 0.38, 0.92, 0.55, "255,165,55", "200,90,15");
-    // Layer 2 — mid disk, slightly smaller
-    diskRing(diskRx * 0.82, diskRy * 0.82, r * 0.22, 0.85, 0.45, "255,200,100","220,110,20");
-    // Layer 3 — hot inner edge (bright, white-hot)
-    diskRing(diskRx * 0.62, diskRy * 0.62, r * 0.10, 0.95, 0.50, "255,240,180","255,180,60");
-    // Layer 4 — photon ring filament (thin, bluish-white)
-    diskRing(diskRx * 0.50, diskRy * 0.50, r * 0.028,0.90, 0.40, "220,235,255","180,210,255");
+    // Outer body — warm amber, bright left / dim right
+    diskPass(diskRx, diskRy, r * 0.42, [
+      [0,    `rgba(180,70,5,0)`],
+      [0.05, `rgba(220,100,15,0.60)`],
+      [0.20, `rgba(255,160,50,0.92)`],
+      [0.38, `rgba(255,220,150,1)`],
+      [0.50, `rgba(255,245,210,1)`],   // top arc — brightest
+      [0.65, `rgba(255,160,50,0.60)`],
+      [0.82, `rgba(200,90,15,0.30)`],
+      [1,    `rgba(180,70,5,0)`],
+    ]);
 
-    // ── Gravitational lensing arc (ghost disk bent over the top) ──────────
-    // In real BH images, the disk wraps over the top as a thin bright arc.
+    // Mid ring — slightly tighter, punchier orange
+    diskPass(diskRx * 0.80, diskRy * 0.80, r * 0.20, [
+      [0,    `rgba(200,80,10,0)`],
+      [0.10, `rgba(255,140,40,0.75)`],
+      [0.35, `rgba(255,210,120,0.90)`],
+      [0.50, `rgba(255,250,220,0.95)`],
+      [0.68, `rgba(255,140,40,0.50)`],
+      [0.88, `rgba(200,80,10,0.20)`],
+      [1,    `rgba(200,80,10,0)`],
+    ]);
+
+    // Inner hot edge — white-hot
+    diskPass(diskRx * 0.60, diskRy * 0.60, r * 0.09, [
+      [0,    `rgba(255,200,100,0)`],
+      [0.15, `rgba(255,230,160,0.85)`],
+      [0.50, `rgba(255,255,240,1)`],
+      [0.80, `rgba(255,210,120,0.55)`],
+      [1,    `rgba(255,200,100,0)`],
+    ]);
+
+    // Photon ring filament — thin, bluish-white
+    diskPass(diskRx * 0.48, diskRy * 0.48, r * 0.025, [
+      [0,    `rgba(200,225,255,0)`],
+      [0.20, `rgba(220,238,255,0.80)`],
+      [0.50, `rgba(255,255,255,0.95)`],
+      [0.78, `rgba(200,220,255,0.50)`],
+      [1,    `rgba(200,225,255,0)`],
+    ]);
+
+    // ── 3. Gravitational lensing arc (top ghost) ─────────────────────────
+    // The back of the disk bends over the top of the hole — thin bright arc.
     ctx.save();
     ctx.translate(cx, cy);
-    // Only draw the TOP half of a tighter, thinner ellipse
     ctx.beginPath();
-    ctx.ellipse(0, -r * 0.12, diskRx * 0.52, diskRy * 0.48, 0, Math.PI, Math.PI * 2);
-    const lensGrad = ctx.createLinearGradient(-diskRx * 0.52, 0, diskRx * 0.52, 0);
-    lensGrad.addColorStop(0,    `rgba(255,180,80,0)`);
-    lensGrad.addColorStop(0.15, `rgba(255,220,140,0.55)`);
-    lensGrad.addColorStop(0.5,  `rgba(255,250,220,0.80)`);
-    lensGrad.addColorStop(0.85, `rgba(255,200,100,0.45)`);
-    lensGrad.addColorStop(1,    `rgba(255,180,80,0)`);
-    ctx.strokeStyle = lensGrad;
-    ctx.lineWidth = r * 0.045;
+    ctx.ellipse(0, -r * 0.10, diskRx * 0.50, diskRy * 0.44, 0, Math.PI, Math.PI * 2);
+    const lens = ctx.createLinearGradient(-diskRx * 0.50, 0, diskRx * 0.50, 0);
+    lens.addColorStop(0,    `rgba(255,170,60,0)`);
+    lens.addColorStop(0.12, `rgba(255,210,120,0.55)`);
+    lens.addColorStop(0.42, `rgba(255,250,210,0.85)`);
+    lens.addColorStop(0.58, `rgba(255,250,210,0.85)`);
+    lens.addColorStop(0.88, `rgba(255,210,120,0.45)`);
+    lens.addColorStop(1,    `rgba(255,170,60,0)`);
+    ctx.strokeStyle = lens;
+    ctx.lineWidth = r * 0.038;
     ctx.stroke();
     ctx.restore();
 
-    // ── Event horizon — pitch black circle, occludes bottom half of disk ──
-    // We draw a slightly larger circle with a soft fringe first for the
-    // photon sphere glow right at the edge.
-    const photonGlow = ctx.createRadialGradient(cx, cy, r * 0.88, cx, cy, r * 1.08);
-    photonGlow.addColorStop(0,   `rgba(255,200,100,0.18)`);
-    photonGlow.addColorStop(0.5, `rgba(255,160,50,0.07)`);
-    photonGlow.addColorStop(1,   `rgba(255,160,50,0)`);
-    ctx.fillStyle = photonGlow;
+    // ── 4. Photon sphere glow (ring right at horizon edge) ───────────────
+    const photon = ctx.createRadialGradient(cx, cy, r * 0.90, cx, cy, r * 1.10);
+    photon.addColorStop(0,   `rgba(255,190,80,0.22)`);
+    photon.addColorStop(0.6, `rgba(255,150,40,0.08)`);
+    photon.addColorStop(1,   `rgba(255,150,40,0)`);
+    ctx.fillStyle = photon;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 1.08, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 1.10, 0, Math.PI * 2);
     ctx.fill();
 
-    // Hard void fill — perfectly black, covers bottom half of disk
+    // ── 5. Event horizon — absolute void, occludes bottom half of disk ───
     ctx.fillStyle = `rgb(5,4,10)`;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 0.98, 0, Math.PI * 2);
+    ctx.arc(cx, cy, r * 0.97, 0, Math.PI * 2);
     ctx.fill();
   }
 
