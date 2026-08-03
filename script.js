@@ -117,24 +117,28 @@
   // Each color is its own solid lens, nested smallest-to-largest — this
   // guarantees correct banding at every point along the shape (a single
   // gradient measured from the center badly mismatches a non-circular
-  // shape, which is what made the last version look like a plain ellipse).
+  // shape, which is what made an earlier version look like a plain ellipse).
+  const DISK_BANDS = [
+    { T: 2.6,  w: 0.58, color: PURPLE },
+    { T: 2.15, w: 0.46, color: ORANGE },
+    { T: 1.75, w: 0.36, color: GOLD },
+    { T: 1.35, w: 0.28, color: WHITE },
+  ];
+
   function drawDiskBands() {
     const { r } = hole;
-    ctx.fillStyle = `rgb(${PURPLE})`;
-    lensPath(r * 2.6, r * 0.58); ctx.fill();
-    ctx.fillStyle = `rgb(${ORANGE})`;
-    lensPath(r * 2.15, r * 0.46); ctx.fill();
-    ctx.fillStyle = `rgb(${GOLD})`;
-    lensPath(r * 1.75, r * 0.36); ctx.fill();
-    ctx.fillStyle = `rgb(${WHITE})`;
-    lensPath(r * 1.35, r * 0.28); ctx.fill();
+    for (const b of DISK_BANDS) {
+      ctx.fillStyle = `rgb(${b.color})`;
+      lensPath(r * b.T, r * b.w);
+      ctx.fill();
+    }
   }
 
   // Small light-streaks traveling along the disk's fixed path — this is
   // what actually reads as "spinning," since the silhouette itself is static.
-  function drawDashes(t) {
+  function drawDashes(t, motionRate) {
     const { r } = hole;
-    const speed = reducedMotion ? 0 : t * 0.00013;
+    const speed = t * 0.00013 * motionRate;
     const count = 6;
     ctx.strokeStyle = "rgba(255,255,255,0.85)";
     ctx.lineWidth = r * 0.032;
@@ -150,9 +154,106 @@
     }
   }
 
+  // Fine embers riding at several depths within the disk, each following
+  // its own band's boundary continuously — this is the actual "gas and
+  // matter flowing" texture; the dashes alone only hint at rotation, this
+  // is what makes the material itself look like it's coursing around.
+  const FLOW_PARTICLES = Array.from({ length: 40 }, (_, i) => ({
+    band: i % DISK_BANDS.length,
+    phase: Math.random(),
+    speedMul: 0.7 + Math.random() * 0.7,
+    size: 0.4 + Math.random() * 0.5,
+  }));
+
+  function drawFlowParticles(t, motionRate) {
+    const { r } = hole;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (const p of FLOW_PARTICLES) {
+      const band = DISK_BANDS[p.band];
+      const s = ((t * 0.00017 * motionRate * p.speedMul + p.phase) % 1 + 1) % 1;
+      const pt = lensBoundaryPoint(r * band.T * 0.95, r * band.w * 0.95, s);
+      const sz = r * 0.055 * p.size;
+      const g = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, sz);
+      g.addColorStop(0, `rgba(${WHITE},0.85)`);
+      g.addColorStop(1, `rgba(${WHITE},0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, sz, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // Paints one half of the disk — bands, dashes, and flow particles —
+  // clipped by a half-plane along the disk's own long axis. Calling this
+  // once on each side of the void (instead of drawing the whole disk in
+  // one pass) is what makes the void sit BETWEEN the two halves rather
+  // than just stamped on top: the far half disappears behind it, the near
+  // half is painted after and visibly overlaps it, so the void finally
+  // reads as a sphere the disk wraps around instead of a flat cutout.
+  function paintDiskHalf(t, motionRate, upperHalf) {
+    const { r } = hole;
+    ctx.save();
+    ctx.beginPath();
+    const BIG = r * 40;
+    if (upperHalf) ctx.rect(-BIG, -BIG, BIG * 2, BIG);
+    else ctx.rect(-BIG, 0, BIG * 2, BIG);
+    ctx.clip();
+    drawDiskBands();
+    drawDashes(t, motionRate);
+    drawFlowParticles(t, motionRate);
+    ctx.restore();
+  }
+
+  // High-energy jets along the poles, perpendicular to the disk — a cool
+  // white/blue contrast against the disk's warm glow, with brighter pulses
+  // travelling outward so the beams read as energy streaming out, not a
+  // static shape.
+  function drawJets(t, motionRate, r) {
+    const len = r * 2.6;
+    const baseW = r * 0.16;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (const dir of [-1, 1]) {
+      const beam = ctx.createLinearGradient(0, 0, 0, dir * len);
+      beam.addColorStop(0,    "rgba(225,240,255,0.5)");
+      beam.addColorStop(0.15, "rgba(190,220,255,0.3)");
+      beam.addColorStop(0.6,  "rgba(160,200,255,0.1)");
+      beam.addColorStop(1,    "rgba(160,200,255,0)");
+      ctx.fillStyle = beam;
+      ctx.beginPath();
+      ctx.moveTo(-baseW * 0.5, 0);
+      ctx.lineTo(baseW * 0.5, 0);
+      ctx.lineTo(baseW * 0.12, dir * len);
+      ctx.lineTo(-baseW * 0.12, dir * len);
+      ctx.closePath();
+      ctx.fill();
+
+      const pulses = 3;
+      for (let i = 0; i < pulses; i++) {
+        const s = ((t * 0.00045 * motionRate + i / pulses) % 1 + 1) % 1;
+        const py = dir * len * s;
+        const pw = baseW * (0.55 - 0.4 * s);
+        const pulse = ctx.createRadialGradient(0, py, 0, 0, py, pw * 1.7);
+        pulse.addColorStop(0, "rgba(255,255,255,0.55)");
+        pulse.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = pulse;
+        ctx.beginPath();
+        ctx.arc(0, py, pw * 1.7, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
   function drawHole(t) {
     const { cx, cy, r } = hole;
     if (r <= 0) return;
+
+    // flow keeps running under reduced-motion too, just slower — it's the
+    // "gases and matter flowing" visual, not a decorative flourish
+    const motionRate = reducedMotion ? 0.35 : 1;
 
     // wide ambient bloom
     const glow = ctx.createRadialGradient(cx, cy, r * 0.4, cx, cy, r * 3.2);
@@ -176,22 +277,14 @@
     ctx.ellipse(0, 0, r * 1.15, r * 1.15 * 0.86, 0, 0, Math.PI * 2);
     ctx.stroke();
 
-    drawDiskBands();
-    drawDashes(t);
+    // far half of the disk — painted first, so the void (below) covers
+    // the part of it that passes behind the sphere
+    paintDiskHalf(t, motionRate, true);
     ctx.restore();
 
-    // crisp bright purple rim right at the void's edge
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.strokeStyle = `rgba(${PURPLE},1)`;
-    ctx.lineWidth = r * 0.05;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, r * 1.05, r * 1.05, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-
-    // the void itself — belt-and-suspenders under the real input's own
-    // background, so there's never a gap even for a stray frame
+    // the void itself, now sitting BETWEEN the two disk halves instead of
+    // on top of both — belt-and-suspenders under the real input's own
+    // background too, so there's never a gap even for a stray frame
     const voidGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
     voidGrad.addColorStop(0, `rgba(${VOID},1)`);
     voidGrad.addColorStop(0.9, `rgba(${VOID},1)`);
@@ -200,6 +293,29 @@
     ctx.beginPath();
     ctx.arc(cx, cy, r * 0.99, 0, Math.PI * 2);
     ctx.fill();
+
+    // near half of the disk — painted on top of the void, so it visibly
+    // overlaps the sphere instead of the sphere just sitting on top of it
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(DISK_TILT);
+    paintDiskHalf(t, motionRate, false);
+
+    // crisp bright purple rim right at the void's edge, on top of everything
+    ctx.strokeStyle = `rgba(${PURPLE},1)`;
+    ctx.lineWidth = r * 0.05;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 1.05, r * 1.05, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // polar jets — perpendicular to the disk, drawn last as an additive
+    // glow so they read as energy on top rather than occluding anything
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(DISK_TILT);
+    drawJets(t, motionRate, r);
+    ctx.restore();
   }
 
   function roundRectPath(x, y, w, h, rad) {
@@ -221,12 +337,13 @@
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     for (const m of motes) {
-      if (!reducedMotion) {
-        const pull = 1 + (hole.r * 2.2 - m.radius) / (hole.r * 4);
-        m.radius -= m.speed * Math.max(pull, 0.3);
-        m.angle += 0.006 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.4));
-        if (m.radius < hole.r * 1.55) Object.assign(m, spawnMote());
-      }
+      // orbiting-then-falling-in is the whole point of this visual, so it
+      // keeps running under reduced-motion too, just gentler.
+      const motionRate = reducedMotion ? 0.4 : 1;
+      const pull = 1 + (hole.r * 2.2 - m.radius) / (hole.r * 4);
+      m.radius -= m.speed * Math.max(pull, 0.3) * motionRate;
+      m.angle += 0.006 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.4)) * motionRate;
+      if (m.radius < hole.r * 1.55) Object.assign(m, spawnMote());
       const x = hole.cx + Math.cos(m.angle) * m.radius;
       const y = hole.cy + Math.sin(m.angle) * m.radius * 0.4;
       const fadeIn = Math.max(0, Math.min(1, (hole.r * 4 - m.radius) / (hole.r * 1.2)));
