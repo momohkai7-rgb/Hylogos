@@ -116,30 +116,32 @@
     ctx.closePath();
     ctx.clip();
 
-    const flow = reducedMotion ? 0 : t * 0.00016;
+    const flow = reducedMotion ? 0 : t * 0.00026;
     const band = outerR - r;
 
     ctx.globalCompositeOperation = "lighter";
     const brightDefs = [
-      { baseR: r*1.18, amp: band*0.22, freq: 2.3, phase: 0.4, w: r*0.05,  col: "rgba(255,238,190,0.55)" },
-      { baseR: r*1.42, amp: band*0.26, freq: 1.7, phase: 2.1, w: r*0.06,  col: "rgba(255,190,90,0.45)"  },
-      { baseR: r*1.65, amp: band*0.20, freq: 2.6, phase: 4.4, w: r*0.045, col: "rgba(255,140,60,0.4)"   },
+      { baseR: r*1.14, amp: band*0.20, freq: 2.3, phase: 0.4, w: r*0.05,  col: "rgba(255,242,200,0.62)" },
+      { baseR: r*1.32, amp: band*0.24, freq: 1.7, phase: 2.1, w: r*0.06,  col: "rgba(255,200,100,0.52)" },
+      { baseR: r*1.50, amp: band*0.22, freq: 2.6, phase: 4.4, w: r*0.05,  col: "rgba(255,150,65,0.46)"  },
+      { baseR: r*1.70, amp: band*0.18, freq: 3.1, phase: 1.6, w: r*0.04,  col: "rgba(255,110,140,0.4)"  },
     ];
     brightDefs.forEach((d, i) => {
       streakPath(d.baseR, d.amp, d.freq, d.phase + flow * (1 + i*0.3));
       ctx.strokeStyle = d.col;
       ctx.lineWidth = d.w;
       ctx.shadowColor = d.col;
-      ctx.shadowBlur = r * 0.12;
+      ctx.shadowBlur = r * 0.18;
       ctx.stroke();
     });
     ctx.shadowBlur = 0;
 
     ctx.globalCompositeOperation = "multiply";
     const darkDefs = [
-      { baseR: r*1.30, amp: band*0.24, freq: 2.0, phase: 1.2, w: r*0.06, col: "rgba(120,20,10,0.35)" },
-      { baseR: r*1.55, amp: band*0.22, freq: 2.9, phase: 3.3, w: r*0.05, col: "rgba(90,10,60,0.32)"  },
-      { baseR: r*1.75, amp: band*0.18, freq: 1.9, phase: 5.6, w: r*0.05, col: "rgba(70,5,90,0.3)"    },
+      { baseR: r*1.24, amp: band*0.22, freq: 2.0, phase: 1.2, w: r*0.055, col: "rgba(120,20,10,0.32)" },
+      { baseR: r*1.44, amp: band*0.20, freq: 2.9, phase: 3.3, w: r*0.05,  col: "rgba(90,10,60,0.30)"  },
+      { baseR: r*1.62, amp: band*0.18, freq: 1.9, phase: 5.6, w: r*0.05,  col: "rgba(70,5,90,0.28)"   },
+      { baseR: r*1.80, amp: band*0.14, freq: 2.4, phase: 0.8, w: r*0.045, col: "rgba(60,5,70,0.26)"   },
     ];
     darkDefs.forEach((d, i) => {
       streakPath(d.baseR, d.amp, d.freq, d.phase - flow * (1 + i*0.25));
@@ -171,33 +173,40 @@
     drawSpiralStreaks(t, r, outerR, startAngle, endAngle);
 
     // flowing energy along the path — streams, does not spin the ring itself
-    const flowR = r * 1.22;
-    ctx.beginPath();
-    ctx.arc(0, 0, flowR, startAngle, endAngle);
-    ctx.strokeStyle = "rgba(255,250,235,0.55)";
-    ctx.lineWidth = r * 0.05;
-    ctx.setLineDash([r * 0.10, r * 0.22]);
-    ctx.lineDashOffset = reducedMotion ? 0 : -t * 0.09;
-    ctx.shadowColor = "rgba(255,225,150,0.9)";
-    ctx.shadowBlur = 14;
-    ctx.stroke();
+    ctx.globalCompositeOperation = "lighter";
+    const flowLines = [
+      { rr: r * 1.20, w: r * 0.05,  dash: [r * 0.10, r * 0.20], dir: -1, speed: 0.10, col: "rgba(255,250,235,0.6)",  glow: "rgba(255,225,150,0.95)", blur: 16 },
+      { rr: r * 1.58, w: r * 0.032, dash: [r * 0.07, r * 0.26], dir:  1, speed: 0.07, col: "rgba(255,205,235,0.42)", glow: "rgba(255,170,220,0.8)",  blur: 12 },
+    ];
+    flowLines.forEach(f => {
+      ctx.beginPath();
+      ctx.arc(0, 0, f.rr, startAngle, endAngle);
+      ctx.strokeStyle = f.col;
+      ctx.lineWidth = f.w;
+      ctx.setLineDash(f.dash);
+      ctx.lineDashOffset = reducedMotion ? 0 : f.dir * t * f.speed;
+      ctx.shadowColor = f.glow;
+      ctx.shadowBlur = f.blur;
+      ctx.stroke();
+    });
     ctx.setLineDash([]);
     ctx.shadowBlur = 0;
+    ctx.globalCompositeOperation = "source-over";
 
     if (!reducedMotion) {
       ctx.globalCompositeOperation = "lighter";
       const arcSpan = endAngle - startAngle;
-      const N = 9;
+      const N = 16;
       for (let i = 0; i < N; i++) {
-        const localT = ((i / N) + (t * 0.00004)) % 1;
+        const localT = ((i / N) + (t * 0.00005)) % 1;
         const a = startAngle + localT * arcSpan;
         if (a < startAngle || a > endAngle) continue;
-        const rr = r * (1.05 + 0.75 * ((i * 53) % 10) / 10);
+        const rr = r * (1.05 + 0.8 * ((i * 53) % 10) / 10);
         const px = Math.cos(a) * rr, py = Math.sin(a) * rr;
-        const flicker = 0.4 + 0.6 * Math.abs(Math.sin(i * 12.9 + t * 0.0015));
-        const s = r * 0.10 * flicker;
+        const flicker = 0.4 + 0.6 * Math.abs(Math.sin(i * 12.9 + t * 0.0018));
+        const s = r * 0.11 * flicker;
         const pg = ctx.createRadialGradient(px, py, 0, px, py, s);
-        pg.addColorStop(0, `rgba(255,248,225,${0.5 * flicker})`);
+        pg.addColorStop(0, `rgba(255,248,225,${0.58 * flicker})`);
         pg.addColorStop(1, "rgba(255,248,225,0)");
         ctx.fillStyle = pg;
         ctx.beginPath();
@@ -210,21 +219,36 @@
     ctx.restore();
   }
 
+  // Half-width/half-height of the tilted+squashed ring's bounding box, per
+  // unit outerR (standard AABB-of-a-rotated-ellipse formula). Used below to
+  // keep the ring from demanding more room than the screen actually has.
+  const RING_TILT_COS = Math.cos(RING_TILT), RING_TILT_SIN = Math.sin(RING_TILT);
+  const RING_BOUNDS_X = Math.sqrt(RING_TILT_COS ** 2 + (RING_SQUASH * RING_TILT_SIN) ** 2);
+  const RING_BOUNDS_Y = Math.sqrt(RING_TILT_SIN ** 2 + (RING_SQUASH * RING_TILT_COS) ** 2);
+
   function drawBlackHole(t) {
     const { cx, cy, r } = hole;
     if (r <= 0) return;
 
-    const outerR = r * 2.35; // enlarged
+    // On a narrow phone, hole.r (driven by the search bar's own width) can
+    // end up large relative to the viewport, so the "ideal" ring below
+    // would run off both edges of the screen and effectively disappear.
+    // Cap it by the room actually available around cx/cy first.
+    const marginX = Math.min(cx, canvas.width - cx) * 0.94;
+    const marginY = Math.min(cy, canvas.height - cy) * 0.94;
+    const maxByScreen = Math.min(marginX / RING_BOUNDS_X, marginY / RING_BOUNDS_Y);
+    const outerR = Math.min(r * 2.35, Math.max(maxByScreen, r * 1.02));
 
-    // wide soft ambient bloom behind everything
-    const bloom = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 4.5);
+    // wide soft ambient bloom behind everything (also screen-capped)
+    const bloomR = Math.max(Math.min(r * 4.5, Math.min(cx, canvas.width - cx, cy, canvas.height - cy) * 0.96), r * 1.6);
+    const bloom = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, bloomR);
     bloom.addColorStop(0,    "rgba(255,180,90,0.22)");
     bloom.addColorStop(0.3,  "rgba(230,90,40,0.10)");
     bloom.addColorStop(0.65, "rgba(160,30,180,0.05)");
     bloom.addColorStop(1,    "rgba(160,30,180,0)");
     ctx.fillStyle = bloom;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 4.5, 0, Math.PI * 2);
+    ctx.arc(cx, cy, bloomR, 0, Math.PI * 2);
     ctx.fill();
 
     // back arc of the ring — passes behind the sphere (the far side)
@@ -308,24 +332,25 @@
     // thin crisp bright edge right at the shadow boundary
     ctx.beginPath();
     ctx.arc(0, 0, r * 1.015, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,250,235,0.9)";
-    ctx.lineWidth = r * 0.035;
-    ctx.shadowColor = "rgba(255,225,150,0.95)";
-    ctx.shadowBlur = r * 0.15;
+    ctx.strokeStyle = "rgba(255,251,240,0.95)";
+    ctx.lineWidth = r * 0.04;
+    ctx.shadowColor = "rgba(255,225,150,1)";
+    ctx.shadowBlur = r * 0.22;
     ctx.stroke();
     ctx.shadowBlur = 0;
 
     // subtle organic variation so it doesn't read as a perfect mechanical ring
     if (!reducedMotion) {
       ctx.globalCompositeOperation = "lighter";
-      for (let i = 0; i < 5; i++) {
-        const a = (i / 5) * Math.PI * 2 + flow;
-        const rr = r * 1.08;
+      const N = 8;
+      for (let i = 0; i < N; i++) {
+        const a = (i / N) * Math.PI * 2 + flow;
+        const rr = r * (1.05 + 0.06 * ((i * 37) % 4) / 4);
         const x = Math.cos(a) * rr, y = Math.sin(a) * rr;
-        const s = r * 0.16;
+        const s = r * (0.13 + 0.08 * ((i * 17) % 3) / 3);
         const pg = ctx.createRadialGradient(x, y, 0, x, y, s);
-        pg.addColorStop(0, "rgba(255,240,205,0.35)");
-        pg.addColorStop(1, "rgba(255,240,205,0)");
+        pg.addColorStop(0, "rgba(255,242,210,0.42)");
+        pg.addColorStop(1, "rgba(255,242,210,0)");
         ctx.fillStyle = pg;
         ctx.beginPath(); ctx.arc(x, y, s, 0, Math.PI * 2); ctx.fill();
       }
