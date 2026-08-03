@@ -214,7 +214,7 @@
     const { cx, cy, r } = hole;
     if (r <= 0) return;
 
-    const outerR = r * 1.95;
+    const outerR = r * 2.35; // enlarged
 
     // wide soft ambient bloom behind everything
     const bloom = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 4.5);
@@ -245,8 +245,62 @@
     ctx.fill();
     ctx.restore();
 
+    // Photon-ring halo — wraps the FULL circumference of the shadow,
+    // unsquashed. Real gravitational lensing bends light from all around
+    // the disk (including the far side) around the hole, so the shadow
+    // always looks enveloped in light, not just where the tilted disk
+    // band happens to cross it. Without this, the sides of the sphere
+    // (perpendicular to the tilt) would show bare black.
+    drawPhotonHalo(t, cx, cy, r);
+
     // front arc of the ring — crosses in front of the sphere (the near side)
     drawRingHalf(t, r, outerR, Math.PI * 1.98 - Math.PI * 2, Math.PI * 1.02);
+  }
+
+  function drawPhotonHalo(t, cx, cy, r) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    const flow = reducedMotion ? 0 : t * 0.0002;
+
+    const halo = ctx.createRadialGradient(0, 0, r * 0.90, 0, 0, r * 1.42);
+    halo.addColorStop(0,    "rgba(255,255,255,0)");
+    halo.addColorStop(0.35, "rgba(255,247,220,0.95)");
+    halo.addColorStop(0.55, "rgba(255,205,110,0.85)");
+    halo.addColorStop(0.75, "rgba(255,140,60,0.55)");
+    halo.addColorStop(1,    "rgba(200,60,180,0)");
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.42, 0, Math.PI * 2);
+    ctx.arc(0, 0, r * 0.90, 0, Math.PI * 2, true);
+    ctx.fill("evenodd");
+
+    // thin crisp bright edge right at the shadow boundary
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.015, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,250,235,0.9)";
+    ctx.lineWidth = r * 0.035;
+    ctx.shadowColor = "rgba(255,225,150,0.95)";
+    ctx.shadowBlur = r * 0.15;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // subtle organic variation so it doesn't read as a perfect mechanical ring
+    if (!reducedMotion) {
+      ctx.globalCompositeOperation = "lighter";
+      for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * Math.PI * 2 + flow;
+        const rr = r * 1.08;
+        const x = Math.cos(a) * rr, y = Math.sin(a) * rr;
+        const s = r * 0.16;
+        const pg = ctx.createRadialGradient(x, y, 0, x, y, s);
+        pg.addColorStop(0, "rgba(255,240,205,0.35)");
+        pg.addColorStop(1, "rgba(255,240,205,0)");
+        ctx.fillStyle = pg;
+        ctx.beginPath(); ctx.arc(x, y, s, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalCompositeOperation = "source-over";
+    }
+    ctx.restore();
   }
 
   /* ── Motes ──────────────────────────────────────────────────────────── */
