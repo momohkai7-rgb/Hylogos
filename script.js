@@ -60,11 +60,10 @@
     hole.r = rect.width / 2;
   }
 
-  const HOT = "255,246,225";
-  const ORANGE = "255,140,50";
-  const REDORANGE = "225,70,25";
-  const PURPLE = "150,45,190";
-  const RIM = "235,225,255";
+  const WHITE = "255,255,255";
+  const GOLD = "255,214,90";
+  const ORANGE = "255,130,35";
+  const PURPLE = "175,55,225";
 
   function drawStars(t) {
     ctx.fillStyle = "#e8e4f0";
@@ -78,45 +77,80 @@
     ctx.globalAlpha = 1;
   }
 
-  // The disk's actual silhouette: tight near the poles (top/bottom, where
-  // lensed light hugs close to the sphere), flaring out wide at the sides
-  // (the equatorial plane) — one continuous shape rather than two overlapping
-  // ellipses, which is what was reading as messy before.
-  function diskShapePath(minR, maxR, power, squashY) {
+  // The disk's silhouette: a tilted lens shape, thick through the middle and
+  // tapering to points at both ends — NOT animated (a real disk's outline
+  // doesn't spin like a coin from a fixed viewing angle; only the material
+  // in it flows, which the traveling dashes below represent instead).
+  const DISK_TILT = -0.47; // ~ -27 degrees
+  const DISK_POWER = 4.2;
+  const DISK_SQUASH = 0.8;
+
+  function ringPoint(theta, minR, maxR) {
+    const widthFactor = Math.pow(Math.abs(Math.cos(theta)), DISK_POWER);
+    const radius = minR + (maxR - minR) * widthFactor;
+    return { radius, x: radius * Math.cos(theta), y: radius * Math.sin(theta) * DISK_SQUASH };
+  }
+
+  function diskShapePath(minR, maxR) {
     ctx.beginPath();
-    const steps = 96;
+    const steps = 110;
     for (let i = 0; i <= steps; i++) {
       const theta = (i / steps) * Math.PI * 2;
-      const widthFactor = Math.pow(Math.abs(Math.cos(theta)), power);
-      const radius = minR + (maxR - minR) * widthFactor;
-      const x = radius * Math.cos(theta);
-      const y = radius * Math.sin(theta) * squashY;
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      const p = ringPoint(theta, minR, maxR);
+      if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
     }
     ctx.closePath();
   }
 
-  function drawDiskLayer(minR, maxR, power, squashY, alphaMul) {
-    diskShapePath(minR, maxR, power, squashY);
-    const grad = ctx.createRadialGradient(0, 0, minR * 0.4, 0, 0, maxR);
-    grad.addColorStop(0, `rgba(${HOT},${1 * alphaMul})`);
-    grad.addColorStop(0.26, `rgba(${ORANGE},${0.95 * alphaMul})`);
-    grad.addColorStop(0.55, `rgba(${REDORANGE},${0.82 * alphaMul})`);
-    grad.addColorStop(0.82, `rgba(${PURPLE},${0.5 * alphaMul})`);
+  // Flat, stepped color bands (two close-together stops per boundary) for a
+  // clean vector-art look rather than a smooth photographic blend.
+  function drawDiskLayer(minR, maxR, alphaMul) {
+    diskShapePath(minR, maxR);
+    const grad = ctx.createRadialGradient(0, 0, minR * 0.5, 0, 0, maxR);
+    grad.addColorStop(0, `rgba(${WHITE},${1 * alphaMul})`);
+    grad.addColorStop(0.3, `rgba(${WHITE},${1 * alphaMul})`);
+    grad.addColorStop(0.33, `rgba(${GOLD},${0.98 * alphaMul})`);
+    grad.addColorStop(0.52, `rgba(${GOLD},${0.98 * alphaMul})`);
+    grad.addColorStop(0.55, `rgba(${ORANGE},${0.92 * alphaMul})`);
+    grad.addColorStop(0.74, `rgba(${ORANGE},${0.92 * alphaMul})`);
+    grad.addColorStop(0.77, `rgba(${PURPLE},${0.85 * alphaMul})`);
+    grad.addColorStop(0.94, `rgba(${PURPLE},${0.6 * alphaMul})`);
     grad.addColorStop(1, `rgba(${PURPLE},0)`);
     ctx.fillStyle = grad;
     ctx.fill();
   }
 
+  // Small light-streaks traveling around the disk's fixed path — this is
+  // what actually reads as "spinning," since the silhouette itself is static.
+  function drawDashes(t) {
+    const { r } = hole;
+    const speed = reducedMotion ? 0 : t * 0.00045;
+    const count = 6;
+    const minR = r * 1.16, maxR = r * 2.05;
+    ctx.strokeStyle = "rgba(255,255,255,0.8)";
+    ctx.lineWidth = r * 0.03;
+    ctx.lineCap = "round";
+    for (let i = 0; i < count; i++) {
+      const theta = speed + (i / count) * Math.PI * 2;
+      const p = ringPoint(theta, minR, maxR);
+      const tangent = theta + Math.PI / 2;
+      const half = r * 0.075;
+      const dx = Math.cos(tangent) * half, dy = Math.sin(tangent) * DISK_SQUASH * half;
+      ctx.beginPath();
+      ctx.moveTo(p.x - dx, p.y - dy);
+      ctx.lineTo(p.x + dx, p.y + dy);
+      ctx.stroke();
+    }
+  }
+
   function drawHole(t) {
     const { cx, cy, r } = hole;
     if (r <= 0) return;
-    const spin = reducedMotion ? 0 : t * 0.00012;
 
     // wide ambient bloom
     const glow = ctx.createRadialGradient(cx, cy, r * 0.4, cx, cy, r * 3.2);
-    glow.addColorStop(0, `rgba(${ORANGE},0.26)`);
-    glow.addColorStop(0.55, `rgba(${PURPLE},0.12)`);
+    glow.addColorStop(0, `rgba(${ORANGE},0.24)`);
+    glow.addColorStop(0.55, `rgba(${PURPLE},0.13)`);
     glow.addColorStop(1, `rgba(${PURPLE},0)`);
     ctx.fillStyle = glow;
     ctx.beginPath();
@@ -125,19 +159,21 @@
 
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.rotate(spin);
-    // soft outer haze, then the main vivid disk on top of it
-    drawDiskLayer(r * 1.18, r * 2.7, 2.3, 0.52, 0.4);
-    drawDiskLayer(r * 1.14, r * 2.15, 2.3, 0.48, 1);
+    ctx.rotate(DISK_TILT);
+    // soft outer haze, then the main vivid disk on top of it, then dashes
+    drawDiskLayer(r * 1.2, r * 2.75, 0.4);
+    drawDiskLayer(r * 1.15, r * 2.15, 1);
+    drawDashes(t);
     ctx.restore();
 
-    // crisp bright rim right at the void's edge
+    // crisp bright purple rim right at the void's edge
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.strokeStyle = `rgba(${RIM},0.95)`;
-    ctx.lineWidth = r * 0.045;
+    ctx.rotate(DISK_TILT);
+    ctx.strokeStyle = `rgba(${PURPLE},1)`;
+    ctx.lineWidth = r * 0.05;
     ctx.beginPath();
-    ctx.ellipse(0, 0, r * 1.04, r * 1.04 * 0.48, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, r * 1.05, r * 1.05 * DISK_SQUASH, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
