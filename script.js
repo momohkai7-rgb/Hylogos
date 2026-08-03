@@ -69,15 +69,13 @@
   }
 
   /* ── Black hole ─────────────────────────────────────────────────────────
-     The disk is a SOLID FILLED lens shape (intersection of two large
-     circles), not ellipse strokes. It glows from white-hot center →
-     orange → deep violet at the edges. The whole lens rotates around
-     the black event horizon circle.
+     A tilted elliptical accretion ring around a solid black event horizon.
+     Colour is one continuous radial gradient (white-hot at the sphere ->
+     gold -> orange -> magenta -> purple at the outer edge), sampled from
+     the reference image. Curved flow filaments layered on top give it
+     swirling texture. The ring shape itself does not rotate; only the
+     flow filaments and light streaks drift, so it flows without spinning.
   ─────────────────────────────────────────────────────────────────────── */
-
-  // Build a lens-shaped path: intersection of two offset circles.
-  // cx/cy = center of lens, half-width W, half-height H
-  // Colors sampled directly from the reference image, innermost -> outermost
   const RING_STOPS = [
     [0.00, "255,255,255"], // white-hot, touching the sphere
     [0.14, "255,246,214"],
@@ -96,6 +94,64 @@
     return g;
   }
 
+  // Curved flow filaments: radius wobbles as angle sweeps, so each streak
+  // gently spirals inward/outward instead of following a perfect circle —
+  // this is what reads as swirling gas instead of a flat painted ring.
+  function streakPath(baseR, amp, freq, phase) {
+    ctx.beginPath();
+    const steps = 90;
+    for (let i = 0; i <= steps; i++) {
+      const a = (i / steps) * Math.PI * 2;
+      const rad = baseR + amp * Math.sin(freq * a + phase);
+      const x = Math.cos(a) * rad, y = Math.sin(a) * rad;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+  }
+
+  function drawSpiralStreaks(t, r, outerR, startAngle, endAngle) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(0, 0, outerR * 0.995, startAngle, endAngle);
+    ctx.arc(0, 0, r * 0.99, endAngle, startAngle, true);
+    ctx.closePath();
+    ctx.clip();
+
+    const flow = reducedMotion ? 0 : t * 0.00016;
+    const band = outerR - r;
+
+    ctx.globalCompositeOperation = "lighter";
+    const brightDefs = [
+      { baseR: r*1.18, amp: band*0.22, freq: 2.3, phase: 0.4, w: r*0.05,  col: "rgba(255,238,190,0.55)" },
+      { baseR: r*1.42, amp: band*0.26, freq: 1.7, phase: 2.1, w: r*0.06,  col: "rgba(255,190,90,0.45)"  },
+      { baseR: r*1.65, amp: band*0.20, freq: 2.6, phase: 4.4, w: r*0.045, col: "rgba(255,140,60,0.4)"   },
+    ];
+    brightDefs.forEach((d, i) => {
+      streakPath(d.baseR, d.amp, d.freq, d.phase + flow * (1 + i*0.3));
+      ctx.strokeStyle = d.col;
+      ctx.lineWidth = d.w;
+      ctx.shadowColor = d.col;
+      ctx.shadowBlur = r * 0.12;
+      ctx.stroke();
+    });
+    ctx.shadowBlur = 0;
+
+    ctx.globalCompositeOperation = "multiply";
+    const darkDefs = [
+      { baseR: r*1.30, amp: band*0.24, freq: 2.0, phase: 1.2, w: r*0.06, col: "rgba(120,20,10,0.35)" },
+      { baseR: r*1.55, amp: band*0.22, freq: 2.9, phase: 3.3, w: r*0.05, col: "rgba(90,10,60,0.32)"  },
+      { baseR: r*1.75, amp: band*0.18, freq: 1.9, phase: 5.6, w: r*0.05, col: "rgba(70,5,90,0.3)"    },
+    ];
+    darkDefs.forEach((d, i) => {
+      streakPath(d.baseR, d.amp, d.freq, d.phase - flow * (1 + i*0.25));
+      ctx.strokeStyle = d.col;
+      ctx.lineWidth = d.w;
+      ctx.stroke();
+    });
+
+    ctx.globalCompositeOperation = "source-over";
+    ctx.restore();
+  }
+
   function drawRingHalf(t, r, outerR, startAngle, endAngle) {
     ctx.save();
     ctx.translate(hole.cx, hole.cy);
@@ -111,6 +167,8 @@
     ctx.closePath();
     ctx.fill();
     ctx.shadowBlur = 0;
+
+    drawSpiralStreaks(t, r, outerR, startAngle, endAngle);
 
     // flowing energy along the path — streams, does not spin the ring itself
     const flowR = r * 1.22;
