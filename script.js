@@ -1,19 +1,18 @@
-/* ===================== Cosmic backdrop (stars + black hole = search) ===================== */
+/* ===================== Cosmic backdrop ===================== */
 (function backdrop() {
-  const canvas = document.getElementById("starfield");
-  const ctx = canvas.getContext("2d");
+  const canvas  = document.getElementById("starfield");
+  const ctx     = canvas.getContext("2d");
   const searchEl = document.getElementById("search");
-  let stars = [];
-  let motes = [];
-  const hole = { cx: 0, cy: 0, r: 0 };
 
-  const VOID = "5,4,10";
+  let stars = [], motes = [];
+  const hole = { cx: 0, cy: 0, r: 0 };
 
   const rmQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   let reducedMotion = rmQuery.matches;
   rmQuery.addEventListener("change", e => { reducedMotion = e.matches; });
 
-  const ELEMENT_SYMBOLS = (typeof ELEMENTS !== "undefined") ? Object.keys(ELEMENTS) : ["H", "O", "Fe", "Na", "C", "Au"];
+  const ELEMENT_SYMBOLS = (typeof ELEMENTS !== "undefined")
+    ? Object.keys(ELEMENTS) : ["H","He","C","O","Fe","Au","Na","Si","Cu","Ar"];
   const MOTE_COUNT = 14;
 
   function moteColor(sym) {
@@ -25,51 +24,43 @@
   function spawnMote() {
     const sym = ELEMENT_SYMBOLS[Math.floor(Math.random() * ELEMENT_SYMBOLS.length)];
     return {
-      angle: Math.random() * Math.PI * 2,
-      radius: hole.r * (2.6 + Math.random() * 1.5),
-      speed: 0.15 + Math.random() * 0.13,
+      angle:  Math.random() * Math.PI * 2,
+      radius: hole.r * (2.8 + Math.random() * 1.6),
+      speed:  0.12 + Math.random() * 0.10,
       symbol: sym,
-      color: moteColor(sym),
-      box: 15 + Math.random() * 5,
+      color:  moteColor(sym),
+      box:    15 + Math.random() * 5,
     };
   }
 
   function resize() {
-    canvas.width = window.innerWidth;
+    canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
-
-    const starCount = Math.floor((canvas.width * canvas.height) / 9000);
-    stars = Array.from({ length: starCount }, () => ({
+    const n = Math.floor(canvas.width * canvas.height / 9000);
+    stars = Array.from({ length: n }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       r: Math.random() * 1.2 + 0.2,
       phase: Math.random() * Math.PI * 2,
       speed: Math.random() * 0.02 + 0.005,
     }));
-
-    updateHolePosition();
-    if (motes.length === 0) motes = Array.from({ length: MOTE_COUNT }, spawnMote);
+    updateHole();
+    if (!motes.length) motes = Array.from({ length: MOTE_COUNT }, spawnMote);
   }
 
-  // The black hole is centered exactly on the real search input, so it always
-  // lines up with it — including through scrolling, since this runs every frame.
-  function updateHolePosition() {
+  function updateHole() {
     const rect = searchEl.getBoundingClientRect();
-    hole.cx = rect.left + rect.width / 2;
-    hole.cy = rect.top + rect.height / 2;
-    hole.r = rect.width / 2;
+    hole.cx = rect.left + rect.width  / 2;
+    hole.cy = rect.top  + rect.height / 2;
+    hole.r  = Math.max(rect.width / 2, Math.min(canvas.width * 0.20, 200));
   }
 
-  const WHITE = "255,255,255";
-  const GOLD = "255,214,90";
-  const ORANGE = "255,130,35";
-  const PURPLE = "175,55,225";
-
+  /* ── Stars ──────────────────────────────────────────────────────────── */
   function drawStars(t) {
     ctx.fillStyle = "#e8e4f0";
     for (const s of stars) {
-      const twinkle = reducedMotion ? 0.5 : Math.abs(Math.sin(s.phase + t * s.speed));
-      ctx.globalAlpha = 0.28 + 0.4 * twinkle;
+      const tw = reducedMotion ? 0.5 : Math.abs(Math.sin(s.phase + t * s.speed));
+      ctx.globalAlpha = 0.25 + 0.45 * tw;
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fill();
@@ -77,248 +68,316 @@
     ctx.globalAlpha = 1;
   }
 
-  // The disk's silhouette is a true lens/vesica shape — built from two large
-  // overlapping circles, the way you'd construct it with a compass — which
-  // gives genuinely sharp pointed tips, unlike a curve that just tapers a
-  // radius (that can only ever round off, never truly come to a point).
-  // Not animated: a real disk's outline doesn't spin like a coin from a fixed
-  // viewing angle, only the material in it flows (the traveling dashes below).
-  const DISK_TILT = -0.47; // ~ -27 degrees
+  /* ── Black hole ─────────────────────────────────────────────────────────
+     A tilted elliptical accretion ring around a solid black event horizon.
+     Colour is one continuous radial gradient (white-hot at the sphere ->
+     gold -> orange -> magenta -> purple at the outer edge), sampled from
+     the reference image. Curved flow filaments layered on top give it
+     swirling texture. The ring shape itself does not rotate; only the
+     flow filaments, light streaks and sparkles drift, so it flows without
+     spinning.
 
-  // Convert "how far the tips reach" (T) and "how thick through the middle" (w)
-  // into the two-circle geometry that produces exactly that lens.
-  function lensParams(T, w) {
-    const R = (w + (T * T) / w) / 2;
-    const D = ((T * T) / w - w) / 2;
-    return { R, D };
-  }
-
-  function lensPath(T, w) {
-    const { R, D } = lensParams(T, w);
-    const theta1 = Math.asin(Math.min(0.999, D / R));
-    ctx.beginPath();
-    ctx.arc(0, -D, R, theta1, Math.PI - theta1, false);
-    ctx.arc(0, D, R, Math.PI + theta1, Math.PI * 2 - theta1, false);
-    ctx.closePath();
-  }
-
-  function lensBoundaryPoint(T, w, s) {
-    const { R, D } = lensParams(T, w);
-    const theta1 = Math.asin(Math.min(0.999, D / R));
-    const span = Math.PI - 2 * theta1;
-    if (s < 0.5) {
-      const theta = theta1 + (s / 0.5) * span;
-      return { x: R * Math.cos(theta), y: -D + R * Math.sin(theta) };
-    }
-    const theta = (Math.PI + theta1) + ((s - 0.5) / 0.5) * span;
-    return { x: R * Math.cos(theta), y: D + R * Math.sin(theta) };
-  }
-
-  // Each color is its own solid lens, nested smallest-to-largest — this
-  // guarantees correct banding at every point along the shape (a single
-  // gradient measured from the center badly mismatches a non-circular
-  // shape, which is what made an earlier version look like a plain ellipse).
-  const DISK_BANDS = [
-    { T: 2.6,  w: 0.58, color: PURPLE },
-    { T: 2.15, w: 0.46, color: ORANGE },
-    { T: 1.75, w: 0.36, color: GOLD },
-    { T: 1.35, w: 0.28, color: WHITE },
+     IMPORTANT geometry note: the disk's inner boundary is drawn as
+     ellipse(r, r/squash) rather than a squashed circle. After the
+     scale(1,squash) below, that renders back to a PERFECT circle of
+     radius r — i.e. it exactly matches the event horizon sphere at every
+     angle. Earlier this used a squashed inner radius, which at angles
+     perpendicular to the tilt sat well inside the sphere's true edge and
+     let the disk paint over part of the black circle (the "pointed dome"
+     shape). This is also why we avoid ctx.shadowBlur for glow — it
+     renders inconsistently across devices/browsers (fine on desktop,
+     collapsed to nothing on some phones). Every soft edge here is done
+     with layered alpha (softStroke) or gradient stops that fade to 0
+     alpha, which render identically everywhere.
+  ─────────────────────────────────────────────────────────────────────── */
+  const RING_STOPS = [
+    [0.00, "255,255,255", 1],
+    [0.14, "255,246,214", 1],
+    [0.30, "255,196,60",  1],
+    [0.50, "255,141,0",   1],
+    [0.70, "255,70,60",   1],
+    [0.86, "232,45,150",  0.9],
+    [0.96, "150,20,220",  0.65],
+    [1.00, "120,15,200",  0],
   ];
+  const RING_TILT = -0.30;
+  const RING_SQUASH = 0.46;
 
-  function drawDiskBands() {
-    const { r } = hole;
-    for (const b of DISK_BANDS) {
-      ctx.fillStyle = `rgb(${b.color})`;
-      lensPath(r * b.T, r * b.w);
-      ctx.fill();
-    }
+  function ringGradient(r, outerR) {
+    const g = ctx.createRadialGradient(0, 0, r, 0, 0, outerR);
+    RING_STOPS.forEach(([pos, rgb, a]) => g.addColorStop(pos, `rgba(${rgb},${a})`));
+    return g;
   }
 
-  // Small light-streaks traveling along the disk's fixed path — this is
-  // what actually reads as "spinning," since the silhouette itself is static.
-  function drawDashes(t, motionRate) {
-    const { r } = hole;
-    const speed = t * 0.00013 * motionRate;
-    const count = 6;
-    ctx.strokeStyle = "rgba(255,255,255,0.85)";
-    ctx.lineWidth = r * 0.032;
-    ctx.lineCap = "round";
-    for (let i = 0; i < count; i++) {
-      const s = ((speed + i / count) % 1 + 1) % 1;
-      const p = lensBoundaryPoint(r * 1.95, r * 0.41, s);
-      const p2 = lensBoundaryPoint(r * 1.95, r * 0.41, (s + 0.012) % 1);
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
-      ctx.lineTo(p2.x, p2.y);
+  // Manual soft glow: layer the same path several times with growing
+  // width and shrinking opacity — looks like a blur but is just alpha
+  // blending, so it renders identically on every device.
+  function softStroke(pathFn, r0, g0, b0, coreWidth, coreAlpha, glowWidth, glowAlpha, layers) {
+    layers = layers || 4;
+    for (let i = layers; i >= 1; i--) {
+      const k = i / layers;
+      pathFn();
+      ctx.strokeStyle = `rgba(${r0},${g0},${b0},${glowAlpha * (1 - k) * (1 - k)})`;
+      ctx.lineWidth = coreWidth + glowWidth * k;
       ctx.stroke();
     }
+    pathFn();
+    ctx.strokeStyle = `rgba(${r0},${g0},${b0},${coreAlpha})`;
+    ctx.lineWidth = coreWidth;
+    ctx.stroke();
   }
 
-  // Fine embers riding at several depths within the disk, each following
-  // its own band's boundary continuously — this is the actual "gas and
-  // matter flowing" texture; the dashes alone only hint at rotation, this
-  // is what makes the material itself look like it's coursing around.
-  const FLOW_PARTICLES = Array.from({ length: 40 }, (_, i) => ({
-    band: i % DISK_BANDS.length,
-    phase: Math.random(),
-    speedMul: 0.7 + Math.random() * 0.7,
-    size: 0.4 + Math.random() * 0.5,
-  }));
-
-  function drawFlowParticles(t, motionRate) {
-    const { r } = hole;
-    ctx.save();
-    ctx.globalCompositeOperation = "lighter";
-    for (const p of FLOW_PARTICLES) {
-      const band = DISK_BANDS[p.band];
-      const s = ((t * 0.00017 * motionRate * p.speedMul + p.phase) % 1 + 1) % 1;
-      const pt = lensBoundaryPoint(r * band.T * 0.95, r * band.w * 0.95, s);
-      const sz = r * 0.055 * p.size;
-      const g = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, sz);
-      g.addColorStop(0, `rgba(${WHITE},0.85)`);
-      g.addColorStop(1, `rgba(${WHITE},0)`);
-      ctx.fillStyle = g;
+  // Curved flow filaments: radius wobbles as angle sweeps, so each streak
+  // gently spirals inward/outward instead of following a perfect circle —
+  // this is what reads as swirling gas instead of a flat painted ring.
+  function streakPath(baseR, amp, freq, phase) {
+    return () => {
       ctx.beginPath();
-      ctx.arc(pt.x, pt.y, sz, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
+      const steps = 90;
+      for (let i = 0; i <= steps; i++) {
+        const a = (i / steps) * Math.PI * 2;
+        const rad = baseR + amp * Math.sin(freq * a + phase);
+        const x = Math.cos(a) * rad, y = Math.sin(a) * rad;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+    };
   }
 
-  // Paints one half of the disk — bands, dashes, and flow particles —
-  // clipped by a half-plane along the disk's own long axis. Calling this
-  // once on each side of the void (instead of drawing the whole disk in
-  // one pass) is what makes the void sit BETWEEN the two halves rather
-  // than just stamped on top: the far half disappears behind it, the near
-  // half is painted after and visibly overlaps it, so the void finally
-  // reads as a sphere the disk wraps around instead of a flat cutout.
-  function paintDiskHalf(t, motionRate, upperHalf) {
-    const { r } = hole;
+  function drawSpiralStreaks(t, r, outerR, startAngle, endAngle) {
     ctx.save();
     ctx.beginPath();
-    const BIG = r * 40;
-    if (upperHalf) ctx.rect(-BIG, -BIG, BIG * 2, BIG);
-    else ctx.rect(-BIG, 0, BIG * 2, BIG);
+    ctx.arc(0, 0, outerR * 0.995, startAngle, endAngle);
+    ctx.ellipse(0, 0, r, r / RING_SQUASH, 0, endAngle, startAngle, true);
+    ctx.closePath();
     ctx.clip();
-    drawDiskBands();
-    drawDashes(t, motionRate);
-    drawFlowParticles(t, motionRate);
+
+    const flow = reducedMotion ? 0 : t * 0.00016;
+    const band = outerR - r;
+
+    ctx.globalCompositeOperation = "lighter";
+    const brightDefs = [
+      { baseR: r*1.18, amp: band*0.22, freq: 2.3, phase: 0.4, w: r*0.035, col: "255,238,190" },
+      { baseR: r*1.42, amp: band*0.28, freq: 1.7, phase: 2.1, w: r*0.045, col: "255,190,90"  },
+      { baseR: r*1.65, amp: band*0.22, freq: 2.6, phase: 4.4, w: r*0.03,  col: "255,140,60"  },
+      { baseR: r*1.90, amp: band*0.18, freq: 3.1, phase: 5.9, w: r*0.025, col: "255,210,140" },
+    ];
+    brightDefs.forEach((d, i) => {
+      const path = streakPath(d.baseR, d.amp, d.freq, d.phase + flow * (1 + i*0.3));
+      const [rr, gg, bb] = d.col.split(",");
+      softStroke(path, rr, gg, bb, d.w, 0.5, d.w*2.2, 0.4, 3);
+    });
+
+    ctx.globalCompositeOperation = "multiply";
+    const darkDefs = [
+      { baseR: r*1.30, amp: band*0.24, freq: 2.0, phase: 1.2, w: r*0.05,  col: "rgba(120,20,10,0.32)" },
+      { baseR: r*1.55, amp: band*0.22, freq: 2.9, phase: 3.3, w: r*0.045, col: "rgba(90,10,60,0.28)"  },
+      { baseR: r*1.78, amp: band*0.18, freq: 1.9, phase: 5.6, w: r*0.045, col: "rgba(70,5,90,0.26)"   },
+    ];
+    darkDefs.forEach((d, i) => {
+      const path = streakPath(d.baseR, d.amp, d.freq, d.phase - flow * (1 + i*0.25));
+      path();
+      ctx.strokeStyle = d.col;
+      ctx.lineWidth = d.w;
+      ctx.stroke();
+    });
+
+    ctx.globalCompositeOperation = "source-over";
     ctx.restore();
   }
 
-  // High-energy jets along the poles, perpendicular to the disk — a cool
-  // white/blue contrast against the disk's warm glow, with brighter pulses
-  // travelling outward so the beams read as energy streaming out, not a
-  // static shape.
-  function drawJets(t, motionRate, r) {
-    const len = r * 2.6;
-    const baseW = r * 0.16;
+  function drawRingHalf(t, r, outerR, startAngle, endAngle) {
     ctx.save();
-    ctx.globalCompositeOperation = "lighter";
-    for (const dir of [-1, 1]) {
-      const beam = ctx.createLinearGradient(0, 0, 0, dir * len);
-      beam.addColorStop(0,    "rgba(225,240,255,0.5)");
-      beam.addColorStop(0.15, "rgba(190,220,255,0.3)");
-      beam.addColorStop(0.6,  "rgba(160,200,255,0.1)");
-      beam.addColorStop(1,    "rgba(160,200,255,0)");
-      ctx.fillStyle = beam;
-      ctx.beginPath();
-      ctx.moveTo(-baseW * 0.5, 0);
-      ctx.lineTo(baseW * 0.5, 0);
-      ctx.lineTo(baseW * 0.12, dir * len);
-      ctx.lineTo(-baseW * 0.12, dir * len);
-      ctx.closePath();
-      ctx.fill();
+    ctx.translate(hole.cx, hole.cy);
+    ctx.rotate(RING_TILT);
+    ctx.scale(1, RING_SQUASH);
 
-      const pulses = 3;
-      for (let i = 0; i < pulses; i++) {
-        const s = ((t * 0.00045 * motionRate + i / pulses) % 1 + 1) % 1;
-        const py = dir * len * s;
-        const pw = baseW * (0.55 - 0.4 * s);
-        const pulse = ctx.createRadialGradient(0, py, 0, 0, py, pw * 1.7);
-        pulse.addColorStop(0, "rgba(255,255,255,0.55)");
-        pulse.addColorStop(1, "rgba(255,255,255,0)");
-        ctx.fillStyle = pulse;
+    ctx.fillStyle = ringGradient(r, outerR);
+    ctx.beginPath();
+    ctx.arc(0, 0, outerR, startAngle, endAngle);
+    ctx.ellipse(0, 0, r, r / RING_SQUASH, 0, endAngle, startAngle, true);
+    ctx.closePath();
+    ctx.fill();
+
+    drawSpiralStreaks(t, r, outerR, startAngle, endAngle);
+
+    // flowing energy along the path — streams, does not spin the ring itself
+    const flowR = r * 1.22;
+    const flowPath = () => { ctx.beginPath(); ctx.arc(0, 0, flowR, startAngle, endAngle); };
+    ctx.save();
+    ctx.setLineDash([r * 0.10, r * 0.22]);
+    ctx.lineDashOffset = reducedMotion ? 0 : -t * 0.09;
+    softStroke(flowPath, 255, 244, 214, r*0.03, 0.75, r*0.08, 0.35, 3);
+    ctx.restore();
+
+    // flowing particles — dense enough to feel alive
+    if (!reducedMotion) {
+      ctx.globalCompositeOperation = "lighter";
+      const arcSpan = endAngle - startAngle;
+      const N = 16;
+      for (let i = 0; i < N; i++) {
+        const speed = 0.00003 + (i % 4) * 0.000012;
+        const localT = ((i / N) + (t * speed)) % 1;
+        const a = startAngle + localT * arcSpan;
+        if (a < startAngle || a > endAngle) continue;
+        const rr = r * (1.02 + 1.05 * ((i * 53) % 10) / 10);
+        const px = Math.cos(a) * rr, py = Math.sin(a) * rr;
+        const flicker = 0.35 + 0.65 * Math.abs(Math.sin(i * 12.9 + t * 0.0018));
+        const s = r * (0.045 + 0.09 * flicker);
+        const pg = ctx.createRadialGradient(px, py, 0, px, py, s);
+        pg.addColorStop(0, `rgba(255,250,230,${0.65*flicker})`);
+        pg.addColorStop(0.5, `rgba(255,230,180,${0.3*flicker})`);
+        pg.addColorStop(1, "rgba(255,230,180,0)");
+        ctx.fillStyle = pg;
         ctx.beginPath();
-        ctx.arc(0, py, pw * 1.7, 0, Math.PI * 2);
+        ctx.arc(px, py, s, 0, Math.PI * 2);
         ctx.fill();
       }
+      ctx.globalCompositeOperation = "source-over";
     }
+
     ctx.restore();
   }
 
-  function drawHole(t) {
+  function drawBlackHole(t) {
     const { cx, cy, r } = hole;
     if (r <= 0) return;
 
-    // flow keeps running under reduced-motion too, just slower — it's the
-    // "gases and matter flowing" visual, not a decorative flourish
-    const motionRate = reducedMotion ? 0.35 : 1;
+    const outerR = r * 2.35;
 
-    // wide ambient bloom
-    const glow = ctx.createRadialGradient(cx, cy, r * 0.4, cx, cy, r * 3.2);
-    glow.addColorStop(0, `rgba(${ORANGE},0.24)`);
-    glow.addColorStop(0.55, `rgba(${PURPLE},0.13)`);
-    glow.addColorStop(1, `rgba(${PURPLE},0)`);
+    const bloom = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 4.5);
+    bloom.addColorStop(0,    "rgba(255,180,90,0.24)");
+    bloom.addColorStop(0.3,  "rgba(230,90,40,0.11)");
+    bloom.addColorStop(0.65, "rgba(160,30,180,0.05)");
+    bloom.addColorStop(1,    "rgba(160,30,180,0)");
+    ctx.fillStyle = bloom;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 4.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // back arc of the ring — passes behind the sphere (the far side)
+    drawRingHalf(t, r, outerR, Math.PI * 1.02, Math.PI * 1.98);
+
+    // event horizon, with a faint atmosphere just outside its rim
+    ctx.save();
+    ctx.translate(cx, cy);
+    const glow = ctx.createRadialGradient(0, 0, r * 0.9, 0, 0, r * 1.15);
+    glow.addColorStop(0, "rgba(255,255,255,0)");
+    glow.addColorStop(0.85, "rgba(255,244,214,0.5)");
+    glow.addColorStop(1, "rgba(255,244,214,0)");
     ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(0, 0, r * 1.15, 0, Math.PI * 2); ctx.fill();
+
+    const sphereShade = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+    sphereShade.addColorStop(0,    "rgb(0,0,0)");
+    sphereShade.addColorStop(0.82, "rgb(0,0,0)");
+    sphereShade.addColorStop(1,    "rgb(14,9,18)");
+    ctx.fillStyle = sphereShade;
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 3.2, 0, Math.PI * 2);
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.fill();
-
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(DISK_TILT);
-
-    // thin halo hugging the void at every angle — the vesica shape alone is
-    // too thin at its waist to reach all the way round, so this fills that in
-    ctx.strokeStyle = `rgba(${PURPLE},0.8)`;
-    ctx.lineWidth = r * 0.22;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, r * 1.15, r * 1.15 * 0.86, 0, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // far half of the disk — painted first, so the void (below) covers
-    // the part of it that passes behind the sphere
-    paintDiskHalf(t, motionRate, true);
     ctx.restore();
 
-    // the void itself, now sitting BETWEEN the two disk halves instead of
-    // on top of both — belt-and-suspenders under the real input's own
-    // background too, so there's never a gap even for a stray frame
-    const voidGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    voidGrad.addColorStop(0, `rgba(${VOID},1)`);
-    voidGrad.addColorStop(0.9, `rgba(${VOID},1)`);
-    voidGrad.addColorStop(1, `rgba(${VOID},0)`);
-    ctx.fillStyle = voidGrad;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r * 0.99, 0, Math.PI * 2);
-    ctx.fill();
+    // Photon-ring halo — wraps the FULL circumference of the shadow,
+    // unsquashed. Real gravitational lensing bends light from all around
+    // the disk (including the far side) around the hole, so the shadow
+    // always looks enveloped in light, not just where the tilted disk
+    // band happens to cross it.
+    drawPhotonHalo(t, cx, cy, r);
+    drawEchoRings(cx, cy, r);
 
-    // near half of the disk — painted on top of the void, so it visibly
-    // overlaps the sphere instead of the sphere just sitting on top of it
+    // front arc of the ring — crosses in front of the sphere (the near side)
+    drawRingHalf(t, r, outerR, Math.PI * 1.98 - Math.PI * 2, Math.PI * 1.02);
+
+    // ambient sparkle field scattered through the disk for extra life
+    drawSparkles(t, cx, cy, r);
+  }
+
+  // Multiple tight rings right at the boundary = higher-order lensed
+  // images (the photon sphere reflects the disk back on itself several
+  // times, each fainter and farther out). Reads as "wrapped in bent
+  // light" instead of "circle plus one ring."
+  function drawEchoRings(cx, cy, r) {
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.rotate(DISK_TILT);
-    paintDiskHalf(t, motionRate, false);
-
-    // crisp bright purple rim right at the void's edge, on top of everything
-    ctx.strokeStyle = `rgba(${PURPLE},1)`;
-    ctx.lineWidth = r * 0.05;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, r * 1.05, r * 1.05, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-
-    // polar jets — perpendicular to the disk, drawn last as an additive
-    // glow so they read as energy on top rather than occluding anything
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(DISK_TILT);
-    drawJets(t, motionRate, r);
+    const echoes = [
+      { rr: r*1.010, w: r*0.014, a: 0.8  },
+      { rr: r*1.075, w: r*0.010, a: 0.42 },
+      { rr: r*1.145, w: r*0.008, a: 0.20 },
+    ];
+    echoes.forEach(e => {
+      ctx.beginPath();
+      ctx.arc(0, 0, e.rr, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,247,225,${e.a})`;
+      ctx.lineWidth = e.w;
+      ctx.stroke();
+    });
     ctx.restore();
   }
 
-  function roundRectPath(x, y, w, h, rad) {
+  function drawPhotonHalo(t, cx, cy, r) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    const flow = reducedMotion ? 0 : t * 0.0002;
+
+    const halo = ctx.createRadialGradient(0, 0, r * 0.90, 0, 0, r * 1.42);
+    halo.addColorStop(0,    "rgba(255,255,255,0)");
+    halo.addColorStop(0.35, "rgba(255,247,220,0.95)");
+    halo.addColorStop(0.55, "rgba(255,205,110,0.85)");
+    halo.addColorStop(0.75, "rgba(255,140,60,0.55)");
+    halo.addColorStop(1,    "rgba(200,60,180,0)");
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.42, 0, Math.PI * 2);
+    ctx.arc(0, 0, r * 0.90, 0, Math.PI * 2, true);
+    ctx.fill("evenodd");
+
+    const edgePath = () => { ctx.beginPath(); ctx.arc(0, 0, r * 1.01, 0, Math.PI * 2); };
+    softStroke(edgePath, 255, 250, 235, r*0.02, 0.85, r*0.10, 0.4, 4);
+
+    if (!reducedMotion) {
+      ctx.globalCompositeOperation = "lighter";
+      for (let i = 0; i < 7; i++) {
+        const a = (i / 7) * Math.PI * 2 + flow;
+        const rr = r * 1.08;
+        const x = Math.cos(a) * rr, y = Math.sin(a) * rr;
+        const s = r * 0.17;
+        const pg = ctx.createRadialGradient(x, y, 0, x, y, s);
+        pg.addColorStop(0, "rgba(255,240,205,0.4)");
+        pg.addColorStop(1, "rgba(255,240,205,0)");
+        ctx.fillStyle = pg;
+        ctx.beginPath(); ctx.arc(x, y, s, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalCompositeOperation = "source-over";
+    }
+    ctx.restore();
+  }
+
+  // Ambient sparkle field through the disk area — extra "alive" detail.
+  function drawSparkles(t, cx, cy, r) {
+    if (reducedMotion) return;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(RING_TILT);
+    ctx.scale(1, RING_SQUASH);
+    ctx.globalCompositeOperation = "lighter";
+    const N = 22;
+    for (let i = 0; i < N; i++) {
+      const seed = i * 91.7;
+      const a = (seed % (Math.PI * 2)) + t * 0.00004 * (1 + (i % 3) * 0.4);
+      const rr = r * (1.05 + 1.15 * ((i * 29) % 10) / 10);
+      const x = Math.cos(a) * rr, y = Math.sin(a) * rr;
+      const tw = 0.3 + 0.7 * Math.abs(Math.sin(seed + t * 0.003));
+      const s = r * 0.028 * tw;
+      ctx.fillStyle = `rgba(255,252,240,${0.55 * tw})`;
+      ctx.beginPath(); ctx.arc(x, y, s, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalCompositeOperation = "source-over";
+    ctx.restore();
+  }
+
+
+  /* ── Motes ──────────────────────────────────────────────────────────── */
+  function roundRect(x, y, w, h, rad) {
     ctx.beginPath();
     ctx.moveTo(x + rad, y);
     ctx.lineTo(x + w - rad, y);
@@ -334,66 +393,60 @@
 
   function drawMotes() {
     if (hole.r <= 0) return;
-    ctx.textAlign = "center";
+    ctx.textAlign    = "center";
     ctx.textBaseline = "middle";
     for (const m of motes) {
-      // orbiting-then-falling-in is the whole point of this visual, so it
-      // keeps running under reduced-motion too, just gentler.
-      const motionRate = reducedMotion ? 0.4 : 1;
-      const pull = 1 + (hole.r * 2.2 - m.radius) / (hole.r * 4);
-      m.radius -= m.speed * Math.max(pull, 0.3) * motionRate;
-      m.angle += 0.006 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.4)) * motionRate;
-      if (m.radius < hole.r * 1.55) Object.assign(m, spawnMote());
+      if (!reducedMotion) {
+        const pull = 1 + Math.max(0, (hole.r * 3.5 - m.radius) / (hole.r * 2.5));
+        m.radius -= m.speed * pull * 0.5;
+        m.angle  += 0.005 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.5));
+        if (m.radius < hole.r * 1.2) Object.assign(m, spawnMote());
+      }
       const x = hole.cx + Math.cos(m.angle) * m.radius;
-      const y = hole.cy + Math.sin(m.angle) * m.radius * 0.4;
-      const fadeIn = Math.max(0, Math.min(1, (hole.r * 4 - m.radius) / (hole.r * 1.2)));
-      const fadeOut = Math.max(0, Math.min(1, (m.radius - hole.r * 1.6) / (hole.r * 0.55)));
-      const alpha = Math.max(0, Math.min(1, fadeIn * fadeOut));
-      const shrink = Math.max(0.2, Math.min(1, (m.radius - hole.r * 1.6) / (hole.r * 0.9)));
-      if (alpha <= 0.03) continue;
+      const y = hole.cy + Math.sin(m.angle) * m.radius * 0.45;
+
+      const fadeIn  = Math.min(1, (m.radius - hole.r * 2.6) / (hole.r * 0.8));
+      const fadeOut = Math.min(1, (m.radius - hole.r * 1.2)  / (hole.r * 1.2));
+      const alpha   = Math.max(0, Math.min(fadeIn, fadeOut));
+      if (alpha < 0.01) continue;
 
       ctx.globalAlpha = alpha;
-      const s = m.box * shrink;
-      ctx.shadowColor = m.color;
-      ctx.shadowBlur = 9;
-      roundRectPath(x - s / 2, y - s / 2, s, s, 3);
-      ctx.fillStyle = "rgba(13,10,24,0.92)";
-      ctx.fill();
-      ctx.strokeStyle = m.color;
-      ctx.lineWidth = 1.6;
-      ctx.stroke();
-
-      ctx.shadowBlur = 12;
-      ctx.fillStyle = m.color;
-      ctx.font = `700 ${(9 * shrink).toFixed(1)}px var(--font-mono), monospace`;
+      const s = m.box;
+      ctx.shadowColor = m.color; ctx.shadowBlur = 9;
+      roundRect(x - s/2, y - s/2, s, s, 3);
+      ctx.fillStyle   = "rgba(13,10,24,0.92)"; ctx.fill();
+      ctx.strokeStyle = m.color; ctx.lineWidth = 1.6; ctx.stroke();
+      ctx.shadowBlur  = 12;
+      ctx.fillStyle   = m.color;
+      ctx.font        = "700 9px var(--font-mono),monospace";
       ctx.fillText(m.symbol, x, y + 0.5);
-      ctx.shadowBlur = 0;
+      ctx.shadowBlur  = 0;
     }
     ctx.globalAlpha = 1;
   }
 
+  /* ── Main loop ──────────────────────────────────────────────────────── */
   function tick(t) {
-    updateHolePosition();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    updateHole();
+    ctx.fillStyle = "rgb(5,4,10)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawStars(t);
-    drawHole(t);
+    drawBlackHole(t);
     drawMotes();
     rafId = requestAnimationFrame(tick);
   }
 
   let rafId = null;
-  function start() { if (rafId === null) rafId = requestAnimationFrame(tick); }
-  function stop() { if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; } }
+  function start() { if (!rafId) rafId = requestAnimationFrame(tick); }
+  function stop()  { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
 
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) stop(); else start();
+    document.hidden ? stop() : start();
   });
-
   window.addEventListener("resize", resize);
   resize();
   start();
 })();
-
 /* ===================== State ===================== */
 let currentSubject = null; // { type, key, data }
 let bohrAnimId = null;
