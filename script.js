@@ -239,7 +239,15 @@
     glow.addColorStop(1, "rgba(255,244,214,0)");
     ctx.fillStyle = glow;
     ctx.beginPath(); ctx.arc(0, 0, r * 1.15, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#000";
+
+    // Not flat black — true black at the core, the faintest possible lift
+    // right at the rim (where grazing light from the disk would scatter),
+    // so the shadow reads as a sphere with volume, not a flat cutout.
+    const sphereShade = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+    sphereShade.addColorStop(0,    "rgb(0,0,0)");
+    sphereShade.addColorStop(0.82, "rgb(0,0,0)");
+    sphereShade.addColorStop(1,    "rgb(14,9,18)");
+    ctx.fillStyle = sphereShade;
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.fill();
@@ -252,9 +260,32 @@
     // band happens to cross it. Without this, the sides of the sphere
     // (perpendicular to the tilt) would show bare black.
     drawPhotonHalo(t, cx, cy, r);
+    drawEchoRings(cx, cy, r);
 
     // front arc of the ring — crosses in front of the sphere (the near side)
     drawRingHalf(t, r, outerR, Math.PI * 1.98 - Math.PI * 2, Math.PI * 1.02);
+  }
+
+  // Multiple tight rings right at the boundary = higher-order lensed
+  // images (the photon sphere reflects the disk back on itself several
+  // times, each fainter and farther out). Reads as "wrapped in bent
+  // light" instead of "circle plus one ring."
+  function drawEchoRings(cx, cy, r) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    const echoes = [
+      { rr: r*1.010, w: r*0.016, a: 0.85 },
+      { rr: r*1.075, w: r*0.012, a: 0.45 },
+      { rr: r*1.145, w: r*0.009, a: 0.22 },
+    ];
+    echoes.forEach(e => {
+      ctx.beginPath();
+      ctx.arc(0, 0, e.rr, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,247,225,${e.a})`;
+      ctx.lineWidth = e.w;
+      ctx.stroke();
+    });
+    ctx.restore();
   }
 
   function drawPhotonHalo(t, cx, cy, r) {
