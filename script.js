@@ -1,16 +1,13 @@
-/* ===================== Cosmic backdrop (stars + black hole) ===================== */
+/* ===================== Cosmic backdrop (stars + black hole = search) ===================== */
 (function backdrop() {
   const canvas = document.getElementById("starfield");
   const ctx = canvas.getContext("2d");
+  const searchEl = document.getElementById("search");
   let stars = [];
   let motes = [];
   const hole = { cx: 0, cy: 0, r: 0 };
 
-  const AMBER = "255,180,84";
-  const HOT = "255,242,214";
-  const BLUE = "127,217,255";
   const VOID = "5,4,10";
-  const VOID2 = "13,10,24";
 
   const rmQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   let reducedMotion = rmQuery.matches;
@@ -18,7 +15,6 @@
 
   const ELEMENT_SYMBOLS = (typeof ELEMENTS !== "undefined") ? Object.keys(ELEMENTS) : ["H", "O", "Fe", "Na", "C", "Au"];
   const MOTE_COUNT = 14;
-  const MOTE_ORBIT_SQUASH = 0.3; // vertical squash of the mote orbit path, kept a bit flatter than the disk's own tilt so symbols read as riding along its near surface
 
   function moteColor(sym) {
     if (typeof ELEMENTS === "undefined" || !ELEMENTS[sym]) return "#8b84a3";
@@ -30,248 +26,12 @@
     const sym = ELEMENT_SYMBOLS[Math.floor(Math.random() * ELEMENT_SYMBOLS.length)];
     return {
       angle: Math.random() * Math.PI * 2,
-      radius: hole.r * (2.5 + Math.random() * 2.0),
-      speed: 0.16 + Math.random() * 0.14,
+      radius: hole.r * (2.6 + Math.random() * 1.5),
+      speed: 0.15 + Math.random() * 0.13,
       symbol: sym,
       color: moteColor(sym),
-      box: 22 + Math.random() * 7, // bumped up from the original 15–20 so the symbols actually read at a glance
+      box: 15 + Math.random() * 5,
     };
-  }
-
-  /* ---- 3D accretion disk (three.js) ----
-     A real WebGL scene — a shader-lit ring for the disk plus a solid
-     sphere for the event horizon, with a thin fresnel "photon ring"
-     hugging its edge — rendered to an offscreen canvas and composited
-     onto the 2D backdrop canvas every frame. Keeping it offscreen means
-     the stars and the glowing element badges below still draw as cheap,
-     crisp 2D canvas work on top, and a WebGL hiccup here can't take the
-     rest of the page down with it (see the try/catch below). */
-  const HOLE_TILT = 1.05;          // radians off face-on — wide, open ellipse like the reference shot
-  const HOLE_INNER_R = 1.05;       // sphere-radius units
-  const HOLE_DISK_OUTER_R = 3.4;
-  const HOLE_BLOOM_OUTER_R = 7.5;
-  const HOLE_FOV = 32;             // degrees — calibration FOV for the offscreen camera
-
-  const DISK_VERT = `
-    varying vec3 vPos;
-    void main() {
-      vPos = position;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `;
-
-  const DISK_FRAG = `
-    precision highp float;
-    varying vec3 vPos;
-    uniform float uTime;
-    uniform float uInnerR;
-    uniform float uDiskOuterR;
-    uniform float uBloomOuterR;
-
-    float hash(vec2 p) {
-      return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
-    }
-    float noise(vec2 p) {
-      vec2 i = floor(p);
-      vec2 f = fract(p);
-      float a = hash(i);
-      float b = hash(i + vec2(1.0, 0.0));
-      float c = hash(i + vec2(0.0, 1.0));
-      float d = hash(i + vec2(1.0, 1.0));
-      vec2 u = f * f * (3.0 - 2.0 * f);
-      return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-    }
-    float fbm(vec2 p) {
-      float v = 0.0;
-      float amp = 0.55;
-      for (int i = 0; i < 4; i++) {
-        v += amp * noise(p);
-        p *= 2.05;
-        amp *= 0.5;
-      }
-      return v;
-    }
-
-    void main() {
-      float radius = length(vPos.xy);
-      if (radius < uInnerR || radius > uBloomOuterR) discard;
-
-      float uDisk = clamp((radius - uInnerR) / (uDiskOuterR - uInnerR), 0.0, 1.0);
-      float theta = atan(vPos.y, vPos.x);
-
-      // Keplerian-style differential rotation: inner material sweeps faster than outer
-      float rot = uTime * 0.5 / (0.45 + 0.75 * uDisk);
-      float angle = theta + rot;
-
-      // woven filament bands — two overlaid harmonics so it reads as fibrous, not banded
-      float fil = sin(angle * 16.0 + uDisk * 22.0) * 0.5 + 0.5;
-      fil += 0.6 * (sin(angle * 6.0 - uDisk * 10.0 + 2.1) * 0.5 + 0.5);
-      fil *= 0.62;
-
-      float turb = fbm(vec2(angle * 2.4, uDisk * 5.0 - uTime * 0.06));
-      float weave = clamp(0.35 + fil * 0.65, 0.0, 1.4) * mix(0.75, 1.25, turb);
-
-      // one-sided brightening along the bottom limb — cheap stand-in for Doppler beaming
-      vec2 dir = normalize(vPos.xy);
-      float beam = smoothstep(-1.0, 1.0, -dir.y * 0.85 - dir.x * 0.15);
-      float brightness = weave * mix(0.55, 1.75, beam);
-
-      // white-hot inner -> gold mid -> deep rust outer
-      vec3 hot = vec3(1.0, 0.97, 0.9);
-      vec3 mid = vec3(1.0, 0.56, 0.14);
-      vec3 cool = vec3(0.5, 0.07, 0.02);
-      vec3 base = uDisk < 0.5 ? mix(hot, mid, uDisk / 0.5) : mix(mid, cool, (uDisk - 0.5) / 0.5);
-      vec3 color = base * brightness;
-
-      // solid through the main disk body, then a soft bloom tail beyond it
-      float bodyAlpha = smoothstep(0.0, 0.06, uDisk) * (1.0 - smoothstep(0.82, 1.0, uDisk));
-      float bloomT = clamp((radius - uDiskOuterR) / (uBloomOuterR - uDiskOuterR), 0.0, 1.0);
-      float bloomAlpha = (1.0 - bloomT) * (1.0 - bloomT) * 0.35;
-      float alpha = max(bodyAlpha * clamp(brightness, 0.15, 1.0), bloomAlpha);
-
-      gl_FragColor = vec4(color, alpha);
-    }
-  `;
-
-  const RIM_VERT = `
-    precision highp float;
-    varying vec3 vNormalV;
-    varying vec3 vViewDirV;
-    void main() {
-      vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-      vNormalV = normalize(normalMatrix * normal);
-      vViewDirV = normalize(-mvPosition.xyz);
-      gl_Position = projectionMatrix * mvPosition;
-    }
-  `;
-
-  const RIM_FRAG = `
-    precision highp float;
-    varying vec3 vNormalV;
-    varying vec3 vViewDirV;
-    uniform vec3 uColor;
-    uniform float uTime;
-    void main() {
-      float rim = 1.0 - max(dot(normalize(vNormalV), normalize(vViewDirV)), 0.0);
-      float intensity = pow(rim, 4.0);
-      float bias = clamp(0.55 - vNormalV.y * 0.5, 0.0, 1.3); // brighter along the bottom limb, echoing the disk's beaming
-      intensity *= bias;
-      intensity *= 0.85 + 0.15 * sin(uTime * 1.7);
-      gl_FragColor = vec4(uColor, clamp(intensity, 0.0, 1.0) * 0.9);
-    }
-  `;
-
-  function createBlackHole3D() {
-    const api = { canvas: null, resize() {}, render() {} };
-    if (typeof THREE === "undefined") return api;
-
-    try {
-      const glCanvas = document.createElement("canvas");
-      const renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, alpha: true });
-      renderer.setPixelRatio(1);
-      renderer.setClearColor(0x000000, 0);
-
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(HOLE_FOV, 1, 0.1, 100);
-      const group = new THREE.Group();
-      scene.add(group);
-
-      const sphereMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(1, 64, 48),
-        new THREE.MeshBasicMaterial({ color: 0x000000 })
-      );
-      group.add(sphereMesh);
-
-      const rimMat = new THREE.ShaderMaterial({
-        uniforms: { uColor: { value: new THREE.Color(0xfff4d6) }, uTime: { value: 0 } },
-        vertexShader: RIM_VERT,
-        fragmentShader: RIM_FRAG,
-        transparent: true,
-        depthWrite: false,
-      });
-      const rimMesh = new THREE.Mesh(new THREE.SphereGeometry(1.045, 64, 48), rimMat);
-      rimMesh.renderOrder = 2;
-      group.add(rimMesh);
-
-      const diskMat = new THREE.ShaderMaterial({
-        uniforms: {
-          uTime: { value: 0 },
-          uInnerR: { value: HOLE_INNER_R },
-          uDiskOuterR: { value: HOLE_DISK_OUTER_R },
-          uBloomOuterR: { value: HOLE_BLOOM_OUTER_R },
-        },
-        vertexShader: DISK_VERT,
-        fragmentShader: DISK_FRAG,
-        transparent: true,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-      });
-      const diskMesh = new THREE.Mesh(
-        new THREE.RingGeometry(HOLE_INNER_R, HOLE_BLOOM_OUTER_R, 128, 4),
-        diskMat
-      );
-      diskMesh.rotation.x = HOLE_TILT;
-      diskMesh.renderOrder = 1;
-      group.add(diskMesh);
-
-      let pixelsPerUnit = 1;
-
-      function resize(pxWidth, pxHeight, holeState) {
-        if (pxWidth <= 0 || pxHeight <= 0) return;
-        glCanvas.width = pxWidth;
-        glCanvas.height = pxHeight;
-        renderer.setSize(pxWidth, pxHeight, false);
-        camera.aspect = pxWidth / pxHeight;
-
-        const r = Math.max(holeState.r, 1);
-        const fovRad = (HOLE_FOV * Math.PI) / 180;
-        const d = (pxHeight / 2) / (r * Math.tan(fovRad / 2));
-        camera.position.set(0, 0, d);
-        camera.updateProjectionMatrix();
-        pixelsPerUnit = r;
-
-        group.position.set(
-          (holeState.cx - pxWidth / 2) / pixelsPerUnit,
-          -(holeState.cy - pxHeight / 2) / pixelsPerUnit,
-          0
-        );
-      }
-
-      function render(t) {
-        const time = t * 0.001 * (reducedMotion ? 0.4 : 1);
-        diskMat.uniforms.uTime.value = time;
-        rimMat.uniforms.uTime.value = time;
-        renderer.render(scene, camera);
-      }
-
-      api.canvas = glCanvas;
-      api.resize = resize;
-      api.render = render;
-    } catch (err) {
-      console.warn("Black hole 3D scene failed to start; showing the backdrop without it.", err);
-    }
-
-    return api;
-  }
-
-  const blackHole3D = createBlackHole3D();
-
-  function drawFallbackHole() {
-    // only used if WebGL is unavailable/fails — a plain glow so the backdrop never goes empty
-    const { cx, cy, r } = hole;
-    if (r <= 0) return;
-    const g = ctx.createRadialGradient(cx, cy, r * 0.4, cx, cy, r * 2.2);
-    g.addColorStop(0, "rgba(255,205,120,0.35)");
-    g.addColorStop(0.5, "rgba(255,120,40,0.18)");
-    g.addColorStop(1, "rgba(255,120,40,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r * 2.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#000";
-    ctx.beginPath();
-    ctx.arc(cx, cy, r * 0.85, 0, Math.PI * 2);
-    ctx.fill();
   }
 
   function resize() {
@@ -287,24 +47,110 @@
       speed: Math.random() * 0.02 + 0.005,
     }));
 
-    hole.r = Math.min(canvas.width * 0.21, 210);
-    hole.cx = canvas.width * 0.5;
-    hole.cy = canvas.height * 0.33;
-
-    motes = Array.from({ length: MOTE_COUNT }, spawnMote);
-    blackHole3D.resize(canvas.width, canvas.height, hole);
+    updateHolePosition();
+    if (motes.length === 0) motes = Array.from({ length: MOTE_COUNT }, spawnMote);
   }
+
+  // The black hole is centered exactly on the real search input, so it always
+  // lines up with it — including through scrolling, since this runs every frame.
+  function updateHolePosition() {
+    const rect = searchEl.getBoundingClientRect();
+    hole.cx = rect.left + rect.width / 2;
+    hole.cy = rect.top + rect.height / 2;
+    hole.r = rect.width / 2;
+  }
+
+  const HOT = "255,246,225";
+  const ORANGE = "255,140,50";
+  const REDORANGE = "225,70,25";
+  const PURPLE = "150,45,190";
+  const RIM = "235,225,255";
 
   function drawStars(t) {
     ctx.fillStyle = "#e8e4f0";
     for (const s of stars) {
-      const twinkle = reducedMotion ? 0.55 : Math.abs(Math.sin(s.phase + t * s.speed));
-      ctx.globalAlpha = 0.35 + 0.5 * twinkle;
+      const twinkle = reducedMotion ? 0.5 : Math.abs(Math.sin(s.phase + t * s.speed));
+      ctx.globalAlpha = 0.28 + 0.4 * twinkle;
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
+  }
+
+  // The disk's actual silhouette: tight near the poles (top/bottom, where
+  // lensed light hugs close to the sphere), flaring out wide at the sides
+  // (the equatorial plane) — one continuous shape rather than two overlapping
+  // ellipses, which is what was reading as messy before.
+  function diskShapePath(minR, maxR, power, squashY) {
+    ctx.beginPath();
+    const steps = 96;
+    for (let i = 0; i <= steps; i++) {
+      const theta = (i / steps) * Math.PI * 2;
+      const widthFactor = Math.pow(Math.abs(Math.cos(theta)), power);
+      const radius = minR + (maxR - minR) * widthFactor;
+      const x = radius * Math.cos(theta);
+      const y = radius * Math.sin(theta) * squashY;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+  }
+
+  function drawDiskLayer(minR, maxR, power, squashY, alphaMul) {
+    diskShapePath(minR, maxR, power, squashY);
+    const grad = ctx.createRadialGradient(0, 0, minR * 0.4, 0, 0, maxR);
+    grad.addColorStop(0, `rgba(${HOT},${1 * alphaMul})`);
+    grad.addColorStop(0.26, `rgba(${ORANGE},${0.95 * alphaMul})`);
+    grad.addColorStop(0.55, `rgba(${REDORANGE},${0.82 * alphaMul})`);
+    grad.addColorStop(0.82, `rgba(${PURPLE},${0.5 * alphaMul})`);
+    grad.addColorStop(1, `rgba(${PURPLE},0)`);
+    ctx.fillStyle = grad;
+    ctx.fill();
+  }
+
+  function drawHole(t) {
+    const { cx, cy, r } = hole;
+    if (r <= 0) return;
+    const spin = reducedMotion ? 0 : t * 0.00012;
+
+    // wide ambient bloom
+    const glow = ctx.createRadialGradient(cx, cy, r * 0.4, cx, cy, r * 3.2);
+    glow.addColorStop(0, `rgba(${ORANGE},0.26)`);
+    glow.addColorStop(0.55, `rgba(${PURPLE},0.12)`);
+    glow.addColorStop(1, `rgba(${PURPLE},0)`);
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 3.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(spin);
+    // soft outer haze, then the main vivid disk on top of it
+    drawDiskLayer(r * 1.18, r * 2.7, 2.3, 0.52, 0.4);
+    drawDiskLayer(r * 1.14, r * 2.15, 2.3, 0.48, 1);
+    ctx.restore();
+
+    // crisp bright rim right at the void's edge
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.strokeStyle = `rgba(${RIM},0.95)`;
+    ctx.lineWidth = r * 0.045;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 1.04, r * 1.04 * 0.48, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // the void itself — belt-and-suspenders under the real input's own
+    // background, so there's never a gap even for a stray frame
+    const voidGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    voidGrad.addColorStop(0, `rgba(${VOID},1)`);
+    voidGrad.addColorStop(0.9, `rgba(${VOID},1)`);
+    voidGrad.addColorStop(1, `rgba(${VOID},0)`);
+    ctx.fillStyle = voidGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.99, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   function roundRectPath(x, y, w, h, rad) {
@@ -326,60 +172,45 @@
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     for (const m of motes) {
-      // orbiting-then-falling-in is the actual point of this visual, so it
-      // keeps running under reduced-motion too, just gentler — only the
-      // flickery bits (star twinkle, turbulence flecks) get fully muted.
-      const motionRate = reducedMotion ? 0.4 : 1;
-      const pull = 1 + (hole.r * 2.2 - m.radius) / (hole.r * 4);
-      m.radius -= m.speed * Math.max(pull, 0.3) * motionRate;
-      m.angle += 0.006 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.4)) * motionRate;
-      if (m.radius < hole.r * 0.7) Object.assign(m, spawnMote());
+      if (!reducedMotion) {
+        const pull = 1 + (hole.r * 2.2 - m.radius) / (hole.r * 4);
+        m.radius -= m.speed * Math.max(pull, 0.3);
+        m.angle += 0.006 * (hole.r * 3 / Math.max(m.radius, hole.r * 0.4));
+        if (m.radius < hole.r * 1.55) Object.assign(m, spawnMote());
+      }
       const x = hole.cx + Math.cos(m.angle) * m.radius;
-      const y = hole.cy + Math.sin(m.angle) * m.radius * MOTE_ORBIT_SQUASH;
-      const fadeIn = Math.max(0, Math.min(1, (hole.r * 4.5 - m.radius) / (hole.r * 1.3)));
-      const fadeOut = Math.max(0, Math.min(1, (m.radius - hole.r * 0.65) / (hole.r * 0.45)));
+      const y = hole.cy + Math.sin(m.angle) * m.radius * 0.4;
+      const fadeIn = Math.max(0, Math.min(1, (hole.r * 4 - m.radius) / (hole.r * 1.2)));
+      const fadeOut = Math.max(0, Math.min(1, (m.radius - hole.r * 1.6) / (hole.r * 0.55)));
       const alpha = Math.max(0, Math.min(1, fadeIn * fadeOut));
+      const shrink = Math.max(0.2, Math.min(1, (m.radius - hole.r * 1.6) / (hole.r * 0.9)));
       if (alpha <= 0.03) continue;
 
       ctx.globalAlpha = alpha;
-      const s = m.box;
-      const fontSize = Math.max(10, Math.round(s * 0.5));
-
-      roundRectPath(x - s / 2, y - s / 2, s, s, 4);
-      ctx.fillStyle = `rgba(${VOID2},0.88)`;
-      ctx.fill();
-
-      // neon glow: a blurred colored halo behind a crisp bright core
-      ctx.save();
+      const s = m.box * shrink;
       ctx.shadowColor = m.color;
-      ctx.shadowBlur = 12;
+      ctx.shadowBlur = 9;
+      roundRectPath(x - s / 2, y - s / 2, s, s, 3);
+      ctx.fillStyle = "rgba(13,10,24,0.92)";
+      ctx.fill();
       ctx.strokeStyle = m.color;
-      ctx.lineWidth = 1.4;
-      roundRectPath(x - s / 2, y - s / 2, s, s, 4);
+      ctx.lineWidth = 1.6;
       ctx.stroke();
 
-      ctx.font = `800 ${fontSize}px var(--font-mono), monospace`;
-      ctx.shadowBlur = 16;
+      ctx.shadowBlur = 12;
       ctx.fillStyle = m.color;
+      ctx.font = `700 ${(9 * shrink).toFixed(1)}px var(--font-mono), monospace`;
       ctx.fillText(m.symbol, x, y + 0.5);
       ctx.shadowBlur = 0;
-      ctx.fillStyle = "#fefefe";
-      ctx.fillText(m.symbol, x, y + 0.5);
-      ctx.restore();
     }
     ctx.globalAlpha = 1;
   }
 
   function tick(t) {
-    ctx.fillStyle = `rgb(5,4,10)`;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    updateHolePosition();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawStars(t);
-    blackHole3D.render(t);
-    if (blackHole3D.canvas) {
-      ctx.drawImage(blackHole3D.canvas, 0, 0, canvas.width, canvas.height);
-    } else {
-      drawFallbackHole();
-    }
+    drawHole(t);
     drawMotes();
     rafId = requestAnimationFrame(tick);
   }
@@ -424,6 +255,8 @@ const els = {
 
 /* ===================== Search handling ===================== */
 let searchDebounce = null;
+
+els.search.placeholder = "search…";
 
 els.search.addEventListener("input", () => {
   const val = els.search.value;
