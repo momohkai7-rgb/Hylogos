@@ -1,6 +1,6 @@
 /* =========================================================================
    ATOM3D — Hylogos-style 3D atom viewer. 
-   ALL ORIGINAL CODE RESTORED. NO DELETIONS.
+   ORIGINAL CODE RESTORED. NO DELETIONS.
 ========================================================================= */
 
 const ATOM_MASS_INTERNAL = {
@@ -30,8 +30,8 @@ function atom3dConfig(Z){
 
 function atom3dAssignOrbitals(count, orbitals){
   const slots = new Array(orbitals).fill(0); let rem = count;
-  for (let i=0;i<orbitals && rem>0;i++){ slots[i]=1; rem--; }
-  for (let i=0;i<orbitals && rem>0;i++){ slots[i]=2; rem--; }
+  for (let i=0;i<orbitals && rem>0;i++) slots[i]=1, rem--;
+  for (let i=0;i<orbitals && rem>0;i++) slots[i]=2, rem--;
   return slots;
 }
 
@@ -95,15 +95,41 @@ function atom3dBuildRing(radius, parent, glowTex, sparkles){
   }
 }
 
-// RESTORED MAIN ATOM VIEWER (Hylogos Style)
+function atom3dBuildElectrons(ctx, Z){
+  const { electronsGroup, glowTex } = ctx;
+  const spinGroups = [], sparkles = [], electronMeshes = [];
+  const configs = atom3dConfig(Z);
+  const shellMap = new Map();
+  configs.forEach(sub => {
+    if (!shellMap.has(sub.n)) shellMap.set(sub.n, []);
+    const orbitals = 2*sub.l + 1;
+    const slots = atom3dAssignOrbitals(sub.count, orbitals);
+    for (let o=0;o<orbitals;o++) for (let e=0;e<slots[o];e++) shellMap.get(sub.n).push({ label:sub.label, l:sub.l, ml:o-sub.l, spin: e===0?'+1/2 ↑':'-1/2 ↓' });
+  });
+  const shellNs = [...shellMap.keys()].sort((a,b)=>a-b);
+  shellNs.forEach(n => {
+    const radius = 4.6 + (n-1)*2.3;
+    atom3dBuildRing(radius, electronsGroup, glowTex, sparkles);
+    const spinGroup = new THREE.Object3D(); spinGroup.userData.speed = 0.3/Math.sqrt(n);
+    electronsGroup.add(spinGroup); spinGroups.push(spinGroup);
+    shellMap.get(n).forEach((d, idx) => {
+      const angle = (idx/shellMap.get(n).length) * Math.PI*2;
+      const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 16), new THREE.MeshPhysicalMaterial({ color:0x1e6bff, emissive:0x1e6bff, emissiveIntensity:1.7, roughness:0.3, clearcoat:0.6 }));
+      mesh.position.set(Math.cos(angle)*radius, Math.sin(angle)*radius, 0);
+      mesh.userData = { kind:'Electron', baseEmissive:1.7 };
+      atom3dAttachGlow(mesh, 0x1e6bff, 1.6, 0.5); spinGroup.add(mesh); electronMeshes.push(mesh);
+    });
+  });
+  return { spinGroups, sparkles, electronMeshes, maxOrbitRadius: 4.6 + (Math.max(...shellNs)-1)*2.3 };
+}
+
 function drawAtom3D(symbol, elData) {
   const host = document.getElementById("threeHost"); host.innerHTML = "";
   const width = host.clientWidth, height = host.clientHeight;
   const z = elData.z, a = ATOM_MASS_INTERNAL[symbol] || Math.round(z * 2.05);
   const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 500);
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(window.devicePixelRatio); renderer.setSize(width, height);
-  host.appendChild(renderer.domElement);
+  renderer.setPixelRatio(window.devicePixelRatio); renderer.setSize(width, height); host.appendChild(renderer.domElement);
 
   const group = new THREE.Group(); scene.add(group);
   const glowTex = atom3dGlowTexture();
@@ -154,13 +180,10 @@ function drawAtom3D(symbol, elData) {
   window.threeScene = { renderer };
 }
 
-/* =========================================================================
-   PREMIUM UPGRADE: COMPOUNDS & ALLOYS (GLOSSY ORBS + PLASMA FILAMENTS)
-========================================================================= */
-
-const premiumPanel = document.createElement('div');
-premiumPanel.style.cssText = "position:absolute; background:rgba(0,0,0,0.9); color:#fff; padding:12px; border:1px solid #00ff7f; border-radius:8px; display:none; pointer-events:none; z-index:9999; font-family:monospace; box-shadow:0 0 15px #00ff7f;";
-document.body.appendChild(premiumPanel);
+/* PREMIUM UPGRADE: MOLECULES & ALLOYS (GLOSSY + PLASMA FILAMENTS) */
+const premiumInfo = document.createElement('div');
+premiumInfo.style.cssText = "position:absolute; background:rgba(0,0,0,0.9); color:#fff; padding:12px; border:1px solid #00ff7f; border-radius:8px; display:none; pointer-events:none; z-index:9999; font-family:monospace; box-shadow:0 0 15px #00ff7f;";
+document.body.appendChild(premiumInfo);
 
 function drawPremiumStructure(data) {
   const host = document.getElementById("threeHost"); host.innerHTML = "";
@@ -202,10 +225,10 @@ function drawPremiumStructure(data) {
     raycaster.setFromCamera(mouse, camera); const hits = raycaster.intersectObjects(atomMeshes);
     if(hits.length > 0) {
       const o = hits[0].object; o.material.emissiveIntensity = 8;
-      premiumPanel.style.display = "block"; premiumPanel.style.left = (e.clientX + 10) + "px"; premiumPanel.style.top = (e.clientY + 10) + "px";
-      premiumPanel.innerHTML = `<b style="color:#00ff7f; font-size:16px;">${o.userData.name}</b> [${o.userData.sym}]<br>Z: ${o.userData.z}<br>Role: ${o.userData.role}`;
+      premiumInfo.style.display = "block"; premiumInfo.style.left = (e.clientX + 10) + "px"; premiumInfo.style.top = (e.clientY + 10) + "px";
+      premiumInfo.innerHTML = `<b style="color:#00ff7f; font-size:16px;">${o.userData.name}</b> [${o.userData.sym}]<br>Z: ${o.userData.z}<br>Role: ${o.userData.role}`;
       setTimeout(() => o.material.emissiveIntensity = 0.5, 400);
-    } else { premiumPanel.style.display = "none"; }
+    } else { premiumInfo.style.display = "none"; }
   });
 
   camera.position.z = 10; new THREE.OrbitControls(camera, renderer.domElement);
