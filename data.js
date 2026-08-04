@@ -488,4 +488,18 @@ function resolveQuery(raw) {
   if (byElName) return { type: "element", key: byElName[0], data: byElName[1] };
 
   return null;
+  // Add this at the very bottom of data.js
+const ALLOYS = {
+  STEEL: {
+    name: "Carbon Steel",
+    composition: [{ el: "Fe", ratio: 0.98, role: "Strength" }, { el: "C", ratio: 0.02, role: "Hardness" }]
+  },
+  BRONZE: {
+    name: "Bronze",
+    composition: [{ el: "Cu", ratio: 0.88, role: "Base" }, { el: "Sn", ratio: 0.12, role: "Durability" }]
+  }
+};
+
+// Find the 'resolveQuery' function in this file and add this line inside it:
+// if (ALLOYS[key]) return { type: "alloy", key, data: ALLOYS[key] };
 }
