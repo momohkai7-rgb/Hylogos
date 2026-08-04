@@ -90,49 +90,5 @@
 <script src="data.js"></script>
 <script src="ptable.js"></script>
 <script src="script.js"></script>
-<!-- PREMIUM VISUALS UPGRADE: Adding CSS for the floating panel and Interaction Logic -->
-<style>
-  #atom-info-panel {
-    position: absolute; pointer-events: none; padding: 10px;
-    background: rgba(15, 15, 20, 0.9); border: 1px solid #7fd9ff;
-    border-radius: 8px; color: white; font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 13px; box-shadow: 0 0 15px rgba(127, 217, 255, 0.4);
-    display: none; z-index: 1000;
-  }
-  #atom-info-panel b { color: #7fd9ff; }
-</style>
-
-<div id="atom-info-panel"></div>
-
-<script>
-// This script upgrades the Molecule Materials to be Glossy/Glowing and adds Interactivity.
-// It runs after your main scripts load.
-window.addEventListener('load', () => {
-  const panel = document.getElementById('atom-info-panel');
-  
-  // Custom hook to detect when atoms are rendered
-  const originalRender = window.renderMolecule || null;
-  
-  document.addEventListener('mousemove', (e) => {
-    panel.style.left = (e.pageX + 15) + 'px';
-    panel.style.top = (e.pageY + 15) + 'px';
-  });
-  // Since we don't have the script.js source, we will apply a high-end look
-  // to the materials every time the viewer host updates.
-  setInterval(() => {
-    const threeHost = document.getElementById('threeHost');
-    if (!threeHost || !window.THREE) return;
-    
-    // We scan the scene for any Molecule/Alloy meshes and upgrade them
-    threeHost.querySelectorAll('canvas').forEach(canvas => {
-       // Visual upgrades are handled by your 3D scripts (atom3d.js), 
-       // but we've now provided the hardcoded colors in data.js to fix the black spheres.
-    });
-  }, 1000);
-});
-</script>
-</body>                                       
+</body>
 </html>
-
-
-
