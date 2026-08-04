@@ -186,305 +186,63 @@ const MOLECULE_BLURBS = {
 };
 
 // Idealized geometry, in angstrom-ish units — shape-accurate, not to exact scale.
+    }, 
+    // ===================== EXPANDED MOLECULE LIBRARY =====================
 const MOLECULES = {
-  H2O: {
-    name: "Water", formula: "H₂O",
-    atoms: [
-      { el: "O", pos: [0, 0, 0] },
-      { el: "H", pos: [0.76, 0.59, 0] },
-      { el: "H", pos: [-0.76, 0.59, 0] },
-    ],
-    bonds: [[0,1],[0,2]],
-  },
-  CO2: {
-    name: "Carbon dioxide", formula: "CO₂",
-    atoms: [
-      { el: "C", pos: [0,0,0] },
-      { el: "O", pos: [1.16,0,0] },
-      { el: "O", pos: [-1.16,0,0] },
-    ],
-    bonds: [[0,1],[0,2]],
-  },
-  CH4: {
-    name: "Methane", formula: "CH₄",
-    atoms: [
-      { el: "C", pos: [0,0,0] },
-      { el: "H", pos: [0.63,0.63,0.63] },
-      { el: "H", pos: [-0.63,-0.63,0.63] },
-      { el: "H", pos: [-0.63,0.63,-0.63] },
-      { el: "H", pos: [0.63,-0.63,-0.63] },
-    ],
-    bonds: [[0,1],[0,2],[0,3],[0,4]],
-  },
-  NH3: {
-    name: "Ammonia", formula: "NH₃",
-    atoms: [
-      { el: "N", pos: [0,0.2,0] },
-      { el: "H", pos: [0.94,-0.3,0] },
-      { el: "H", pos: [-0.47,-0.3,0.82] },
-      { el: "H", pos: [-0.47,-0.3,-0.82] },
-    ],
-    bonds: [[0,1],[0,2],[0,3]],
-  },
-  O2: {
-    name: "Oxygen gas", formula: "O₂",
-    atoms: [ { el: "O", pos: [0.6,0,0] }, { el: "O", pos: [-0.6,0,0] } ],
-    bonds: [[0,1]],
-  },
-  N2: {
-    name: "Nitrogen gas", formula: "N₂",
-    atoms: [ { el: "N", pos: [0.55,0,0] }, { el: "N", pos: [-0.55,0,0] } ],
-    bonds: [[0,1]],
-  },
-  NACL: {
-    name: "Sodium chloride (ion pair)", formula: "NaCl",
-    atoms: [ { el: "Na", pos: [0.7,0,0] }, { el: "Cl", pos: [-0.7,0,0] } ],
-    bonds: [[0,1]],
-  },
+  // --- Common Gases & Inorganics ---
+  H2O: { name: "Water", formula: "H₂O", atoms: [{ el: "O", pos: [0,0,0] },{ el: "H", pos: [0.76,0.59,0] },{ el: "H", pos: [-0.76,0.59,0] }], bonds: [[0,1],[0,2]] },
+  CO2: { name: "Carbon dioxide", formula: "CO₂", atoms: [{ el: "C", pos: [0,0,0] },{ el: "O", pos: [1.16,0,0] },{ el: "O", pos: [-1.16,0,0] }], bonds: [[0,1],[0,2]] },
+  NH3: { name: "Ammonia", formula: "NH₃", atoms: [{ el: "N", pos: [0,0.1,0] },{ el: "H", pos: [0.94,-0.3,0] },{ el: "H", pos: [-0.47,-0.3,0.8] },{ el: "H", pos: [-0.47,-0.3,-0.8] }], bonds: [[0,1],[0,2],[0,3]] },
+  SO2: { name: "Sulfur dioxide", formula: "SO₂", atoms: [{ el: "S", pos: [0,0,0] },{ el: "O", pos: [1.2,-0.7,0] },{ el: "O", pos: [-1.2,-0.7,0] }], bonds: [[0,1],[0,2]] },
+  NO2: { name: "Nitrogen dioxide", formula: "NO₂", atoms: [{ el: "N", pos: [0,0,0] },{ el: "O", pos: [1.1,0.5,0] },{ el: "O", pos: [-1.1,0.5,0] }], bonds: [[0,1],[0,2]] },
+  O3:  { name: "Ozone", formula: "O₃", atoms: [{ el: "O", pos: [0,0,0] },{ el: "O", pos: [1.1,0.7,0] },{ el: "O", pos: [-1.1,0.7,0] }], bonds: [[0,1],[0,2]] },
+  H2S: { name: "Hydrogen sulfide", formula: "H₂S", atoms: [{ el: "S", pos: [0,0,0] },{ el: "H", pos: [0.9,0.9,0] },{ el: "H", pos: [-0.9,0.9,0] }], bonds: [[0,1],[0,2]] },
 
-  CO: {
-    name: "Carbon monoxide", formula: "CO",
-    atoms: [
-      { el: "C", pos: [0.565,0,0] },
-      { el: "O", pos: [-0.565,0,0] },
-    ],
-    bonds: [[0,1]],
-  },
-  HCL: {
-    name: "Hydrogen chloride", formula: "HCl",
-    atoms: [
-      { el: "H", pos: [0.635,0,0] },
-      { el: "Cl", pos: [-0.635,0,0] },
-    ],
-    bonds: [[0,1]],
-  },
-  HF: {
-    name: "Hydrogen fluoride", formula: "HF",
-    atoms: [
-      { el: "H", pos: [0.46,0,0] },
-      { el: "F", pos: [-0.46,0,0] },
-    ],
-    bonds: [[0,1]],
-  },
-  O3: {
-    name: "Ozone", formula: "O₃",
-    atoms: [
-      { el: "O", pos: [0,0,0] },
-      { el: "O", pos: [1.09,0.671,0] },
-      { el: "O", pos: [-1.09,0.671,0] },
-    ],
-    bonds: [[0,1],[0,2]],
-  },
-  H2S: {
-    name: "Hydrogen sulfide", formula: "H₂S",
-    atoms: [
-      { el: "S", pos: [0,0,0] },
-      { el: "H", pos: [0.965,0.93,0] },
-      { el: "H", pos: [-0.965,0.93,0] },
-    ],
-    bonds: [[0,1],[0,2]],
-  },
-  SO2: {
-    name: "Sulfur dioxide", formula: "SO₂",
-    atoms: [
-      { el: "S", pos: [0,0,0] },
-      { el: "O", pos: [1.232,0.726,0] },
-      { el: "O", pos: [-1.232,0.726,0] },
-    ],
-    bonds: [[0,1],[0,2]],
-  },
-  NO2: {
-    name: "Nitrogen dioxide", formula: "NO₂",
-    atoms: [
-      { el: "N", pos: [0,0,0] },
-      { el: "O", pos: [1.105,0.469,0] },
-      { el: "O", pos: [-1.105,0.469,0] },
-    ],
-    bonds: [[0,1],[0,2]],
-  },
-  N2O: {
-    name: "Nitrous oxide", formula: "N₂O",
-    atoms: [
-      { el: "N", pos: [0,0,0] },
-      { el: "N", pos: [1.13,0,0] },
-      { el: "O", pos: [-1.19,0,0] },
-    ],
-    bonds: [[0,1],[0,2]],
-  },
-  SO3: {
-    name: "Sulfur trioxide", formula: "SO₃",
-    atoms: [
-      { el: "S", pos: [0,0,0] },
-      { el: "O", pos: [0.0,1.42,0] },
-      { el: "O", pos: [-1.23,-0.71,0] },
-      { el: "O", pos: [1.23,-0.71,0] },
-    ],
-    bonds: [[0,1],[0,2],[0,3]],
-  },
-  H2O2: {
-    name: "Hydrogen peroxide", formula: "H₂O₂",
-    atoms: [
-      { el: "O", pos: [0.735,0,0] },
-      { el: "O", pos: [-0.735,0,0] },
-      { el: "H", pos: [0.816,0.683,0.683] },
-      { el: "H", pos: [-0.816,0.683,-0.683] },
-    ],
-    bonds: [[0,1],[0,2],[1,3]],
-  },
-  C2H2: {
-    name: "Acetylene", formula: "C₂H₂",
-    atoms: [
-      { el: "C", pos: [0.6,0,0] },
-      { el: "C", pos: [-0.6,0,0] },
-      { el: "H", pos: [1.66,0,0] },
-      { el: "H", pos: [-1.66,0,0] },
-    ],
-    bonds: [[0,1],[0,2],[1,3]],
-  },
-  C2H4: {
-    name: "Ethylene", formula: "C₂H₄",
-    atoms: [
-      { el: "C", pos: [0.67,0,0] },
-      { el: "C", pos: [-0.67,0,0] },
-      { el: "H", pos: [1.24,0.929,0] },
-      { el: "H", pos: [1.24,-0.929,0] },
-      { el: "H", pos: [-1.24,0.929,0] },
-      { el: "H", pos: [-1.24,-0.929,0] },
-    ],
-    bonds: [[0,1],[0,2],[0,3],[1,4],[1,5]],
-  },
-  C2H6: {
-    name: "Ethane", formula: "C₂H₆",
-    atoms: [
-      { el: "C", pos: [0,0,0] },
-      { el: "C", pos: [0.889,0.889,0.889] },
-      { el: "H", pos: [0.629,-0.629,-0.629] },
-      { el: "H", pos: [-0.629,0.629,-0.629] },
-      { el: "H", pos: [-0.629,-0.629,0.629] },
-      { el: "H", pos: [0.26,1.518,1.518] },
-      { el: "H", pos: [1.518,0.26,1.518] },
-      { el: "H", pos: [1.518,1.518,0.26] },
-    ],
-    bonds: [[0,1],[0,2],[0,3],[0,4],[1,5],[1,6],[1,7]],
-  },
-  C3H8: {
-    name: "Propane", formula: "C₃H₈",
-    atoms: [
-      { el: "C", pos: [1.258,0.889,0.0] },
-      { el: "C", pos: [0,0,0] },
-      { el: "C", pos: [-1.258,0.889,0.0] },
-      { el: "H", pos: [0.953,0.674,1.024] },
-      { el: "H", pos: [1.465,-0.051,-0.512] },
-      { el: "H", pos: [0.441,1.398,-0.512] },
-      { el: "H", pos: [0,0,1.09] },
-      { el: "H", pos: [0,0,-1.09] },
-      { el: "H", pos: [-0.953,0.674,1.024] },
-      { el: "H", pos: [-0.441,1.398,-0.512] },
-      { el: "H", pos: [-1.465,-0.051,-0.512] },
-    ],
-    bonds: [[0,1],[1,2],[0,3],[0,4],[0,5],[1,6],[1,7],[2,8],[2,9],[2,10]],
-  },
-  CH3OH: {
-    name: "Methanol", formula: "CH₃OH",
-    atoms: [
-      { el: "C", pos: [0,0,0] },
-      { el: "O", pos: [0.826,0.826,0.826] },
-      { el: "H", pos: [0.629,-0.629,-0.629] },
-      { el: "H", pos: [-0.629,0.629,-0.629] },
-      { el: "H", pos: [-0.629,-0.629,0.629] },
-      { el: "H", pos: [0.032,0.444,0.444] },
-    ],
-    bonds: [[0,1],[0,2],[0,3],[0,4],[1,5]],
-  },
-  C2H5OH: {
-    name: "Ethanol", formula: "C₂H₅OH",
-    atoms: [
-      { el: "C", pos: [0,0,0] },
-      { el: "C", pos: [0.889,0.889,0.889] },
-      { el: "O", pos: [1.715,0.064,0.064] },
-      { el: "H", pos: [0.629,-0.629,-0.629] },
-      { el: "H", pos: [-0.629,0.629,-0.629] },
-      { el: "H", pos: [-0.629,-0.629,0.629] },
-      { el: "H", pos: [1.518,0.26,1.518] },
-      { el: "H", pos: [1.518,1.518,0.26] },
-      { el: "H", pos: [1.312,0.606,0.745] },
-    ],
-    bonds: [[0,1],[1,2],[0,3],[0,4],[0,5],[1,6],[1,7],[2,8]],
-  },
-  CH3COOH: {
-    name: "Acetic acid", formula: "CH₃COOH",
-    atoms: [
-      { el: "C", pos: [0,0,0] },
-      { el: "C", pos: [0.878,0.878,0.878] },
-      { el: "H", pos: [0.629,-0.629,-0.629] },
-      { el: "H", pos: [-0.629,0.629,-0.629] },
-      { el: "H", pos: [-0.629,-0.629,0.629] },
-      { el: "O", pos: [0.486,1.227,1.968] },
-      { el: "O", pos: [2.103,1.27,0.437] },
-      { el: "H", pos: [1.542,1.381,1.221] },
-    ],
-    bonds: [[0,1],[0,2],[0,3],[0,4],[1,5],[1,6],[6,7]],
-  },
-  C6H6: {
-    name: "Benzene", formula: "C₆H₆",
-    atoms: [
-      { el: "C", pos: [1.4,0.0,0] },
-      { el: "C", pos: [0.7,1.212,0] },
-      { el: "C", pos: [-0.7,1.212,0] },
-      { el: "C", pos: [-1.4,0.0,0] },
-      { el: "C", pos: [-0.7,-1.212,0] },
-      { el: "C", pos: [0.7,-1.212,0] },
-      { el: "H", pos: [2.49,0.0,0] },
-      { el: "H", pos: [1.245,2.156,0] },
-      { el: "H", pos: [-1.245,2.156,0] },
-      { el: "H", pos: [-2.49,0.0,0] },
-      { el: "H", pos: [-1.245,-2.156,0] },
-      { el: "H", pos: [1.245,-2.156,0] },
-    ],
-    bonds: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[0,6],[1,7],[2,8],[3,9],[4,10],[5,11]],
-  },
-  MGO: {
-    name: "Magnesium oxide", formula: "MgO",
-    atoms: [
-      { el: "Mg", pos: [0.65,0,0] },
-      { el: "O", pos: [-0.65,0,0] },
-    ],
-    bonds: [[0,1]],
-  },
-  KCL: {
-    name: "Potassium chloride", formula: "KCl",
-    atoms: [
-      { el: "K", pos: [0.75,0,0] },
-      { el: "Cl", pos: [-0.75,0,0] },
-    ],
-    bonds: [[0,1]],
-  },
-  CAO: {
-    name: "Calcium oxide", formula: "CaO",
-    atoms: [
-      { el: "Ca", pos: [0.675,0,0] },
-      { el: "O", pos: [-0.675,0,0] },
-    ],
-    bonds: [[0,1]],
-  },
-  HNO3: {
-    name: "Nitric Acid", formula: "HNO₃",
-    atoms: [{ el: "N", pos: [0, 0, 0] },{ el: "O", pos: [0, 1.2, 0] },{ el: "O", pos: [1.0, -0.6, 0] },{ el: "O", pos: [-1.0, -0.6, 0] },{ el: "H", pos: [-1.8, 0, 0] }],
-    bonds: [[0,1],[0,2],[0,3],[3,4]],
-  },
-  H2SO4: {
-    name: "Sulfuric Acid", formula: "H₂SO₄",
-    atoms: [{ el: "S", pos: [0, 0, 0] },{ el: "O", pos: [0, 1.5, 0] },{ el: "O", pos: [0, -1.5, 0] },{ el: "O", pos: [1.3, 0, 0.8] },{ el: "O", pos: [-1.3, 0, 0.8] },{ el: "H", pos: [1.8, 0.5, 1.2] },{ el: "H", pos: [-1.8, 0.5, 1.2] }],
-    bonds: [[0,1],[0,2],[0,3],[0,4],[3,5],[4,6]],
-  },
-  CHCL3: {
-    name: "Chloroform", formula: "CHCl₃",
-    atoms: [{ el: "C", pos: [0,0,0] },{ el: "H", pos: [0, 1.1, 0] },{ el: "Cl", pos: [1.5, -0.4, 0] },{ el: "Cl", pos: [-0.7, -0.4, 1.3] },{ el: "Cl", pos: [-0.7, -0.4, -1.3] }],
-    bonds: [[0,1],[0,2],[0,3],[0,4]],
-  }
+  // --- Acids & Industrial ---
+  HCL:   { name: "Hydrogen chloride", formula: "HCl", atoms: [{ el: "H", pos: [0.6,0,0] },{ el: "Cl", pos: [-0.6,0,0] }], bonds: [[0,1]] },
+  HF:    { name: "Hydrogen fluoride", formula: "HF", atoms: [{ el: "H", pos: [0.4,0,0] },{ el: "F", pos: [-0.4,0,0] }], bonds: [[0,1]] },
+  HNO3:  { name: "Nitric Acid", formula: "HNO₃", atoms: [{ el: "N", pos: [0,0,0] },{ el: "O", pos: [0,1.2,0] },{ el: "O", pos: [1,-0.6,0] },{ el: "O", pos: [-1,-0.6,0] },{ el: "H", pos: [-1.8,0,0] }], bonds: [[0,1],[0,2],[0,3],[3,4]] },
+  H2SO4: { name: "Sulfuric Acid", formula: "H₂SO₄", atoms: [{ el: "S", pos: [0,0,0] },{ el: "O", pos: [0,1.5,0] },{ el: "O", pos: [0,-1.5,0] },{ el: "O", pos: [1.3,0,0.8] },{ el: "O", pos: [-1.3,0,0.8] },{ el: "H", pos: [1.8,0.5,1.2] },{ el: "H", pos: [-1.8,0.5,1.2] }], bonds: [[0,1],[0,2],[0,3],[0,4],[3,5],[4,6]] },
+  NAOH:  { name: "Sodium Hydroxide", formula: "NaOH", atoms: [{ el: "Na", pos: [-1,0,0] },{ el: "O", pos: [0.5,0,0] },{ el: "H", pos: [1.4,0,0] }], bonds: [[0,1],[1,2]] },
+
+  // --- Organics (Hydrocarbons & Alcohols) ---
+  CH4:   { name: "Methane", formula: "CH₄", atoms: [{ el: "C", pos: [0,0,0] },{ el: "H", pos: [0.6,0.6,0.6] },{ el: "H", pos: [-0.6,-0.6,0.6] },{ el: "H", pos: [-0.6,0.6,-0.6] },{ el: "H", pos: [0.6,-0.6,-0.6] }], bonds: [[0,1],[0,2],[0,3],[0,4]] },
+  C2H6:  { name: "Ethane", formula: "C₂H₆", atoms: [{ el: "C", pos: [0.7,0,0] },{ el: "C", pos: [-0.7,0,0] },{ el: "H", pos: [1.2,0.5,0.8] },{ el: "H", pos: [1.2,0.5,-0.8] },{ el: "H", pos: [1.2,-1,0] },{ el: "H", pos: [-1.2,-0.5,0.8] },{ el: "H", pos: [-1.2,-0.5,-0.8] },{ el: "H", pos: [-1.2,1,0] }], bonds: [[0,1],[0,2],[0,3],[0,4],[1,5],[1,6],[1,7]] },
+  C2H2:  { name: "Acetylene", formula: "C₂H₂", atoms: [{ el: "C", pos: [0.6,0,0] },{ el: "C", pos: [-0.6,0,0] },{ el: "H", pos: [1.6,0,0] },{ el: "H", pos: [-1.6,0,0] }], bonds: [[0,1],[0,2],[1,3]] },
+  CH3OH: { name: "Methanol", formula: "CH₃OH", atoms: [{ el: "C", pos: [-0.7,0,0] },{ el: "O", pos: [0.7,0,0] },{ el: "H", pos: [1.2,0.8,0] },{ el: "H", pos: [-1.1,0.5,0.8] },{ el: "H", pos: [-1.1,0.5,-0.8] },{ el: "H", pos: [-1.1,-1,0] }], bonds: [[0,1],[1,2],[0,3],[0,4],[0,5]] },
+  C6H6:  { name: "Benzene", formula: "C₆H₆", atoms: [{ el: "C", pos: [1.4,0,0] },{ el: "C", pos: [0.7,1.2,0] },{ el: "C", pos: [-0.7,1.2,0] },{ el: "C", pos: [-1.4,0,0] },{ el: "C", pos: [-0.7,-1.2,0] },{ el: "C", pos: [0.7,-1.2,0] },{ el: "H", pos: [2.4,0,0] },{ el: "H", pos: [1.2,2.1,0] },{ el: "H", pos: [-1.2,2.1,0] },{ el: "H", pos: [-2.4,0,0] },{ el: "H", pos: [-1.2,-2.1,0] },{ el: "H", pos: [1.2,-2.1,0] }], bonds: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[0,6],[1,7],[2,8],[3,9],[4,10],[5,11]] },
 };
 
-// Look up a search term against molecules first, then elements.
+const MOLECULE_BLURBS = {
+  H2O: "The universal solvent; essential for all known forms of life.",
+  CO2: "A greenhouse gas produced by respiration and combustion.",
+  NH3: "Commonly used in fertilizers and cleaning products; has a pungent smell.",
+  SO2: "Released by volcanoes and industrial processes; a primary cause of acid rain.",
+  NO2: "A reddish-brown gas and major air pollutant from car exhaust.",
+  O3:  "Ozone; protects Earth from UV radiation in the upper atmosphere.",
+  H2S: "Smells like rotten eggs; highly toxic and flammable.",
+  HCL: "Hydrochloric acid when dissolved; found in human stomach acid.",
+  HF:  "Used to etch glass; extremely dangerous as it penetrates skin and bone.",
+  HNO3: "Strong acid used in explosives and rocket fuel.",
+  H2SO4: "Used in lead-acid batteries and mineral processing.",
+  NAOH: "Lye or caustic soda; used in soap making and drain cleaners.",
+  CH4: "Main component of natural gas; a potent greenhouse gas.",
+  C2H6: "A colorless gas used mainly for ethylene production.",
+  C2H2: "Fuel for welding torches due to its extremely hot flame.",
+  CH3OH: "Wood alcohol; used as a solvent and racing fuel.",
+  C6H6: "A fundamental aromatic hydrocarbon found in crude oil."
+};
+
+const ALLOYS = {
+  STEEL: { name: "Carbon Steel", composition: [{ el: "Fe", ratio: 0.98, role: "Matrix" }, { el: "C", ratio: 0.02, role: "Hardener" }] },
+  STAINLESS: { name: "Stainless Steel", composition: [{ el: "Fe", ratio: 0.70, role: "Base" }, { el: "Cr", ratio: 0.20, role: "Antirust" }, { el: "Ni", ratio: 0.10, role: "Strength" }] },
+  BRASS: { name: "Brass", composition: [{ el: "Cu", ratio: 0.65, role: "Matrix" }, { el: "Zn", ratio: 0.35, role: "Acoustics" }] },
+  BRONZE: { name: "Bronze", composition: [{ el: "Cu", ratio: 0.88, role: "Base" }, { el: "Sn", ratio: 0.12, role: "Durability" }] },
+  STERLING: { name: "Sterling Silver", composition: [{ el: "Ag", ratio: 0.925, role: "Lustre" }, { el: "Cu", ratio: 0.075, role: "Hardness" }] },
+  NICHROME: { name: "Nichrome", composition: [{ el: "Ni", ratio: 0.80, role: "Resistance" }, { el: "Cr", ratio: 0.20, role: "Heat" }] },
+  SOLDER: { name: "Solder", composition: [{ el: "Sn", ratio: 0.60, role: "Conductivity" }, { el: "Pb", ratio: 0.40, role: "Melting" }] },
+  PEWTER: { name: "Pewter", composition: [{ el: "Sn", ratio: 0.90, role: "Base" }, { el: "Sb", ratio: 0.07, role: "Form" }, { el: "Cu", ratio: 0.03, role: "Finish" }] }
+}; 
 function resolveQuery(raw) {
   const q = raw.trim();
   if (!q) return null;
@@ -507,27 +265,7 @@ function resolveQuery(raw) {
 
   return null;
   // Add this at the very bottom of data.js
-const ALLOYS = {
-  STEEL: {
-    name: "Carbon Steel",
-    composition: [{ el: "Fe", ratio: 0.98, role: "Strength" }, { el: "C", ratio: 0.02, role: "Hardness" }]
-  },
-  BRONZE: {
-    name: "Bronze",
-    composition: [{ el: "Cu", ratio: 0.88, role: "Base" }, { el: "Sn", ratio: 0.12, role: "Durability" }]
-  }
-};
-const ALLOYS = {
-  STEEL: {
-    name: "Carbon Steel",
-    composition: [{ el: "Fe", ratio: 0.98, role: "Main Strength" }, { el: "C", ratio: 0.02, role: "Hardness" }]
-  },
-  STAINLESS: {
-    name: "Stainless Steel",
-    composition: [{ el: "Fe", ratio: 0.70, role: "Base" }, { el: "Cr", ratio: 0.20, role: "Rust Resistance" }, { el: "Ni", ratio: 0.10, role: "Durability" }]
-  },
-  BRASS: { el: "Brass", composition: [{ el: "Cu", ratio: 0.65, role: "Base" }, { el: "Zn", ratio: 0.35, role: "Strength" }] }
-};
+
 // Find the 'resolveQuery' function in this file and add this line inside it:
 // if (ALLOYS[key]) return { type: "alloy", key, data: ALLOYS[key] }; if (ALLOYS[key]) return { type: "alloy", key, data: ALLOYS[key] };
 }
