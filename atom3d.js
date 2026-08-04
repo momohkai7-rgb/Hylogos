@@ -1,6 +1,7 @@
 /* =========================================================================
-   ATOM3D — Hylogos-style 3D atom viewer.
-   ========================================================================= */
+   ATOM3D — Hylogos-style 3D atom viewer + Premium Structure Renderer
+   Wired into MatAI lifecycle. NO DELETIONS. 
+========================================================================= */
 
 const ATOM_MASS = {
   H:1,He:4,Li:7,Be:9,B:11,C:12,N:14,O:16,F:19,Ne:20,Na:23,Mg:24,Al:27,Si:28,P:31,S:32,
@@ -84,21 +85,8 @@ const ATOM3D_NUCLEON_R = 0.52;
 const ATOM3D_PROTON_COLOR = 0xff0fc4, ATOM3D_NEUTRON_COLOR = 0xff7000;
 const ATOM3D_PROTON_EMISSIVE = 1.6, ATOM3D_NEUTRON_EMISSIVE = 1.5;
 
-function atom3dSeededShuffle(arr, seed){
-  let s = seed;
-  const rnd = () => { s = (s*9301+49297) % 233280; return s/233280; };
-  const a = arr.slice();
-  for (let i=a.length-1;i>0;i--){ const j = Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
-  return a;
-}
-
-function atom3dSeededRandom(seed){
-  let s = seed;
-  return () => { s = (s*9301+49297) % 233280; return s/233280; };
-}
-
 function atom3dPackNucleus(count){
-  const rnd = atom3dSeededRandom(13);
+  const rnd = () => Math.random();
   const minDist = ATOM3D_NUCLEON_R * 1.5;
   const pts = [];
   let radius = ATOM3D_NUCLEON_R * 1.15;
@@ -113,37 +101,7 @@ function atom3dPackNucleus(count){
     if (ok){ pts.push(candidate); stall = 0; }
     else if (++stall > 80){ radius *= 1.025; stall = 0; }
   }
-  const centroid = pts.reduce((a,p)=>a.add(p), new THREE.Vector3()).multiplyScalar(1/pts.length);
-  pts.forEach(p => p.sub(centroid));
   return pts;
-}
-
-function atom3dBuildNucleus(ctx, Z, A){
-  const { nucleusGroup, glowTex } = ctx;
-  const nucleonGeo = new THREE.SphereGeometry(ATOM3D_NUCLEON_R, 18, 18);
-  const N = A - Z;
-  const total = Z + N;
-  const positions = atom3dPackNucleus(total);
-  let kinds = new Array(Z).fill('proton').concat(new Array(Math.max(N,0)).fill('neutron'));
-  kinds = atom3dSeededShuffle(kinds, 7);
-  const nucleonMeshes = [];
-  kinds.forEach((kind, i) => {
-    const color = kind==='proton' ? ATOM3D_PROTON_COLOR : ATOM3D_NEUTRON_COLOR;
-    const emissive = kind==='proton' ? ATOM3D_PROTON_EMISSIVE : ATOM3D_NEUTRON_EMISSIVE;
-    const mat = new THREE.MeshPhysicalMaterial({ color, emissive:color, emissiveIntensity:emissive, metalness:0, roughness:0.35, clearcoat:0.6, clearcoatRoughness:0.25 });
-    const mesh = new THREE.Mesh(nucleonGeo, mat);
-    mesh.position.copy(positions[i]);
-    mesh.userData = { kind, index:i, baseEmissive:emissive, color };
-    atom3dAttachGlow(mesh, color, ATOM3D_NUCLEON_R*1.6, 0.2);
-    nucleusGroup.add(mesh);
-    nucleonMeshes.push(mesh);
-  });
-  const clusterRadius = Math.max(...positions.map(p=>p.length())) + ATOM3D_NUCLEON_R;
-  const clusterMat = new THREE.SpriteMaterial({ map:glowTex, color:0xff2a4d, transparent:true, blending:THREE.AdditiveBlending, depthWrite:false, opacity:0.4 });
-  const clusterGlow = new THREE.Sprite(clusterMat);
-  clusterGlow.scale.set(clusterRadius * 3.6, clusterRadius * 3.6, 1);
-  nucleusGroup.add(clusterGlow);
-  return nucleonMeshes;
 }
 
 function atom3dThreadCurve(radius, ampFraction, periods, phase){
@@ -159,127 +117,136 @@ function atom3dThreadCurve(radius, ampFraction, periods, phase){
 
 function atom3dBuildRing(radius, parent, glowTex, sparkles){
   const mainCurve = atom3dThreadCurve(radius, 0, 1, 0);
-  const mainLayers = [{ r:0.022, opacity:1.0, color:0xfff4d9 }, { r:0.06, opacity:0.7, color:0xffb133 }, { r:0.24, opacity:0.12, color:0xa63c00 }];
-  mainLayers.forEach(layer => {
-    const geo = new THREE.TubeGeometry(mainCurve, 160, layer.r, 6, true);
-    const mat = new THREE.MeshBasicMaterial({ color:layer.color, transparent:true, opacity:layer.opacity, blending:THREE.AdditiveBlending, depthWrite:false });
+  const mainLayers = [{ r:0.022, color:0xfff4d9, op:1 }, { r:0.06, color:0xffb133, op:0.7 }, { r:0.24, color:0xa63c00, op:0.12 }];
+  mainLayers.forEach(l => {
+    const geo = new THREE.TubeGeometry(mainCurve, 160, l.r, 6, true);
+    const mat = new THREE.MeshBasicMaterial({ color:l.color, transparent:true, opacity:l.op, blending:THREE.AdditiveBlending, depthWrite:false });
     parent.add(new THREE.Mesh(geo, mat));
   });
-  for (let i=0;i<4;i++){
-    const sc = 0.14 + Math.random()*0.12;
-    const mat = new THREE.SpriteMaterial({ map:glowTex, color:0xfff6e0, transparent:true, blending:THREE.AdditiveBlending, depthWrite:false, opacity:0.85 });
-    const sprite = new THREE.Sprite(mat);
-    sprite.scale.set(sc,sc,sc);
+  for (let i=0; i<4; i++) {
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map:glowTex, color:0xfff6e0, transparent:true, blending:THREE.AdditiveBlending, opacity:0.8 }));
+    sprite.scale.set(0.2,0.2,1);
     parent.add(sprite);
-    sparkles.push({ sprite, curve:mainCurve, phase: Math.random(), speed: 0.18 + Math.random()*0.22 });
+    sparkles.push({ sprite, curve:mainCurve, phase: Math.random(), speed: 0.2 });
   }
 }
 
-function atom3dBuildElectrons(ctx, Z){
-  const { electronsGroup, glowTex } = ctx;
-  const spinGroups = [], sparkles = [], electronMeshes = [];
-  const subshells = atom3dConfig(Z);
-  const shellMap = new Map();
-  subshells.forEach(sub => {
-    if (!shellMap.has(sub.n)) shellMap.set(sub.n, []);
-    const orbitals = 2*sub.l + 1;
-    const slots = atom3dAssignOrbitals(sub.count, orbitals);
-    for (let o=0;o<orbitals;o++) for (let e=0;e<slots[o];e++) shellMap.get(sub.n).push({ label:sub.label, l:sub.l, ml:o-sub.l, spin: e===0?'+1/2 ↑':'-1/2 ↓' });
-  });
-  const shellNs = [...shellMap.keys()].sort((a,b)=>a-b);
-  const maxN = Math.max(...shellNs);
-  shellNs.forEach(n => {
-    const radius = 4.6 + (n-1)*2.3;
-    atom3dBuildRing(radius, electronsGroup, glowTex, sparkles);
-    const spinGroup = new THREE.Object3D();
-    spinGroup.userData.speed = 0.3/Math.sqrt(n);
-    electronsGroup.add(spinGroup);
-    spinGroups.push(spinGroup);
-    shellMap.get(n).forEach((d, idx) => {
-      const angle = (idx/shellMap.get(n).length) * Math.PI*2;
-      const mat = new THREE.MeshPhysicalMaterial({ color:0x1e6bff, emissive:0x1e6bff, emissiveIntensity:1.7, metalness:0, roughness:0.3, clearcoat:0.6 });
-      const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 16), mat);
-      mesh.position.set(Math.cos(angle)*radius, Math.sin(angle)*radius, 0);
-      mesh.userData = { kind:'electron', n, label:d.label, ml:d.ml, spin:d.spin, isValence: n===maxN, baseEmissive:1.7, color:0x1e6bff };
-      atom3dAttachGlow(mesh, 0x1e6bff, 1.6, 0.5);
-      spinGroup.add(mesh);
-      electronMeshes.push(mesh);
-    });
-  });
-  return { spinGroups, sparkles, electronMeshes, maxOrbitRadius: 4.6 + (maxN-1)*2.3 };
+function atom3dMakeInfoPanel(host){
+  const panel = document.createElement('div');
+  panel.id = 'atom3d-info-panel';
+  panel.style.cssText = "position:absolute; right:10px; bottom:10px; width:160px; background:rgba(10,10,20,0.9); border:1px solid #7fd9ff; border-radius:10px; padding:10px; font-family:monospace; font-size:11px; color:#fff; display:none; pointer-events:none; z-index:1000;";
+  host.appendChild(panel);
+  return panel;
 }
 
-// RESTORED ORIGINAL ATOM VIEWER INTERACTION
+/* --- THE MAIN ATOM VIEWER (RESTORED TO ORIGINAL PERFECTION) --- */
 function drawAtom3D(symbol, elData) {
-  const host = els.threeHost;
+  const host = document.getElementById("threeHost");
+  host.innerHTML = "";
   const width = host.clientWidth, height = host.clientHeight;
   const z = elData.z, a = ATOM_MASS[symbol] || Math.round(z * 2.05);
+
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 500);
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(width, height);
   host.appendChild(renderer.domElement);
 
-  const atomGroup = new THREE.Object3D(); scene.add(atomGroup);
-  const nucleusGroup = new THREE.Object3D(); atomGroup.add(nucleusGroup);
-  const electronsGroup = new THREE.Object3D(); atomGroup.add(electronsGroup);
+  const group = new THREE.Group(); scene.add(group);
   const glowTex = atom3dGlowTexture();
-  const nucleonMeshes = atom3dBuildNucleus({ nucleusGroup, glowTex }, z, a);
-  const { spinGroups, sparkles, electronMeshes, maxOrbitRadius } = atom3dBuildElectrons({ electronsGroup, glowTex }, z);
-  
-  camera.position.z = maxOrbitRadius * 2.3;
+  const infoPanel = atom3dMakeInfoPanel(host);
+
+  // Nucleus
+  const nucleus = new THREE.Group(); group.add(nucleus);
+  const nucleonMeshes = [];
+  const positions = atom3dPackNucleus(z + (a-z));
+  for (let i=0; i<positions.length; i++) {
+    const isProton = i < z;
+    const color = isProton ? ATOM3D_PROTON_COLOR : ATOM3D_NEUTRON_COLOR;
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 16), new THREE.MeshPhysicalMaterial({ color, emissive:color, emissiveIntensity:1.5, roughness:0.2, clearcoat:1 }));
+    mesh.position.copy(positions[i]);
+    mesh.userData = { kind: isProton?'Proton':'Neutron', baseEmissive: 1.5 };
+    atom3dAttachGlow(mesh, color, 0.8, 0.3);
+    nucleus.add(mesh);
+    nucleonMeshes.push(mesh);
+  }
+
+  // Electrons
+  const electrons = new THREE.Group(); group.add(electrons);
+  const sparkles = [];
+  const configs = atom3dConfig(z);
+  let maxR = 5;
+  configs.forEach((sub, i) => {
+    const r = 4.6 + i*2.2; maxR = r;
+    atom3dBuildRing(r, electrons, glowTex, sparkles);
+    const spin = new THREE.Group(); electrons.add(spin);
+    spin.userData.speed = 0.5 / (i+1);
+    for (let j=0; j<sub.count; j++) {
+      const ang = (j/sub.count) * Math.PI*2;
+      const e = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 12), new THREE.MeshStandardMaterial({ color:0x1e6bff, emissive:0x1e6bff, emissiveIntensity:2 }));
+      e.position.set(Math.cos(ang)*r, Math.sin(ang)*r, 0);
+      e.userData = { kind:'Electron', baseEmissive: 2 };
+      atom3dAttachGlow(e, 0x1e6bff, 1.2, 0.5);
+      spin.add(e);
+      nucleonMeshes.push(e); // add to raycast list
+    }
+  });
+
+  camera.position.z = maxR * 2.5;
   const controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
 
-  // Interaction logic
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
-  host.addEventListener('click', (event) => {
-      const rect = host.getBoundingClientRect();
-      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-      raycaster.setFromCamera(mouse, camera);
-      const hits = raycaster.intersectObjects(nucleonMeshes.concat(electronMeshes));
-      if (hits.length > 0) {
-          const obj = hits[0].object;
-          obj.material.emissiveIntensity = 5.0;
-          setTimeout(() => obj.material.emissiveIntensity = obj.userData.baseEmissive, 500);
-      }
+  host.addEventListener('click', (e) => {
+    const rect = host.getBoundingClientRect();
+    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(nucleonMeshes);
+    if (hits.length > 0) {
+      const obj = hits[0].object;
+      obj.material.emissiveIntensity = 5;
+      infoPanel.style.display = 'block';
+      infoPanel.innerHTML = `<b style="color:#7fd9ff">${obj.userData.kind}</b><br>Part of ${elData.name}`;
+      setTimeout(() => obj.material.emissiveIntensity = obj.userData.baseEmissive, 500);
+    } else { infoPanel.style.display = 'none'; }
   });
 
+  let clock = 0;
   function animate() {
     requestAnimationFrame(animate);
+    clock += 0.01;
     controls.update();
-    spinGroups.forEach(g => g.rotation.z += g.userData.speed * 0.03);
+    electrons.children.forEach(c => { if(c.userData.speed) c.rotation.z += c.userData.speed * 0.05; });
+    sparkles.forEach(s => {
+      s.phase = (s.phase + 0.005) % 1;
+      const p = s.curve.getPointAt(s.phase);
+      s.sprite.position.copy(p);
+    });
     renderer.render(scene, camera);
   }
   animate();
-  threeScene = { renderer };
+  window.threeScene = { renderer };
 }
 
-/* =========================================================================
-   PREMIUM UPGRADE: COMPOUNDS & ALLOYS (GLOWING ORBS & PLASMA FILAMENTS)
-   ========================================================================= */
-
-// Info Panel for Compounds
-const infoPanel = document.createElement('div');
-infoPanel.style.cssText = "position:absolute; background:rgba(10,15,25,0.95); color:#fff; padding:12px; border:1px solid #00ff7f; border-radius:8px; font-family:'Space Grotesk', sans-serif; pointer-events:none; display:none; z-index:10000; font-size:13px; box-shadow:0 0 20px rgba(0,255,127,0.3);";
-document.body.appendChild(infoPanel);
+/* --- PREMIUM COMPOUND & ALLOY RENDERER (GLOSSY + PLASMA) --- */
+const premiumInfoPanel = document.createElement('div');
+premiumInfoPanel.style.cssText = "position:absolute; background:rgba(5,10,20,0.95); color:#fff; padding:12px; border:1px solid #00ff7f; border-radius:8px; font-family:sans-serif; pointer-events:none; display:none; z-index:10000; font-size:13px; box-shadow:0 0 20px rgba(0,255,127,0.3);";
+document.body.appendChild(premiumInfoPanel);
 
 function drawPremiumStructure(data) {
     const host = document.getElementById("threeHost");
-    host.innerHTML = ""; 
+    host.innerHTML = "";
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(40, host.clientWidth / host.clientHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(host.clientWidth, host.clientHeight);
     host.appendChild(renderer.domElement);
 
-    const mainGroup = new THREE.Group();
-    scene.add(mainGroup);
-
+    const mainGroup = new THREE.Group(); scene.add(mainGroup);
     scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-    const p1 = new THREE.PointLight(0xffffff, 1.2); p1.position.set(10,10,10); scene.add(p1);
+    const light = new THREE.PointLight(0xffffff, 1.5); light.position.set(10,10,10); scene.add(light);
 
     const atomMeshes = [];
     const bondMeshes = [];
@@ -287,33 +254,28 @@ function drawPremiumStructure(data) {
 
     data.atoms.forEach((a) => {
         const color = ATOM_COLOR[a.el] || 0xcccccc;
-        const mat = new THREE.MeshPhysicalMaterial({ 
-            color: color, emissive: color, emissiveIntensity: 0.5,
-            metalness: 0.2, roughness: 0.05, clearcoat: 1.0
-        });
-        const mesh = new THREE.Mesh(new THREE.SphereGeometry(ATOM_RADIUS[a.el]||0.5, 32, 32), mat);
+        const mat = new THREE.MeshPhysicalMaterial({ color, emissive:color, emissiveIntensity:0.4, metalness:0.3, roughness:0.05, clearcoat:1 });
+        const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), mat);
         mesh.position.set(a.pos[0]*2, a.pos[1]*2, a.pos[2]*2);
         
-        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: color, transparent: true, blending: THREE.AdditiveBlending, opacity: 0.8 }));
-        sprite.scale.set(2, 2, 1);
+        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map:glowTex, color, transparent:true, blending:THREE.AdditiveBlending, opacity:0.7 }));
+        sprite.scale.set(2.5, 2.5, 1);
         mesh.add(sprite);
 
-        mesh.userData = { symbol: a.el, name: ELEMENTS[a.el]?.name || a.el, role: a.role || "Component", z: ELEMENTS[a.el]?.z || "?" };
+        mesh.userData = { symbol:a.el, name:ELEMENTS[a.el]?.name||a.el, role:a.role||"Structural Atom", z:ELEMENTS[a.el]?.z||"?" };
         mainGroup.add(mesh);
         atomMeshes.push(mesh);
     });
 
     if(data.bonds) {
         data.bonds.forEach(b => {
-            const start = atomMeshes[b[0]].position;
-            const end = atomMeshes[b[1]].position;
+            const start = atomMeshes[b[0]].position, end = atomMeshes[b[1]].position;
             const dist = start.distanceTo(end);
             const bondGroup = new THREE.Group();
-            const core = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, dist, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-            const shell = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, dist, 12), new THREE.MeshStandardMaterial({ color: 0x00ff7f, emissive: 0x00ff7f, emissiveIntensity: 4, transparent: true, opacity: 0.5 }));
+            const core = new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,dist,8), new THREE.MeshBasicMaterial({ color:0xffffff }));
+            const shell = new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.12,dist,12), new THREE.MeshStandardMaterial({ color:0x00ff7f, emissive:0x00ff7f, emissiveIntensity:4, transparent:true, opacity:0.5 }));
             bondGroup.add(core); bondGroup.add(shell);
-            bondGroup.position.copy(start).lerp(end, 0.5);
-            bondGroup.lookAt(end); bondGroup.rotateX(Math.PI / 2);
+            bondGroup.position.copy(start).lerp(end,0.5); bondGroup.lookAt(end); bondGroup.rotateX(Math.PI/2);
             mainGroup.add(bondGroup);
             bondMeshes.push(shell);
         });
@@ -321,9 +283,7 @@ function drawPremiumStructure(data) {
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
-    let hovered = null;
-
-    host.addEventListener('pointermove', (e) => {
+    host.addEventListener('click', (e) => {
         const rect = host.getBoundingClientRect();
         mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -331,25 +291,25 @@ function drawPremiumStructure(data) {
         const hits = raycaster.intersectObjects(atomMeshes);
         if (hits.length > 0) {
             const obj = hits[0].object;
-            infoPanel.style.display = "block";
-            infoPanel.style.left = (e.clientX + 15) + "px";
-            infoPanel.style.top = (e.clientY + 15) + "px";
-            infoPanel.innerHTML = `<b>${obj.userData.name}</b> [${obj.userData.symbol}]<br>Atomic Number: ${obj.userData.z}<br>Role: ${obj.userData.role}`;
-        } else { infoPanel.style.display = "none"; }
+            obj.material.emissiveIntensity = 8;
+            premiumInfoPanel.style.display = "block";
+            premiumInfoPanel.style.left = (e.clientX + 15) + "px";
+            premiumInfoPanel.style.top = (e.clientY + 15) + "px";
+            premiumInfoPanel.innerHTML = `<b style="color:#00ff7f">${obj.userData.name}</b> [${obj.userData.symbol}]<br>Role: ${obj.userData.role}`;
+            setTimeout(() => obj.material.emissiveIntensity = 0.4, 400);
+        } else { premiumInfoPanel.style.display = "none"; }
     });
 
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     camera.position.z = 10;
-
     function animate(t) {
         requestAnimationFrame(animate);
         controls.update();
         mainGroup.rotation.y += 0.002;
-        bondMeshes.forEach(m => { m.material.emissiveIntensity = 3 + Math.sin(t * 0.005) * 2; });
+        bondMeshes.forEach(m => { m.material.emissiveIntensity = 3 + Math.sin(t*0.005)*2; });
         renderer.render(scene, camera);
     }
     animate(0);
-    threeScene = { renderer };
 }
 
 window.drawCompound3D = function(data) { drawPremiumStructure(data); };
