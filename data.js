@@ -180,6 +180,9 @@ const MOLECULE_BLURBS = {
   MGO: "Highly heat-resistant; used to line furnaces and kilns.",
   KCL: "Used as a common potassium fertilizer and, in a medical setting, as a heart medication.",
   CAO: "Known as 'quicklime'; reacts vigorously with water and has been used in construction since antiquity.",
+  HNO3: "A highly corrosive mineral acid used in the production of fertilizers and explosives.",
+  H2SO4: "Often called 'the king of chemicals,' it is vital for battery acid and mineral processing.",
+  CHCL3: "Historically used as an anesthetic; today it is a precursor to Teflon production.", 
 };
 
 // Idealized geometry, in angstrom-ish units — shape-accurate, not to exact scale.
@@ -464,6 +467,21 @@ const MOLECULES = {
     ],
     bonds: [[0,1]],
   },
+  HNO3: {
+    name: "Nitric Acid", formula: "HNO₃",
+    atoms: [{ el: "N", pos: [0, 0, 0] },{ el: "O", pos: [0, 1.2, 0] },{ el: "O", pos: [1.0, -0.6, 0] },{ el: "O", pos: [-1.0, -0.6, 0] },{ el: "H", pos: [-1.8, 0, 0] }],
+    bonds: [[0,1],[0,2],[0,3],[3,4]],
+  },
+  H2SO4: {
+    name: "Sulfuric Acid", formula: "H₂SO₄",
+    atoms: [{ el: "S", pos: [0, 0, 0] },{ el: "O", pos: [0, 1.5, 0] },{ el: "O", pos: [0, -1.5, 0] },{ el: "O", pos: [1.3, 0, 0.8] },{ el: "O", pos: [-1.3, 0, 0.8] },{ el: "H", pos: [1.8, 0.5, 1.2] },{ el: "H", pos: [-1.8, 0.5, 1.2] }],
+    bonds: [[0,1],[0,2],[0,3],[0,4],[3,5],[4,6]],
+  },
+  CHCL3: {
+    name: "Chloroform", formula: "CHCl₃",
+    atoms: [{ el: "C", pos: [0,0,0] },{ el: "H", pos: [0, 1.1, 0] },{ el: "Cl", pos: [1.5, -0.4, 0] },{ el: "Cl", pos: [-0.7, -0.4, 1.3] },{ el: "Cl", pos: [-0.7, -0.4, -1.3] }],
+    bonds: [[0,1],[0,2],[0,3],[0,4]],
+  }
 };
 
 // Look up a search term against molecules first, then elements.
@@ -499,7 +517,17 @@ const ALLOYS = {
     composition: [{ el: "Cu", ratio: 0.88, role: "Base" }, { el: "Sn", ratio: 0.12, role: "Durability" }]
   }
 };
-
+const ALLOYS = {
+  STEEL: {
+    name: "Carbon Steel",
+    composition: [{ el: "Fe", ratio: 0.98, role: "Main Strength" }, { el: "C", ratio: 0.02, role: "Hardness" }]
+  },
+  STAINLESS: {
+    name: "Stainless Steel",
+    composition: [{ el: "Fe", ratio: 0.70, role: "Base" }, { el: "Cr", ratio: 0.20, role: "Rust Resistance" }, { el: "Ni", ratio: 0.10, role: "Durability" }]
+  },
+  BRASS: { el: "Brass", composition: [{ el: "Cu", ratio: 0.65, role: "Base" }, { el: "Zn", ratio: 0.35, role: "Strength" }] }
+};
 // Find the 'resolveQuery' function in this file and add this line inside it:
-// if (ALLOYS[key]) return { type: "alloy", key, data: ALLOYS[key] };
+// if (ALLOYS[key]) return { type: "alloy", key, data: ALLOYS[key] }; if (ALLOYS[key]) return { type: "alloy", key, data: ALLOYS[key] };
 }
