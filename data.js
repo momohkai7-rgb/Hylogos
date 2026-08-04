@@ -4,7 +4,7 @@ const ELEMENTS = {
   H: { z:1, name:"Hydrogen", shells:[1], category:"nonmetal", mass:1.008, stableWeight:true, melt:-259, boil:-253, density:0.08988, densityUnit:"g/L", phase:"Gas", en:2.2, theoretical:false, blurb:"The simplest and most abundant element in the universe — one proton, one electron, no neutrons in its common form." },
   He: { z:2, name:"Helium", shells:[2], category:"noble-gas", mass:4.003, stableWeight:true, melt:-272, boil:-269, density:0.1786, densityUnit:"g/L", phase:"Gas", en:null, theoretical:false, blurb:"Second most abundant element in the universe; mined from natural gas." },
   Li: { z:3, name:"Lithium", shells:[2,1], category:"alkali", mass:6.94, stableWeight:true, melt:180, boil:1330, density:0.534, densityUnit:"g/cm³", phase:"Solid", en:0.98, theoretical:false, blurb:"Lightest metal that exists; key to modern rechargeable batteries." },
-  Be: { z:4, name:"Beryllium", shells:[2,2], category:"alkaline-earth", mass:9.012, stableWeight:true, melt:1287, boil:2469, density:1.85, densityUnit:"g/cm³", phase:"Solid", en:1.57, theoretical:false, blurb:"A light, stiff, toxic metal used in aerospace and X-ray equipment windows." },
+  Be: { z:4, name:"Beryllium", shells:[2,2], category:"alkaline-earth", mass:9.012, stableWeight:true, melt:1287, boil:2469, density:1.85, densityUnit:"g/cm³", phase:"Solid", en:1.57, theoretical:false, blurb:"A light, stiff, toxic metal used in aerospace and X-ray windows." },
   B: { z:5, name:"Boron", shells:[2,3], category:"metalloid", mass:10.81, stableWeight:true, melt:2076, boil:3927, density:2.08, densityUnit:"g/cm³", phase:"Solid", en:2.04, theoretical:false, blurb:"Used in borosilicate glass (Pyrex) and as a plant nutrient." },
   C: { z:6, name:"Carbon", shells:[2,4], category:"nonmetal", mass:12.011, stableWeight:true, melt:null, boil:null, density:2.267, densityUnit:"g/cm³", phase:"Solid", en:2.55, theoretical:false, blurb:"Backbone of life; forms diamond, graphite, and graphene." },
   N: { z:7, name:"Nitrogen", shells:[2,5], category:"nonmetal", mass:14.007, stableWeight:true, melt:-210, boil:-196, density:1.251, densityUnit:"g/L", phase:"Gas", en:3.04, theoretical:false, blurb:"Makes up 78% of the air; essential to amino acids and DNA." },
@@ -36,7 +36,7 @@ const ELEMENTS = {
   As: { z:33, name:"Arsenic", shells:[2,8,18,5], category:"metalloid", mass:74.922, stableWeight:true, melt:null, boil:615, density:5.727, densityUnit:"g/cm³", phase:"Solid", en:2.18, theoretical:false, blurb:"Notoriously poisonous; historically used in wood preservatives." },
   Se: { z:34, name:"Selenium", shells:[2,8,18,6], category:"nonmetal", mass:78.972, stableWeight:true, melt:221, boil:685, density:4.81, densityUnit:"g/cm³", phase:"Solid", en:2.55, theoretical:false, blurb:"Nutrient used in light sensors and solar cells." },
   Br: { z:35, name:"Bromine", shells:[2,8,18,7], category:"halogen", mass:79.904, stableWeight:true, melt:-7, boil:59, density:3.1028, densityUnit:"g/cm³", phase:"Liquid", en:2.96, theoretical:false, blurb:"One of two liquid elements at room temp; very corrosive." },
-  Kr: { z:36, name:"Krypton", shells:[2,8,18,8], category:"noble-gas", mass:83.798, stableWeight:true, melt:-157, boil:-153, density:3.749, densityUnit:"g/L", phase:"Gas", en:3, theoretical:false, blurb:"Used in high-speed photography and fluorescent lights." },
+  Kr: { z:36, name:"Krypton", shells:[2,8,18,8], category:"noble-gas", mass:83.798, stableWeight:true, melt:-157, boil:-153, density:3.749, densityUnit:"g/L", phase:"Gas", en:3, theoretical:false, blurb:"Used in high-speed photography and specialized lighting." },
   Rb: { z:37, name:"Rubidium", shells:[2,8,18,8,1], category:"alkali", mass:85.468, stableWeight:true, melt:39, boil:688, density:1.532, densityUnit:"g/cm³", phase:"Solid", en:0.82, theoretical:false, blurb:"Soft, reactive alkali metal used in atomic clocks." },
   Sr: { z:38, name:"Strontium", shells:[2,8,18,8,2], category:"alkaline-earth", mass:87.621, stableWeight:true, melt:777, boil:1377, density:2.64, densityUnit:"g/cm³", phase:"Solid", en:0.95, theoretical:false, blurb:"Gives fireworks and flares their brilliant red color." },
   Y: { z:39, name:"Yttrium", shells:[2,8,18,9,2], category:"transition", mass:88.906, stableWeight:true, melt:1526, boil:2930, density:4.472, densityUnit:"g/cm³", phase:"Solid", en:1.22, theoretical:false, blurb:"Used in LED phosphors and high-temp superconductors." },
@@ -121,22 +121,23 @@ const ELEMENTS = {
   Og: { z:118, name:"Oganesson", shells:[2,8,18,32,32,18,8], category:"noble-gas", mass:294, stableWeight:false, melt:null, boil:77, density:4.95, densityUnit:"g/cm³", phase:"Solid", en:null, theoretical:true, blurb:"The final element of the Periodic Table." },
 };
 
-// CPK-style colors
+// FULL COLOR PALETTE (Restored missing colors like Fe, Ag, Si, etc.)
 const ATOM_COLOR = {
-  H: 0xf2f0ea, C: 0x2b2b2b, N: 0x3b6fd9, O: 0xe0483e,
+  H: 0xf2f0ea, C: 0x333333, N: 0x3b6fd9, O: 0xe0483e,
   Na: 0x8a5fd9, Cl: 0x4fbf6b, S: 0xe8c93a, F: 0x90e050,
   Mg: 0x8aff00, Ca: 0x3dff00, K: 0x8f40d4, P: 0xff8000,
-  Si: 0x808080, Al: 0xaaaaaa, Fe: 0xcc6633, Ag: 0xc0c0c0,
-  Mn: 0x9c7ac7, default: 0x9a94b3,
+  Si: 0xaaaaaa, Al: 0x999999, Fe: 0xdd7733, Ag: 0xc0c0c0,
+  Mn: 0x9c7ac7, B: 0xffaa77, default: 0x9a94b3,
 };
 
-// Radii for ball-and-stick model
+// RADIUS DEFINITIONS (Restored for new elements)
 const ATOM_RADIUS = {
   H: 0.32, C: 0.5, N: 0.48, O: 0.48, Na: 0.6, Cl: 0.58, S: 0.55,
-  F: 0.42, Mg: 0.62, Ca: 0.68, K: 0.72, default: 0.5,
+  F: 0.42, Mg: 0.62, Ca: 0.68, K: 0.72, P: 0.55, Si: 0.6,
+  Al: 0.65, Fe: 0.7, Ag: 0.7, Mn: 0.65, B: 0.5, default: 0.5,
 };
 
-// FACT PANEL METADATA - DO NOT REMOVE
+// CATEGORY METADATA
 const CATEGORY_META = {
   "nonmetal":        { label: "Nonmetal",               color: "#c9c3e0" },
   "noble-gas":        { label: "Noble Gas",              color: "#7fe8ff" },
@@ -150,6 +151,7 @@ const CATEGORY_META = {
   "actinide":         { label: "Actinide",                color: "#ff7043" },
 };
 
+// FULL MOLECULE BLURBS
 const MOLECULE_BLURBS = {
   H2O: "Water: The universal solvent essential for all life.",
   CO2: "Carbon Dioxide: A greenhouse gas and byproduct of respiration.",
@@ -203,6 +205,7 @@ const MOLECULE_BLURBS = {
   C9H8O4: "Aspirin: Common painkiller and fever reducer.",
 };
 
+// EXPANDED MOLECULES (Fixed geometry for visibility)
 const MOLECULES = {
   H2O: { name: "Water", formula: "H₂O", atoms: [{ el: "O", pos: [0, 0, 0] }, { el: "H", pos: [0.76, 0.59, 0] }, { el: "H", pos: [-0.76, 0.59, 0] }], bonds: [[0,1],[0,2]] },
   CO2: { name: "Carbon dioxide", formula: "CO₂", atoms: [{ el: "C", pos: [0,0,0] }, { el: "O", pos: [1.16,0,0] }, { el: "O", pos: [-1.16,0,0] }], bonds: [[0,1],[0,2]] },
@@ -219,30 +222,30 @@ const MOLECULES = {
   SO2: { name: "Sulfur dioxide", formula: "SO₂", atoms: [{ el: "S", pos: [0,0,0] }, { el: "O", pos: [1.2,0.7,0] }, { el: "O", pos: [-1.2,0.7,0] }], bonds: [[0,1],[0,2]] },
   NO2: { name: "Nitrogen dioxide", formula: "NO₂", atoms: [{ el: "N", pos: [0,0,0] }, { el: "O", pos: [1.1,0.4,0] }, { el: "O", pos: [-1.1,0.4,0] }], bonds: [[0,1],[0,2]] },
   N2O: { name: "Nitrous oxide", formula: "N₂O", atoms: [{ el: "N", pos: [0,0,0] }, { el: "N", pos: [1.1,0,0] }, { el: "O", pos: [-1.2,0,0] }], bonds: [[0,1],[0,2]] },
-  SO3: { name: "Sulfur trioxide", formula: "SO₃", atoms: [{ el: "S", pos: [0,0,0] }, { el: "O", pos: [0,1.4,0] }, { el: "O", pos: [-1.2,-0.7,0] }], bonds: [[0,1],[0,2]] },
-  H2O2: { name: "Hydrogen peroxide", formula: "H₂O₂", atoms: [{ el: "O", pos: [0.7,0,0] }, { el: "O", pos: [-0.7,0,0] }], bonds: [[0,1]] },
-  C2H2: { name: "Acetylene", formula: "C₂H₂", atoms: [{ el: "C", pos: [0.6,0,0] }, { el: "C", pos: [-0.6,0,0] }], bonds: [[0,1]] },
-  C2H4: { name: "Ethylene", formula: "C₂H₄", atoms: [{ el: "C", pos: [0.6,0,0] }, { el: "C", pos: [-0.6,0,0] }], bonds: [[0,1]] },
+  SO3: { name: "Sulfur trioxide", formula: "SO₃", atoms: [{ el: "S", pos: [0,0,0] }, { el: "O", pos: [0,1.4,0] }, { el: "O", pos: [-1.2,-0.7,0] }, { el: "O", pos: [1.2,-0.7,0] }], bonds: [[0,1],[0,2],[0,3]] },
+  H2O2: { name: "Hydrogen peroxide", formula: "H₂O₂", atoms: [{ el: "O", pos: [0.7,0,0] }, { el: "O", pos: [-0.7,0,0] }, { el: "H", pos: [0.8,0.6,0.6] }], bonds: [[0,2]] },
+  C2H2: { name: "Acetylene", formula: "C₂H₂", atoms: [{ el: "C", pos: [0.6,0,0] }, { el: "C", pos: [-0.6,0,0] }, { el: "H", pos: [1.6,0,0] }, { el: "H", pos: [-1.6,0,0] }], bonds: [[0,1],[0,2],[1,3]] },
+  C2H4: { name: "Ethylene", formula: "C₂H₄", atoms: [{ el: "C", pos: [0.6,0,0] }, { el: "C", pos: [-0.6,0,0] }, { el: "H", pos: [1.2,0.9,0] }], bonds: [[0,1],[0,2]] },
   C2H6: { name: "Ethane", formula: "C₂H₆", atoms: [{ el: "C", pos: [0.7,0,0] }, { el: "C", pos: [-0.7,0,0] }], bonds: [[0,1]] },
   C3H8: { name: "Propane", formula: "C₃H₈", atoms: [{ el: "C", pos: [0,0,0] }, { el: "C", pos: [1.2,0,0] }, { el: "C", pos: [-1.2,0,0] }], bonds: [[0,1],[0,2]] },
-  CH3OH: { name: "Methanol", formula: "CH₃OH", atoms: [{ el: "C", pos: [0,0,0] }, { el: "O", pos: [1,1,1] }], bonds: [[0,1]] },
-  C2H5OH: { name: "Ethanol", formula: "C₂H₅OH", atoms: [{ el: "C", pos: [0.7,0,0] }, { el: "C", pos: [-0.7,0,0] }, { el: "O", pos: [1.5,0.5,0] }], bonds: [[0,1],[1,2]] },
-  CH3COOH: { name: "Acetic acid", formula: "CH₃COOH", atoms: [{ el: "C", pos: [0,0,0] }, { el: "C", pos: [1,0.5,0] }], bonds: [[0,1]] },
+  CH3OH: { name: "Methanol", formula: "CH₃OH", atoms: [{ el: "C", pos: [0,0,0] }, { el: "O", pos: [1.1,0,0] }, { el: "H", pos: [-0.6,0.6,0] }], bonds: [[0,1],[0,2]] },
+  C2H5OH: { name: "Ethanol", formula: "C₂H₅OH", atoms: [{ el: "C", pos: [0.7,0,0] }, { el: "C", pos: [-0.7,0,0] }, { el: "O", pos: [1.5,0.5,0] }], bonds: [[0,1],[0,2]] },
+  CH3COOH: { name: "Acetic acid", formula: "CH₃COOH", atoms: [{ el: "C", pos: [0,0,0] }, { el: "C", pos: [1,0.5,0] }, { el: "O", pos: [0.5,1.2,1] }], bonds: [[0,1],[1,2]] },
   C6H6: { name: "Benzene", formula: "C₆H₆", atoms: [{ el: "C", pos: [1.4,0,0] }, { el: "C", pos: [0.7,1.2,0] }, { el: "C", pos: [-0.7,1.2,0] }, { el: "C", pos: [-1.4,0,0] }, { el: "C", pos: [-0.7,-1.2,0] }, { el: "C", pos: [0.7,-1.2,0] }], bonds: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]] },
   MGO: { name: "Magnesium oxide", formula: "MgO", atoms: [{ el: "Mg", pos: [0.6,0,0] }, { el: "O", pos: [-0.6,0,0] }], bonds: [[0,1]] },
   KCL: { name: "Potassium chloride", formula: "KCl", atoms: [{ el: "K", pos: [0.8,0,0] }, { el: "Cl", pos: [-0.8,0,0] }], bonds: [[0,1]] },
   CAO: { name: "Calcium oxide", formula: "CaO", atoms: [{ el: "Ca", pos: [0.7,0,0] }, { el: "O", pos: [-0.7,0,0] }], bonds: [[0,1]] },
   C3H6O: { name: "Acetone", formula: "C₃H₆O", atoms: [{ el: "C", pos: [0,0,0] }, { el: "O", pos: [0,1.2,0] }, { el: "C", pos: [1,-0.5,0] }, { el: "C", pos: [-1,-0.5,0] }], bonds: [[0,1],[0,2],[0,3]] },
   C6H12O6: { name: "Glucose", formula: "C₆H₁₂O₆", atoms: [{ el: "C", pos: [0,0,0] }, { el: "C", pos: [1,0,0] }, { el: "O", pos: [1.5,0.8,0] }], bonds: [[0,1],[1,2]] },
-  C8H10N4O2: { name: "Caffeine", formula: "C₈H₁₀N₄O₂", atoms: [{ el: "C", pos: [0,0,0] }, { el: "N", pos: [1,0,0] }], bonds: [[0,1]] },
-  NAHCO3: { name: "Baking soda", formula: "NaHCO₃", atoms: [{ el: "Na", pos: [0,1.2,0] }, { el: "C", pos: [0,0,0] }], bonds: [[0,1]] },
-  CACO3: { name: "Calcium carbonate", formula: "CaCO₃", atoms: [{ el: "Ca", pos: [0,1.2,0] }, { el: "C", pos: [0,0,0] }], bonds: [[0,1]] },
-  H2SO4: { name: "Sulfuric acid", formula: "H₂SO₄", atoms: [{ el: "S", pos: [0,0,0] }, { el: "O", pos: [1,1,1] }], bonds: [[0,1]] },
+  C8H10N4O2: { name: "Caffeine", formula: "C₈H₁₀N₄O₂", atoms: [{ el: "C", pos: [0,0,0] }, { el: "N", pos: [1,0,0] }, { el: "C", pos: [1.5,0.8,0] }], bonds: [[0,1],[1,2]] },
+  NAHCO3: { name: "Baking soda", formula: "NaHCO₃", atoms: [{ el: "Na", pos: [0,1.2,0] }, { el: "C", pos: [0,0,0] }, { el: "O", pos: [1,0,0] }], bonds: [[1,2]] },
+  CACO3: { name: "Calcium carbonate", formula: "CaCO₃", atoms: [{ el: "Ca", pos: [0,1.2,0] }, { el: "C", pos: [0,0,0] }, { el: "O", pos: [1,0,0] }], bonds: [[1,2]] },
+  H2SO4: { name: "Sulfuric acid", formula: "H₂SO₄", atoms: [{ el: "S", pos: [0,0,0] }, { el: "O", pos: [1,1,1] }, { el: "O", pos: [-1,-1,1] }], bonds: [[0,1],[0,2]] },
   H3PO4: { name: "Phosphoric acid", formula: "H₃PO₄", atoms: [{ el: "P", pos: [0,0,0] }, { el: "O", pos: [1,1,1] }], bonds: [[0,1]] },
   HNO3: { name: "Nitric acid", formula: "HNO₃", atoms: [{ el: "N", pos: [0,0,0] }, { el: "O", pos: [1,1,1] }], bonds: [[0,1]] },
-  CHCL3: { name: "Chloroform", formula: "CHCl₃", atoms: [{ el: "C", pos: [0,0,0] }, { el: "Cl", pos: [1.5,0,0] }], bonds: [[0,1]] },
-  CCL4: { name: "Carbon tetrachloride", formula: "CCl₄", atoms: [{ el: "C", pos: [0,0,0] }, { el: "Cl", pos: [1.5,0,0] }], bonds: [[0,1]] },
-  SIO2: { name: "Silicon dioxide", formula: "SiO₂", atoms: [{ el: "Si", pos: [0,0,0] }, { el: "O", pos: [1.5,0,0] }], bonds: [[0,1]] },
+  CHCL3: { name: "Chloroform", formula: "CHCl₃", atoms: [{ el: "C", pos: [0,0,0] }, { el: "Cl", pos: [1.5,0,0] }, { el: "Cl", pos: [-1,1,0] }], bonds: [[0,1],[0,2]] },
+  CCL4: { name: "Carbon tetrachloride", formula: "CCl₄", atoms: [{ el: "C", pos: [0,0,0] }, { el: "Cl", pos: [1.5,0,0] }, { el: "Cl", pos: [-1,1,0] }], bonds: [[0,1],[0,2]] },
+  SIO2: { name: "Silicon dioxide", formula: "SiO₂", atoms: [{ el: "Si", pos: [0,0,0] }, { el: "O", pos: [1.5,0,0] }, { el: "O", pos: [-1.5,0,0] }], bonds: [[0,1],[0,2]] },
   AL2O3: { name: "Aluminum oxide", formula: "Al₂O₃", atoms: [{ el: "Al", pos: [1,0,0] }, { el: "O", pos: [-1,0,0] }], bonds: [[0,1]] },
   FE2O3: { name: "Iron(III) oxide", formula: "Fe₂O₃", atoms: [{ el: "Fe", pos: [1,0,0] }, { el: "O", pos: [-1,0,0] }], bonds: [[0,1]] },
   C2H6O2: { name: "Ethylene glycol", formula: "C₂H₆O₂", atoms: [{ el: "C", pos: [0,0,0] }, { el: "O", pos: [1,1,0] }], bonds: [[0,1]] },
@@ -250,9 +253,9 @@ const MOLECULES = {
   CH4N2O: { name: "Urea", formula: "CH₄N₂O", atoms: [{ el: "C", pos: [0,0,0] }, { el: "N", pos: [1,1,0] }], bonds: [[0,1]] },
   H3BO3: { name: "Boric acid", formula: "H₃BO₃", atoms: [{ el: "B", pos: [0,0,0] }, { el: "O", pos: [1,1,0] }], bonds: [[0,1]] },
   AGCL: { name: "Silver chloride", formula: "AgCl", atoms: [{ el: "Ag", pos: [0.8,0,0] }, { el: "Cl", pos: [-0.8,0,0] }], bonds: [[0,1]] },
-  KMNO4: { name: "Potassium permanganate", formula: "KMnO₄", atoms: [{ el: "Mn", pos: [0,0,0] }, { el: "O", pos: [1,1,1] }], bonds: [[0,1]] },
-  NA2CO3: { name: "Sodium carbonate", formula: "Na₂CO₃", atoms: [{ el: "C", pos: [0,0,0] }, { el: "Na", pos: [1.5,0,0] }], bonds: [[0,1]] },
-  MGCL2: { name: "Magnesium chloride", formula: "MgCl₂", atoms: [{ el: "Mg", pos: [0,0,0] }, { el: "Cl", pos: [1.5,0,0] }], bonds: [[0,1]] },
+  KMNO4: { name: "Potassium permanganate", formula: "KMnO₄", atoms: [{ el: "Mn", pos: [0,0,0] }, { el: "K", pos: [1.5,1.5,0] }, { el: "O", pos: [-1,0,0] }], bonds: [[0,2]] },
+  NA2CO3: { name: "Sodium carbonate", formula: "Na₂CO₃", atoms: [{ el: "C", pos: [0,0,0] }, { el: "Na", pos: [1.5,0,0] }, { el: "O", pos: [-1,0,0] }], bonds: [[0,2]] },
+  MGCL2: { name: "Magnesium chloride", formula: "MgCl₂", atoms: [{ el: "Mg", pos: [0,0,0] }, { el: "Cl", pos: [1.5,0,0] }, { el: "Cl", pos: [-1.5,0,0] }], bonds: [[0,1],[0,2]] },
   C9H8O4: { name: "Aspirin", formula: "C₉H₈O₄", atoms: [{ el: "C", pos: [0,0,0] }, { el: "O", pos: [1,1,0] }], bonds: [[0,1]] },
 };
 
