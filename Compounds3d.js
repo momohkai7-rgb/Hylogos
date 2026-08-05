@@ -1,7 +1,4 @@
-/* =========================================================================
-   COMPOUNDS & ALLOYS 3D ENGINE — UPGRADED PREDIUM VERSION
-   Matches the visual style and interactivity of atom3d.js
-========================================================================= */
+/* ===================== PREMIUM COMPOUNDS & ALLOYS ENGINE ===================== */
 
 const VIZ_THEME = {
     emerald: 0x10FF78,
@@ -10,7 +7,7 @@ const VIZ_THEME = {
     latticeSpacing: 1.8
 };
 
-// --- Shared Glow Engine (Replicating atom3d logic) ---
+// --- Glow Engine (Matches atom3d.js style) ---
 let _sharedGlowTex = null;
 function getGlowTexture() {
     if (_sharedGlowTex) return _sharedGlowTex;
@@ -35,19 +32,15 @@ function attachGlow(mesh, color, scale, baseOpacity) {
     const sprite = new THREE.Sprite(mat);
     sprite.scale.set(scale, scale, scale);
     mesh.add(sprite);
-    
-    // Store for animation/selection
     mesh.userData.glow = sprite;
     mesh.userData.glowBaseScale = scale;
-    mesh.userData.glowBaseOpacity = baseOpacity;
 }
 
-// --- Core Scene Setup ---
+// --- Scene Setup ---
 function setupPremiumScene(host) {
     host.innerHTML = "";
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
-    
     const camera = new THREE.PerspectiveCamera(45, host.clientWidth / host.clientHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -55,33 +48,27 @@ function setupPremiumScene(host) {
     renderer.outputEncoding = THREE.sRGBEncoding;
     host.appendChild(renderer.domElement);
 
-    // High-end Lighting
     scene.add(new THREE.AmbientLight(0xffffff, 0.2));
     const l1 = new THREE.DirectionalLight(0xffffff, 0.8);
     l1.position.set(5, 10, 7);
     scene.add(l1);
-    const l2 = new THREE.PointLight(VIZ_THEME.emerald, 0.5, 20);
-    l2.position.set(-5, -5, -5);
-    scene.add(l2);
 
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.08;
-
     return { scene, camera, renderer, controls };
 }
 
 // --- 1. MOLECULES ---
 window.drawCompound3D = function(data) {
-    const { scene, camera, renderer, controls } = setupPremiumScene(els.threeHost);
+    const host = document.getElementById("threeHost");
+    const { scene, camera, renderer, controls } = setupPremiumScene(host);
     const atomMeshes = [];
     const interactiveObjects = [];
 
-    // Create Atoms
     data.atoms.forEach(a => {
         const symbol = a.el;
-        const color = ATOM_COLOR[symbol] || ATOM_COLOR.default;
-        const radius = (ATOM_RADIUS[symbol] || ATOM_RADIUS.default) * 0.9;
+        const color = ATOM_COLOR[symbol] || 0x9a94b3;
+        const radius = (ATOM_RADIUS[symbol] || 0.5) * 0.9;
 
         const geo = new THREE.SphereGeometry(radius, VIZ_THEME.atomDetail, VIZ_THEME.atomDetail);
         const mat = new THREE.MeshPhysicalMaterial({
@@ -92,10 +79,9 @@ window.drawCompound3D = function(data) {
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(a.pos[0]*2, a.pos[1]*2, a.pos[2]*2);
         
-        const elData = ELEMENTS[symbol];
         mesh.userData = { 
-            type: 'atom', title: `${elData.name} (${symbol})`, 
-            desc: elData.blurb, baseEmissive: 0.2 
+            title: `${ELEMENTS[symbol].name} (${symbol})`, 
+            desc: ELEMENTS[symbol].blurb, baseEmissive: 0.2 
         };
 
         attachGlow(mesh, color, radius * 4, 0.3);
@@ -104,7 +90,6 @@ window.drawCompound3D = function(data) {
         interactiveObjects.push(mesh);
     });
 
-    // Create Glowing Bonds
     data.bonds.forEach(b => {
         const start = atomMeshes[b[0]].position;
         const end = atomMeshes[b[1]].position;
@@ -122,7 +107,7 @@ window.drawCompound3D = function(data) {
         bond.rotateX(Math.PI / 2);
         
         bond.userData = { 
-            type: 'bond', title: 'Chemical Bond', 
+            title: 'Chemical Bond', 
             desc: 'A covalent electron-sharing interaction stabilizing the molecule.',
             baseEmissive: 1.2
         };
@@ -133,32 +118,25 @@ window.drawCompound3D = function(data) {
     });
 
     camera.position.z = 8;
-    initInteraction(scene, camera, renderer, interactiveObjects);
-    runAnimation(scene, camera, renderer, controls);
+    initInteraction(camera, renderer, interactiveObjects);
+    animateLoop(scene, camera, renderer, controls);
 };
 
 // --- 2. ALLOYS ---
 window.drawAlloy3D = function(data) {
-    const { scene, camera, renderer, controls } = setupPremiumScene(els.threeHost);
+    const host = document.getElementById("threeHost");
+    const { scene, camera, renderer, controls } = setupPremiumScene(host);
     const interactiveObjects = [];
     
-    // Parse element composition for random distribution
+    // Fixed: Now using 'data.elements' to match your data.js structure
     const symbols = Object.keys(data.elements);
-    const totalWeight = Object.values(data.elements).reduce((a, b) => a + b, 0);
 
-    // Create 3x3x3 Lattice
     for (let x = -1; x <= 1; x++) {
         for (let y = -1; y <= 1; y++) {
             for (let z = -1; z <= 1; z++) {
-                // Pick element based on weight
-                let roll = Math.random() * totalWeight;
-                let symbol = symbols[0];
-                for (let s of symbols) {
-                    if (roll < data.elements[s]) { symbol = s; break; }
-                    roll -= data.elements[s];
-                }
-
+                const symbol = Math.random() > 0.85 && symbols[1] ? symbols[1] : symbols[0];
                 const color = ATOM_COLOR[symbol] || 0xcccccc;
+                
                 const mesh = new THREE.Mesh(
                     new THREE.SphereGeometry(0.55, 24, 24),
                     new THREE.MeshPhysicalMaterial({ 
@@ -169,8 +147,8 @@ window.drawAlloy3D = function(data) {
                 mesh.position.set(x * 1.8, y * 1.8, z * 1.8);
                 
                 mesh.userData = { 
-                    title: `${ELEMENTS[symbol].name} (In Lattice)`, 
-                    desc: `This ${symbol} atom is part of the metallic crystalline structure of ${data.name}.`,
+                    title: `${ELEMENTS[symbol].name} (Metallic Lattice)`, 
+                    desc: `Crystalline structure of ${data.name}.`,
                     baseEmissive: 0.1
                 };
 
@@ -182,61 +160,33 @@ window.drawAlloy3D = function(data) {
     }
 
     camera.position.set(5, 5, 8);
-    initInteraction(scene, camera, renderer, interactiveObjects);
-    runAnimation(scene, camera, renderer, controls);
+    initInteraction(camera, renderer, interactiveObjects);
+    animateLoop(scene, camera, renderer, controls);
 };
 
-// --- Helper: Interaction ---
-function initInteraction(scene, camera, renderer, targets) {
+function initInteraction(camera, renderer, targets) {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
-    let selected = null;
     let mouseDownPos = { x: 0, y: 0 };
 
-    renderer.domElement.addEventListener('mousedown', e => {
-        mouseDownPos = { x: e.clientX, y: e.clientY };
-    });
-
+    renderer.domElement.addEventListener('mousedown', e => mouseDownPos = { x: e.clientX, y: e.clientY });
     renderer.domElement.addEventListener('mouseup', e => {
-        const dist = Math.sqrt((e.clientX - mouseDownPos.x)**2 + (e.clientY - mouseDownPos.y)**2);
-        if (dist > 5) return; // Ignore drags
-
+        if (Math.sqrt((e.clientX - mouseDownPos.x)**2 + (e.clientY - mouseDownPos.y)**2) > 5) return;
         const rect = renderer.domElement.getBoundingClientRect();
         mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
         raycaster.setFromCamera(mouse, camera);
         const hits = raycaster.intersectObjects(targets);
-
-        if (selected) {
-            // Reset old selection
-            selected.scale.set(1, 1, 1);
-            selected.material.emissiveIntensity = selected.userData.baseEmissive;
-            selected.userData.glow.scale.setScalar(selected.userData.glowBaseScale);
-        }
-
         if (hits.length > 0) {
-            selected = hits[0].object;
-            const d = selected.userData;
-            // Visual Highlight
-            selected.scale.setScalar(1.2);
-            selected.material.emissiveIntensity = d.baseEmissive * 3;
-            selected.userData.glow.scale.setScalar(selected.userData.glowBaseScale * 1.5);
-
-            // Update UI
+            const d = hits[0].object.userData;
             document.getElementById("subjectName").innerHTML = `<span style="color:#10FF78">${d.title}</span>`;
             document.getElementById("viewerNote").textContent = d.desc;
         }
     });
 }
 
-// --- Helper: Animation Loop ---
-function runAnimation(scene, camera, renderer, controls) {
-    function animate() {
-        requestAnimationFrame(animate);
-        controls.update();
-        renderer.render(scene, camera);
-    }
+function animateLoop(scene, camera, renderer, controls) {
+    function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
     animate();
     window.threeScene = { renderer };
-}
+       }
