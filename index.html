@@ -15,20 +15,13 @@
 
 <main>
   <header class="hero">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 280" width="100%" height="100%" style="background-color: #060807; overflow: visible;">
+   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 280" width="100%" height="100%" style="background-color: #000000; overflow: visible;">
   <defs>
-    <!-- Background Glow & Atmosphere -->
-    <radialGradient id="ambientGlow" cx="50%" cy="50%" r="60%">
-      <stop offset="0%" stop-color="#00ff66" stop-opacity="0.08"/>
-      <stop offset="60%" stop-color="#002211" stop-opacity="0.03"/>
-      <stop offset="100%" stop-color="#060807" stop-opacity="0"/>
-    </radialGradient>
-
-    <!-- Radioactive Glow Filters (Vector-safe layered glows) -->
-    <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="3" result="blur1"/>
-      <feGaussianBlur stdDeviation="8" result="blur2"/>
-      <feGaussianBlur stdDeviation="15" result="blur3"/>
+    <!-- Intense Radioactive Glow Filters -->
+    <filter id="emeraldGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur1"/>
+      <feGaussianBlur stdDeviation="10" result="blur2"/>
+      <feGaussianBlur stdDeviation="20" result="blur3"/>
       <feMerge>
         <feMergeNode in="blur3"/>
         <feMergeNode in="blur2"/>
@@ -37,206 +30,114 @@
       </feMerge>
     </filter>
 
-    <filter id="intenseCore" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+    <filter id="coreGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
 
-    <!-- MATERIAL TEXTURES & PATTERNS -->
-    
-    <!-- H: Brushed Steel Pattern -->
-    <pattern id="brushedSteel" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-      <rect width="10" height="10" fill="#20252b"/>
-      <line x1="0" y1="0" x2="0" y2="10" stroke="#323a42" stroke-width="1.5"/>
-      <line x1="5" y1="0" x2="5" y2="10" stroke="#181d22" stroke-width="1"/>
-    </pattern>
-
-    <!-- l: Titanium Pattern (Subtle fine crosshatch) -->
-    <pattern id="titanium" width="6" height="6" patternUnits="userSpaceOnUse">
-      <rect width="6" height="6" fill="#313840"/>
-      <path d="M0 3L3 0M3 6L6 3" stroke="#3d4650" stroke-width="0.8"/>
-    </pattern>
-
-    <!-- first o: Oxidized Bronze (Teal/Dark copper oxidation) -->
-    <linearGradient id="oxidizedBronze" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1f3832"/>
-      <stop offset="50%" stop-color="#122420"/>
-      <stop offset="100%" stop-color="#0b1715"/>
-    </linearGradient>
-
-    <!-- second o: Dark Steel with Green Corrosion -->
-    <linearGradient id="darkSteelCorroded" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#181c20"/>
-      <stop offset="70%" stop-color="#111417"/>
-      <stop offset="100%" stop-color="#0d1013"/>
-    </linearGradient>
-
-    <!-- s: Aged Copper (Darkened patina brownish-copper) -->
-    <linearGradient id="agedCopper" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#3d2820"/>
-      <stop offset="50%" stop-color="#2c1c16"/>
-      <stop offset="100%" stop-color="#1a110d"/>
-    </linearGradient>
-
-    <!-- Radioactive Neon Core Gradients -->
-    <linearGradient id="radioactiveCore" x1="0%" y1="0%" x2="0%" y2="100%">
+    <!-- Radioactive Core Gradient -->
+    <linearGradient id="radioactiveNeon" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="25%" stop-color="#7affb2"/>
+      <stop offset="30%" stop-color="#7affb2"/>
       <stop offset="100%" stop-color="#00ff66"/>
     </linearGradient>
   </defs>
 
-  <!-- Ambient Scene Glow -->
-  <rect width="100%" height="100%" fill="url(#ambientGlow)"/>
+  <!-- Global Clean Base Styling for Sharp 2D Vector Look -->
+  <style>
+    .plain-white {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-weight: 700;
+      font-size: 145px;
+      fill: #ffffff;
+    }
+  </style>
 
-  <!-- ==================== LETTER: H (Brushed Steel) ==================== -->
-  <g id="letter-H">
-    <path d="M 60 40 L 95 40 L 95 110 L 145 110 L 145 40 L 180 40 L 180 220 L 145 220 L 145 140 L 95 140 L 95 220 L 60 220 Z" 
-          fill="url(#brushedSteel)" stroke="#3a444e" stroke-width="2"/>
-    <!-- Radioactive Infection Veins creeping from the right side into H -->
-    <path d="M 180 90 L 170 95 L 175 105 L 165 115" stroke="#00ff66" stroke-width="2" fill="none" filter="id('neonGlow')"/>
-    <path d="M 180 170 L 168 175 L 172 185 L 160 190" stroke="#00ff66" stroke-width="1.5" fill="none"/>
-    <circle cx="165" cy="115" r="2" fill="#7affb2" filter="url(#intenseCore)"/>
-    <circle cx="160" cy="190" r="1.5" fill="#7affb2"/>
+  <!-- ==================== LETTER: H ==================== -->
+  <text x="70" y="175" class="plain-white">H</text>
+
+  <!-- ==================== LETTER: y ==================== -->
+  <text x="210" y="175" class="plain-white">y</text>
+  <!-- Subtle infection on right side of y creeping toward 'l' -->
+  <path d="M 285 155 L 293 162 L 290 170" stroke="#00ff66" stroke-width="2" fill="none" stroke-linecap="round" filter="url(#coreGlow)"/>
+  <circle cx="293" cy="162" r="2" fill="#7affb2" filter="url(#coreGlow)"/>
+
+  <!-- ==================== LETTER: l ==================== -->
+  <text x="355" y="175" class="plain-white">l</text>
+  <!-- Subtle infection creeping into 'l' from the left -->
+  <path d="M 355 120 L 362 125 L 359 132" stroke="#00ff66" stroke-width="1.8" fill="none" stroke-linecap="round" filter="url(#coreGlow)"/>
+  <circle cx="362" cy="125" r="1.8" fill="#7affb2"/>
+
+  <!-- ==================== FIRST RADIOACTIVE 'o' ==================== -->
+  <!-- Outer Radioactive Glow -->
+  <g filter="url(#emeraldGlow)" opacity="0.9">
+    <ellipse cx="465" cy="130" rx="42" ry="52" fill="#00ff66"/>
   </g>
-
-  <!-- ==================== LETTER: y (Radioactive Neon Core) ==================== -->
-  <!-- Outer Radioactive Halo Aura -->
-  <g filter="url(#neonGlow)" opacity="0.85">
-    <path d="M 210 130 L 255 130 L 275 175 L 295 130 L 340 130 L 295 200 L 295 235 C 295 255, 305 265, 330 265 L 345 265 L 345 285 L 325 285 C 285 285, 260 265, 260 225 L 260 200 Z" fill="#00ff66"/>
+  <!-- Sharp Core 'o' with Vector Hole -->
+  <g filter="url(#coreGlow)">
+    <path d="M 465 70 C 495 70, 515 95, 515 130 C 515 165, 495 190, 465 190 C 435 190, 415 165, 415 130 C 415 95, 435 70, 465 70 Z
+             M 465 102 C 448 102, 442 113, 442 130 C 442 147, 448 158, 465 158 C 482 158, 488 147, 488 130 C 488 113, 482 102, 465 102 Z" 
+          fill="url(#radioactiveNeon)" fill-rule="evenodd"/>
   </g>
-  <!-- Sharp Vector Core of 'y' -->
-  <g id="letter-y" filter="url(#intenseCore)">
-    <path d="M 210 130 L 255 130 L 275 175 L 295 130 L 340 130 L 295 200 L 295 235 C 295 255, 305 265, 330 265 L 345 265 L 345 285 L 325 285 C 285 285, 260 265, 260 225 L 260 200 Z" fill="url(#radioactiveCore)"/>
-  </g>
-  
-  <!-- Multiple Radioactive Drips from 'y' -->
-  <g filter="url(#intenseCore)">
-    <!-- Drip 1 (Top left arm corner) -->
-    <path d="M 215 130 Q 212 145, 215 155 A 3 3 0 0 1 209 155 Q 210 140, 215 130 Z" fill="#00ff66"/>
-    <!-- Drip 2 (V-intersections / inner center) -->
-    <path d="M 273 175 Q 270 195, 274 210 A 4 4 0 0 0 282 210 Q 278 190, 273 175 Z" fill="#7affb2"/>
-    <circle cx="278" cy="214" r="3" fill="#ffffff"/>
-    <!-- Drip 3 (Right arm bottom edge) -->
-    <path d="M 335 130 Q 338 142, 334 150 A 2.5 2.5 0 0 1 340 148 Q 342 138, 335 130 Z" fill="#00ff66"/>
-    <!-- Drip 4 (Tail terminal drop) -->
-    <path d="M 330 265 Q 325 285, 331 298 A 5 5 0 0 0 341 298 Q 337 280, 330 265 Z" fill="#00ff66"/>
-    <circle cx="336" cy="303" r="3.5" fill="#ffffff" filter="url(#intenseCore)"/>
-    <!-- Secondary tiny micro-drip -->
-    <circle cx="265" cy="215" r="2" fill="#00ff66"/>
-    <path d="M 265 215 Q 263 222, 266 226 A 1.5 1.5 0 0 0 268 223 Z" fill="#00ff66"/>
-  </g>
-
-
-  <!-- ==================== LETTER: l (Titanium) ==================== -->
-  <g id="letter-l">
-    <rect x="380" y="40" width="35" height="180" rx="4" fill="url(#titanium)" stroke="#48525e" stroke-width="2"/>
-    <!-- Radioactive Contamination Infection spreading from left side (from 'y') -->
-    <path d="M 380 95 L 392 100 L 388 110 L 400 120" stroke="#00ff66" stroke-width="2" fill="none" filter="id('neonGlow')"/>
-    <path d="M 380 150 L 390 155 L 385 165" stroke="#00ff66" stroke-width="1.5" fill="none"/>
-    <circle cx="400" cy="120" r="2" fill="#7affb2" filter="url(#intenseCore)"/>
-    <polygon points="380,180 395,185 388,195" fill="#00ff66" opacity="0.8" filter="url(#neonGlow)"/>
-  </g>
-
-
-  <!-- ==================== LETTER: o (Oxidized Bronze) ==================== -->
-  <g id="letter-o1">
-    <path d="M 470 90 C 440 90, 430 115, 430 135 C 430 155, 440 180, 470 180 C 500 180, 510 155, 510 135 C 510 115, 500 90, 470 90 Z 
-             M 470 115 C 485 115, 488 125, 488 135 C 488 145, 485 155, 470 155 C 455 155, 452 145, 452 135 C 452 125, 455 115, 470 115 Z" 
-          fill="url(#oxidizedBronze)" stroke="#274a41" stroke-width="2" fill-rule="evenodd"/>
-    <!-- Bright emerald radioactive crust / corrosion patches inside the bronze -->
-    <path d="M 495 105 Q 505 120, 500 135 Q 492 125, 495 105 Z" fill="#00ff66" opacity="0.9" filter="url(#neonGlow)"/>
-    <path d="M 440 160 Q 448 172, 458 168 Q 452 158, 440 160 Z" fill="#00ff66" filter="url(#intenseCore)"/>
-    <circle cx="498" cy="132" r="2.5" fill="#7affb2" filter="url(#intenseCore)"/>
+  <!-- Multiple Radioactive Liquid Drips (First 'o') -->
+  <g filter="url(#coreGlow)">
+    <!-- Top-right rim drip -->
+    <path d="M 495 85 Q 505 98, 500 108 A 2.5 2.5 0 0 1 493 104 Q 495 95, 495 85 Z" fill="#00ff66"/>
+    <!-- Right side cascading drip -->
+    <path d="M 512 135 Q 522 148, 517 158 A 3 3 0 0 1 508 153 Q 512 144, 512 135 Z" fill="#00ff66"/>
+    <circle cx="517" cy="163" r="2.5" fill="#ffffff"/>
+    <!-- Bottom center heavy drip -->
+    <path d="M 460 190 Q 455 212, 462 222 A 4 4 0 0 0 472 220 Q 467 202, 460 190 Z" fill="#00ff66"/>
+    <circle cx="467" cy="226" r="3" fill="#ffffff"/>
+    <!-- Bottom-left micro drip -->
+    <path d="M 430 180 Q 423 195, 428 202 A 2 2 0 0 0 435 197 Q 431 188, 430 180 Z" fill="#7affb2"/>
   </g>
 
 
-  <!-- ==================== LETTER: g (Radioactive Neon Core) ==================== -->
-  <!-- Outer Radioactive Glow Aura -->
-  <g filter="url(#neonGlow)" opacity="0.85">
-    <path d="M 590 90 C 555 90, 545 115, 545 135 C 545 160, 560 180, 590 180 C 610 180, 625 170, 630 155 L 605 155 C 602 160, 595 162, 588 162 C 575 162, 570 150, 570 135 C 570 120, 575 108, 588 108 C 598 108, 605 115, 608 125 L 632 125 C 625 100, 610 90, 590 90 Z
-             M 590 190 C 555 190, 540 210, 540 240 C 540 265, 558 285, 585 285 C 615 285, 635 265, 635 235 L 635 195 L 610 195 L 610 215 C 605 205, 598 190, 590 190 Z" fill="#00ff66"/>
-    <!-- Loop inner body glow cutout approximation -->
-    <ellipse cx="585" cy="238" rx="22" ry="25" fill="#00ff66"/>
+  <!-- ==================== LETTER: g ==================== -->
+  <text x="560" y="175" class="plain-white">g</text>
+  <!-- Subtle infection creeping into 'g' from the first radioactive 'o' -->
+  <path d="M 558 115 L 567 122 L 563 130" stroke="#00ff66" stroke-width="2" fill="none" stroke-linecap="round" filter="url(#coreGlow)"/>
+  <circle cx="567" cy="122" r="2" fill="#7affb2"/>
+  <path d="M 560 160 L 568 165" stroke="#00ff66" stroke-width="1.5" fill="none"/>
+
+
+  <!-- ==================== SECOND RADIOACTIVE 'o' ==================== -->
+  <!-- Outer Radioactive Glow -->
+  <g filter="url(#emeraldGlow)" opacity="0.9">
+    <ellipse cx="685" cy="130" rx="42" ry="52" fill="#00ff66"/>
   </g>
-
-  <!-- Sharp Vector Core of 'g' -->
-  <g id="letter-g" filter="url(#intenseCore)">
-    <path d="M 590 90 C 555 90, 545 115, 545 135 C 545 160, 560 180, 590 180 C 610 180, 625 170, 630 155 L 605 155 C 602 160, 595 162, 588 162 C 575 162, 570 150, 570 135 C 570 120, 575 108, 588 108 C 598 108, 605 115, 608 125 L 632 125 C 625 100, 610 90, 590 90 Z
-             M 590 190 C 555 190, 540 210, 540 240 C 540 265, 558 285, 585 285 C 615 285, 635 265, 635 235 L 635 195 L 610 195 L 610 215 C 605 205, 598 190, 590 190 Z" fill="url(#radioactiveCore)"/>
-    <!-- Negative space cut out of loop center -->
-    <ellipse cx="585" cy="238" rx="17" ry="19" fill="#060807"/>
+  <!-- Sharp Core 'o' with Vector Hole -->
+  <g filter="url(#coreGlow)">
+    <path d="M 685 70 C 715 70, 735 95, 735 130 C 735 165, 715 190, 685 190 C 655 190, 635 165, 635 130 C 635 95, 655 70, 685 70 Z
+             M 685 102 C 668 102, 662 113, 662 130 C 662 147, 668 158, 685 158 C 702 158, 708 147, 708 130 C 708 113, 702 102, 685 102 Z" 
+          fill="url(#radioactiveNeon)" fill-rule="evenodd"/>
   </g>
-
-  <!-- Multiple Radioactive Drips from 'g' -->
-  <g filter="url(#intenseCore)">
-    <!-- Drip 1 (Top hook right corner) -->
-    <path d="M 625 125 Q 632 135, 628 145 A 2.5 2.5 0 0 1 620 142 Q 622 134, 625 125 Z" fill="#00ff66"/>
-    <!-- Drip 2 (Mid-section bridge underhang) -->
-    <path d="M 580 180 Q 575 195, 581 202 A 3 3 0 0 0 589 198 Q 585 188, 580 180 Z" fill="#7affb2"/>
-    <circle cx="585" cy="205" r="2.5" fill="#ffffff"/>
-    <!-- Drip 3 (Bottom loop base) -->
-    <path d="M 575 285 Q 570 305, 577 315 A 4 4 0 0 0 587 312 Q 581 298, 575 285 Z" fill="#00ff66"/>
-    <circle cx="582" cy="318" r="3" fill="#ffffff" filter="url(#intenseCore)"/>
-    <!-- Drip 4 (Right side lower loop curve) -->
-    <path d="M 632 245 Q 642 255, 638 265 A 2.5 2.5 0 0 1 630 260 Q 633 252, 632 245 Z" fill="#00ff66"/>
-  </g>
-
-
-  <!-- ==================== LETTER: o (Dark Steel with Green Corrosion) ==================== -->
-  <g id="letter-o2">
-    <path d="M 705 90 C 675 90, 665 115, 665 135 C 665 155, 675 180, 705 180 C 735 180, 745 155, 745 135 C 745 115, 735 90, 705 90 Z 
-             M 705 115 C 720 115, 723 125, 723 135 C 723 145, 720 155, 705 155 C 690 155, 687 145, 687 135 C 687 125, 690 115, 705 115 Z" 
-          fill="url(#darkSteelCorroded)" stroke="#222b35" stroke-width="2" fill-rule="evenodd"/>
-    <!-- Heavy radioactive green corrosion spreading from 'g' on the left side -->
-    <path d="M 665 110 L 678 120 L 672 135 L 685 142 L 670 160" stroke="#00ff66" stroke-width="3" fill="none" filter="url(#neonGlow)"/>
-    <path d="M 665 110 L 678 120 L 672 135 L 685 142 L 670 160" stroke="#7affb2" stroke-width="1.2" fill="none"/>
-    <polygon points="672,135 680,138 676,145" fill="#00ff66" filter="url(#intenseCore)"/>
-    <circle cx="685" cy="142" r="3" fill="#7affb2" filter="url(#intenseCore)"/>
-    <circle cx="670" cy="160" r="2" fill="#00ff66"/>
-    <!-- Small corrosion spots elsewhere on dark steel -->
-    <circle cx="725" cy="165" r="2.5" fill="#00ff66" opacity="0.8" filter="url(#neonGlow)"/>
+  <!-- Multiple Radioactive Liquid Drips (Second 'o') -->
+  <g filter="url(#coreGlow)">
+    <!-- Top-left rim drip -->
+    <path d="M 655 82 Q 645 95, 650 105 A 2.5 2.5 0 0 0 658 101 Q 655 92, 655 82 Z" fill="#00ff66"/>
+    <!-- Left side midpoint drip -->
+    <path d="M 635 125 Q 623 138, 628 148 A 3 3 0 0 0 637 143 Q 633 134, 635 125 Z" fill="#00ff66"/>
+    <circle cx="628" cy="153" r="2.5" fill="#ffffff"/>
+    <!-- Bottom base drip -->
+    <path d="M 680 190 Q 675 210, 682 220 A 4 4 0 0 0 692 218 Q 687 200, 680 190 Z" fill="#00ff66"/>
+    <circle cx="687" cy="224" r="3" fill="#ffffff"/>
+    <!-- Right side lower drip -->
+    <path d="M 725 165 Q 735 178, 730 188 A 2.5 2.5 0 0 1 721 183 Q 725 174, 725 165 Z" fill="#7affb2"/>
   </g>
 
 
-  <!-- ==================== LETTER: s (Aged Copper) ==================== -->
-  <g id="letter-s">
-    <path d="M 810 95 L 775 95 C 765 95, 755 105, 755 120 C 755 135, 765 142, 785 148 C 805 154, 820 162, 820 180 C 820 200, 800 210, 775 210 C 750 210, 735 198, 735 180 L 765 180 C 765 190, 772 195, 782 195 C 792 195, 795 190, 795 182 C 795 173, 785 168, 768 163 C 748 157, 730 148, 730 123 C 730 102, 750 90, 778 90 L 810 90 Z" 
-          fill="url(#agedCopper)" stroke="#52382c" stroke-width="2"/>
-    <!-- Radioactive Contamination Infection creeping from 'o' on the left -->
-    <path d="M 733 115 L 745 125 L 740 138" stroke="#00ff66" stroke-width="2" fill="none" filter="url(#neonGlow)"/>
-    <circle cx="745" cy="125" r="2.5" fill="#7affb2" filter="url(#intenseCore)"/>
-    <path d="M 735 195 L 748 190 L 745 202" stroke="#00ff66" stroke-width="1.8" fill="none"/>
-    <circle cx="748" cy="190" r="2" fill="#00ff66"/>
-  </g>
-
-  <!-- ==================== FLOATING RADIOACTIVE PARTICLES & DUST ==================== -->
-  <g filter="url(#intenseCore)" opacity="0.9">
-    <!-- Around 'y' -->
-    <circle cx="230" cy="95" r="1.5" fill="#7affb2"/>
-    <circle cx="310" cy="85" r="2" fill="#00ff66"/>
-    <circle cx="360" cy="120" r="1" fill="#7affb2"/>
-    <circle cx="280" cy="250" r="2.5" fill="#00ff66"/>
-    <circle cx="245" cy="230" r="1" fill="#ffffff"/>
-
-    <!-- Around 'g' -->
-    <circle cx="525" cy="70" r="2" fill="#00ff66"/>
-    <circle cx="560" cy="65" r="1.2" fill="#7affb2"/>
-    <circle cx="645" cy="105" r="2.2" fill="#00ff66"/>
-    <circle cx="650" cy="210" r="1.5" fill="#7affb2"/>
-    <circle cx="530" cy="245" r="2" fill="#00ff66"/>
-    <circle cx="620" cy="290" r="1" fill="#ffffff"/>
-
-    <!-- General ambient space dust -->
-    <circle cx="450" cy="60" r="1" fill="#7affb2" opacity="0.5"/>
-    <circle cx="130" cy="240" r="1.5" fill="#00ff66" opacity="0.6"/>
-    <circle cx="840" cy="140" r="1.2" fill="#7affb2" opacity="0.7"/>
-    <circle cx="760" cy="70" r="1" fill="#00ff66" opacity="0.5"/>
-  </g>
-  </svg>
+  <!-- ==================== LETTER: s ==================== -->
+  <text x="770" y="175" class="plain-white">s</text>
+  <!-- Subtle infection creeping into 's' from the second radioactive 'o' -->
+  <path d="M 768 115 L 777 122 L 774 130" stroke="#00ff66" stroke-width="2" fill="none" stroke-linecap="round" filter="url(#coreGlow)"/>
+  <circle cx="777" cy="122" r="2" fill="#7affb2"/>
+  <path d="M 770 162 L 779 168" stroke="#00ff66" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+   </svg>
     <p class="tagline">Search an element or a molecule. Watch its structure form. Ask what it means.</p>
   </header>
 
