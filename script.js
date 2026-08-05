@@ -258,21 +258,27 @@ function showSubject(hit) {
   stopBohr(); 
   clearThree();
 
+  els.threeHost.style.display = "block";
+
   if (hit.type === "element") {
     const a = (typeof ATOM_MASS !== 'undefined' && ATOM_MASS[hit.key]) || Math.round(hit.data.z * 2.05);
     els.subjectName.textContent = `${hit.data.name} (${hit.key})`;
     els.subjectMeta.textContent = `Z=${hit.data.z} · N=${a - hit.data.z} · A=${a}`;
-    els.threeHost.style.display = "block";
     if (typeof drawAtom3D === "function") drawAtom3D(hit.key, hit.data);
   } 
   else if (hit.type === "molecule") {
     els.subjectName.textContent = `${hit.data.name} (${hit.data.formula})`;
-    els.threeHost.style.display = "block";
-    if (typeof drawCompound3D === "function") drawCompound3D(hit.data);
+    els.subjectMeta.textContent = `${hit.data.atoms.length} atoms · ${hit.data.bonds.length} bonds`;
+    // Supports both Compounds3d.js (drawCompound3D) and fallbacks
+    if (typeof drawCompound3D === "function") {
+      drawCompound3D(hit.data);
+    } else if (typeof drawMolecule3D === "function") {
+      drawMolecule3D(hit.key, hit.data);
+    }
   } 
   else if (hit.type === "alloy") {
     els.subjectName.textContent = hit.data.name;
-    els.threeHost.style.display = "block";
+    els.subjectMeta.textContent = `alloy`;
     if (typeof drawAlloy3D === "function") drawAlloy3D(hit.data);
   }
 
@@ -315,17 +321,18 @@ function showFacts(hit) {
 }
 
 function factStat(l, v) { return `<div class="fact-stat"><div class="label">${l}</div><div class="value">${v}</div></div>`; }
-function stopBohr() { if (bohrAnimId) cancelAnimationFrame(bohrAnimId); bohrAnimId = null; }
-/* Updated Scene Management in script.js */
+
+function stopBohr() { 
+  if (bohrAnimId) cancelAnimationFrame(bohrAnimId); 
+  bohrAnimId = null; 
+}
+
+/* Updated Scene Management */
 function clearThree() {
-  // Check both global and window scope for the scene
   const sceneToClear = window.threeScene || threeScene;
   
   if (sceneToClear && sceneToClear.renderer) {
-    // Stop any running animations
     if (sceneToClear.animId) cancelAnimationFrame(sceneToClear.animId);
-    
-    // Clean up GPU memory
     sceneToClear.renderer.dispose();
     if (sceneToClear.renderer.domElement && sceneToClear.renderer.domElement.parentElement) {
       sceneToClear.renderer.domElement.parentElement.removeChild(sceneToClear.renderer.domElement);
@@ -337,60 +344,30 @@ function clearThree() {
   window.threeScene = null;
 }
 
-// Ensure showSubject clears properly before drawing
-function showSubject(hit) {
-  currentSubject = hit;
-  els.empty.style.display = "none";
-  els.results.classList.remove("hidden");
-  
-  stopBohr(); 
-  clearThree(); // This must run first to reset the viewer
-
-  els.threeHost.style.display = "block";
-
-  if (hit.type === "element") {
-    els.subjectName.textContent = `${hit.data.name} (${hit.key})`;
-    const a = ATOM_MASS[hit.key] || Math.round(hit.data.z * 2.05);
-    els.subjectMeta.textContent = `Z=${hit.data.z} · N=${a - hit.data.z} · A=${a}`;
-    if (typeof drawAtom3D === "function") drawAtom3D(hit.key, hit.data);
-  } 
-  else if (hit.type === "molecule") {
-    els.subjectName.textContent = `${hit.data.name} (${hit.data.formula})`;
-    if (typeof drawCompound3D === "function") drawCompound3D(hit.data);
-  } 
-  else if (hit.type === "alloy") {
-    els.subjectName.textContent = hit.data.name;
-    if (typeof drawAlloy3D === "function") drawAlloy3D(hit.data);
-  }
-
-  showFacts(hit);
-}
-function appendChat(role, text, pending = false) {
-  const div = document.createElement("div");
-  div.className = `chat-msg ${role}` + (pending ? " pending" : "");
-  div.textContent = text; els.chatLog.appendChild(div);
-  els.chatLog.scrollTop = els.chatLog.scrollHeight; return div;
-}
 /* ===================== Chat logic ===================== */
 if (els.chatForm) {
   const handleChatSubmit = async (e) => {
-    if (e) e.preventDefault(); // Stop page refresh
+    if (e) e.preventDefault();
     
     const msg = els.chatInput.value.trim(); 
     if (!msg) return;
     
     els.chatInput.value = ""; 
     appendChat("user", msg);
-    
-    // Hide mobile keyboard after sending
     els.chatInput.blur(); 
 
     const pending = appendChat("ai", "Processing...", true);
     try {
+      const subjectLabel = currentSubject
+        ? (currentSubject.type === "element"
+            ? `${currentSubject.data.name} (element, Z=${currentSubject.data.z})`
+            : `${currentSubject.data.name} (${currentSubject.data.formula})`)
+        : "no subject selected yet";
+
       const res = await fetch("/api/chat", { 
         method: "POST", 
         headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify({ message: msg }) 
+        body: JSON.stringify({ message: msg, subject: subjectLabel }) 
       });
       const data = await res.json();
       pending.textContent = data.reply || "Error."; 
@@ -401,10 +378,8 @@ if (els.chatForm) {
     }
   };
 
-  // Listen for normal form submission (clicking Ask or pressing Enter)
   els.chatForm.addEventListener("submit", handleChatSubmit);
 
-  // Extra safety net for mobile phone keyboards
   els.chatInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -420,4 +395,4 @@ function appendChat(role, text, pending = false) {
   els.chatLog.appendChild(div);
   els.chatLog.scrollTop = els.chatLog.scrollHeight; 
   return div;
-}
+              }
