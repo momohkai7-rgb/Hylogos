@@ -454,4 +454,187 @@ function drawAtom3D(symbol, elData) {
       m.parent.userData._pausedSpeed = m.parent.userData.speed;
       m.parent.userData.speed = 0;
     }
-    infoPanel.style.dis
+    infoPanel.style.display = 'block';
+    if (isElectron) atom3dShowElectron(infoPanel, m, symbol, name);
+    else atom3dShowNucleon(infoPanel, m, name);
+    const closeBtn = infoPanel.querySelector('.atom3d-close');
+    if (closeBtn){
+      const newBtn = closeBtn.cloneNode(true);
+      closeBtn.parentNode.replaceChild(newBtn, closeBtn);
+      newBtn.addEventListener('click', (e) => { e.stopPropagation(); clearSelection(); });
+    }
+  }
+
+  // OrbitControls internally calls setPointerCapture() on pointerdown, which
+  // captures ALL subsequent pointer events to itself until pointerup. Adding
+  // our own pointer/click listeners on the same element causes its internal
+  // `pointers[]` array to desync — the drag state never clears, freezing
+  // rotation after any particle click.
+  // Mouse events are NOT subject to pointer capture, so they stay clean.
+  let mouseDownPos = null;
+  renderer.domElement.addEventListener('mousedown', e => {
+    mouseDownPos = { x: e.clientX, y: e.clientY };
+  });
+  renderer.domElement.addEventListener('mouseup', e => {
+    if (!mouseDownPos) return;
+    const dx = Math.abs(e.clientX - mouseDownPos.x);
+    const dy = Math.abs(e.clientY - mouseDownPos.y);
+    mouseDownPos = null;
+    if (dx > 5 || dy > 5) return;
+    const rect = renderer.domElement.getBoundingClientRect();
+    ndc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    ndc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    // Force all world matrices up to date before raycasting against moving objects
+    scene.updateMatrixWorld(true);
+    raycaster.setFromCamera(ndc, camera);
+    const hits = raycaster.intersectObjects(nucleonMeshes.concat(electronMeshes));
+    if (hits.length) selectMesh(hits[0].object);
+    else clearSelection();
+  });
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let sparkleClock = 0;
+  let animId;
+  function animate(t) {
+    animId = requestAnimationFrame(animate);
+    try {
+      controls.update();
+      if (!reducedMotion){
+        spinGroups.forEach(g => g.rotation.z += g.userData.speed * 0.03);
+        sparkleClock += 0.006;
+        sparkles.forEach(s => {
+          const u = ((sparkleClock*s.speed + s.phase) % 1 + 1) % 1;
+          const pt = s.curve.getPointAt(u);
+          s.sprite.position.set(pt.x, pt.y, 0);
+        });
+      }
+      if (selected && selected.userData && selected.userData.glow && selected.userData.glow.material){
+        const pulse = 1 + Math.sin((t||0)*0.005)*0.15;
+        selected.userData.glow.material.opacity = 0.85*pulse;
+      }
+      renderer.render(scene, camera);
+    } catch (err) {
+      console.error('atom3d render error:', err);
+    }
+  }
+  animate();
+
+  // Use a getter so clearThree() always reads the latest animId, not a
+  // stale copy from the moment drawAtom3D first ran.
+  threeScene = { renderer, get animId() { return animId; } };
+
+  function onResize() {
+    const w = host.clientWidth, h = host.clientHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }
+  window.addEventListener('resize', onResize);
+}
+
+/* --- UPGRADED COMPOUND & ALLOY VIEWER --- */
+
+// 1. Function for Molecules (H2O, HCl, etc.)
+window.drawCompound3D = function(data) {
+    const host = document.getElementById("threeHost");
+    host.innerHTML = ""; // Clear the old view
+
+    // Setup the 3D space
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, host.clientWidth / host.clientHeight, 0.1, 1000);
+    camera.position.z = 7;
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(host.clientWidth, host.clientHeight);
+    host.appendChild(renderer.domElement);
+
+    // Lighting
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    const light = new THREE.PointLight(0xffffff, 1);
+    light.position.set(10, 10, 10);
+    scene.add(light);
+
+    const atomMeshes = [];
+
+    // Draw Atoms
+    data.atoms.forEach(a => {
+        const color = (typeof ATOM_COLOR !== 'undefined' ? ATOM_COLOR[a.el] : null) || 0xcccccc;
+        const mesh = new THREE.Mesh(
+            new THREE.SphereGeometry(0.4, 32, 32),
+            new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 0.2 })
+        );
+        mesh.position.set(a.pos[0]*2, a.pos[1]*2, a.pos[2]*2);
+        mesh.userData = { title: (typeof ELEMENTS !== 'undefined' && ELEMENTS[a.el]) ? ELEMENTS[a.el].name : a.el, desc: "An atom in this molecule." };
+        scene.add(mesh);
+        atomMeshes.push(mesh);
+    });
+
+    // Draw Glowing Bonds
+    data.bonds.forEach(b => {
+        const start = atomMeshes[b[0]].position;
+        const end = atomMeshes[b[1]].position;
+        const dist = start.distanceTo(end);
+        const bond = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.07, 0.07, dist, 16),
+            new THREE.MeshStandardMaterial({ color: 0x10FF78, emissive: 0x10FF78, emissiveIntensity: 1 })
+        );
+        bond.position.copy(start).lerp(end, 0.5);
+        bond.lookAt(end);
+        bond.rotateX(Math.PI / 2);
+        scene.add(bond);
+    });
+
+    // Interaction & Animation
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    let animId;
+    function animate() { 
+        animId = requestAnimationFrame(animate); 
+        controls.update(); 
+        renderer.render(scene, camera); 
+    }
+    animate();
+    
+    // Proper Lifecycle Registration for clearThree()
+    window.threeScene = { renderer, get animId() { return animId; } };
+};
+
+// 2. Function for Alloys (Steel, etc.)
+window.drawAlloy3D = function(data) {
+    const host = document.getElementById("threeHost");
+    host.innerHTML = ""; 
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, host.clientWidth / host.clientHeight, 0.1, 1000);
+    camera.position.z = 8;
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(host.clientWidth, host.clientHeight);
+    host.appendChild(renderer.domElement);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+    // Create a metallic grid (Lattice)
+    for (let x = -1; x <= 1; x++) {
+        for (let y = -1; y <= 1; y++) {
+            for (let z = -1; z <= 1; z++) {
+                const isMinor = Math.random() > 0.8;
+                const el = (data.composition && data.composition[1]) ? (isMinor ? data.composition[1].el : data.composition[0].el) : 'Fe';
+                const color = (typeof ATOM_COLOR !== 'undefined' ? ATOM_COLOR[el] : null) || 0x888888;
+                const atom = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.5, 24, 24),
+                    new THREE.MeshStandardMaterial({ color: color, metalness: 1, roughness: 0.1 })
+                );
+                atom.position.set(x*1.8, y*1.8, z*1.8);
+                scene.add(atom);
+            }
+        }
+    }
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    let animId;
+    function animate() { 
+        animId = requestAnimationFrame(animate); 
+        controls.update(); 
+        renderer.render(scene, camera); 
+    }
+    animate();
+    
+    // Proper Lifecycle Registration for clearThree()
+    window.threeScene = { renderer, get animId() { return animId; } };
+};
