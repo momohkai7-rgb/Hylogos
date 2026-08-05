@@ -316,28 +316,54 @@ function showFacts(hit) {
 
 function factStat(l, v) { return `<div class="fact-stat"><div class="label">${l}</div><div class="value">${v}</div></div>`; }
 function stopBohr() { if (bohrAnimId) cancelAnimationFrame(bohrAnimId); bohrAnimId = null; }
-
+/* Updated Scene Management in script.js */
 function clearThree() {
-  if (threeScene && threeScene.renderer) {
-    threeScene.renderer.dispose();
-    if (threeScene.renderer.domElement.parentElement) threeScene.renderer.domElement.parentElement.removeChild(threeScene.renderer.domElement);
+  // Check both global and window scope for the scene
+  const sceneToClear = window.threeScene || threeScene;
+  
+  if (sceneToClear && sceneToClear.renderer) {
+    // Stop any running animations
+    if (sceneToClear.animId) cancelAnimationFrame(sceneToClear.animId);
+    
+    // Clean up GPU memory
+    sceneToClear.renderer.dispose();
+    if (sceneToClear.renderer.domElement && sceneToClear.renderer.domElement.parentElement) {
+      sceneToClear.renderer.domElement.parentElement.removeChild(sceneToClear.renderer.domElement);
+    }
   }
-  els.threeHost.innerHTML = ""; threeScene = null;
+  
+  els.threeHost.innerHTML = ""; 
+  threeScene = null;
+  window.threeScene = null;
 }
 
-/* ===================== Chat logic ===================== */
-if (els.chatForm) {
-  els.chatForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const msg = els.chatInput.value.trim(); if (!msg) return;
-    els.chatInput.value = ""; appendChat("user", msg);
-    const pending = appendChat("ai", "Processing...", true);
-    try {
-      const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: msg }) });
-      const data = await res.json();
-      pending.textContent = data.reply || "Error."; pending.classList.remove("pending");
-    } catch (err) { pending.textContent = "Offline."; pending.classList.remove("pending"); }
-  });
+// Ensure showSubject clears properly before drawing
+function showSubject(hit) {
+  currentSubject = hit;
+  els.empty.style.display = "none";
+  els.results.classList.remove("hidden");
+  
+  stopBohr(); 
+  clearThree(); // This must run first to reset the viewer
+
+  els.threeHost.style.display = "block";
+
+  if (hit.type === "element") {
+    els.subjectName.textContent = `${hit.data.name} (${hit.key})`;
+    const a = ATOM_MASS[hit.key] || Math.round(hit.data.z * 2.05);
+    els.subjectMeta.textContent = `Z=${hit.data.z} · N=${a - hit.data.z} · A=${a}`;
+    if (typeof drawAtom3D === "function") drawAtom3D(hit.key, hit.data);
+  } 
+  else if (hit.type === "molecule") {
+    els.subjectName.textContent = `${hit.data.name} (${hit.data.formula})`;
+    if (typeof drawCompound3D === "function") drawCompound3D(hit.data);
+  } 
+  else if (hit.type === "alloy") {
+    els.subjectName.textContent = hit.data.name;
+    if (typeof drawAlloy3D === "function") drawAlloy3D(hit.data);
+  }
+
+  showFacts(hit);
 }
 function appendChat(role, text, pending = false) {
   const div = document.createElement("div");
