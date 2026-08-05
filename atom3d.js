@@ -352,7 +352,7 @@ function drawAtom3D(symbol, elData) {
   const width = host.clientWidth || 400;
   const height = host.clientHeight || 340;
   const name = elData.name, z = elData.z;
-  const a = ATOM_MASS[symbol] || Math.round(z * 2.05); // fallback estimate if a symbol isn't in the table yet
+  const a = ATOM_MASS[symbol] || Math.round(z * 2.05);
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x000000);
@@ -363,19 +363,9 @@ function drawAtom3D(symbol, elData) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(width, height);
   renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.toneMapping = THREE.NoToneMapping; // keeps the saturated emissive colors punchy
   host.appendChild(renderer.domElement);
 
-  renderer.domElement.addEventListener('webglcontextlost', (e) => {
-    e.preventDefault();
-    console.warn('atom3d: WebGL context lost, will rebuild on restore');
-  }, false);
-  renderer.domElement.addEventListener('webglcontextrestored', () => {
-    if (typeof currentSubject !== 'undefined' && currentSubject) {
-      showSubject(currentSubject);
-    }
-  }, false);
-
+  // Lighting
   scene.add(new THREE.AmbientLight(0xffffff, 0.08));
   const keyLight = new THREE.DirectionalLight(0xffffff, 0.35);
   keyLight.position.set(-7,9,10); scene.add(keyLight);
@@ -395,24 +385,85 @@ function drawAtom3D(symbol, elData) {
 
   const camDistance = maxOrbitRadius * 2.3;
   camera.position.set(0, 0, camDistance);
-  camera.lookAt(0, 0, 0);
 
   const controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
-  controls.enableZoom = true;
-  controls.minDistance = maxOrbitRadius * 0.5;
-  controls.maxDistance = maxOrbitRadius * 5;
-  controls.target.set(0, 0, 0);
 
-  // click-to-select (OrbitControls owns drag-to-rotate; this just tells a
-  // real click from the end of a drag before raycasting)
   const infoPanel = atom3dMakeInfoPanel(host);
-
   const raycaster = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
   let selected = null;
 
+  // Selection Logic
+  function clearSelection(){
+    if (selected){
+      const g = selected.userData.glow;
+      if (g) {
+        g.scale.setScalar(selected.userData.glowBaseScale);
+        g.material.opacity = selected.userData.glowBaseOpacity;
+      }
+      selected.material.emissiveIntensity = selected.userData.baseEmissive;
+      selected.scale.set(1,1,1);
+      if (selected.parent && selected.parent.userData._pausedSpeed !== undefined){
+        selected.parent.userData.speed = selected.parent.userData._pausedSpeed;
+        delete selected.parent.userData._pausedSpeed;
+      }
+    }
+    selected = null;
+    infoPanel.style.display = 'none';
+  }
+
+  function selectMesh(m){
+    if (selected) clearSelection();
+    selected = m;
+    const isElectron = m.userData.kind === 'electron';
+    m.scale.setScalar(isElectron ? 1.4 : 1.25);
+    m.material.emissiveIntensity = m.userData.baseEmissive * 1.5;
+    if (m.userData.glow) {
+        m.userData.glow.scale.setScalar(m.userData.glowBaseScale * 2);
+        m.userData.glow.material.opacity = 0.9;
+    }
+    if (isElectron && m.parent && m.parent.userData.speed) {
+      m.parent.userData._pausedSpeed = m.parent.userData.speed;
+      m.parent.userData.speed = 0;
+    }
+    infoPanel.style.display = 'block';
+    if (isElectron) atom3dShowElectron(infoPanel, m, symbol, name);
+    else atom3dShowNucleon(infoPanel, m, name);
+  }
+
+  // Mouse Input
+  let mouseDownPos = null;
+  renderer.domElement.addEventListener('mousedown', e => mouseDownPos = { x: e.clientX, y: e.clientY });
+  renderer.domElement.addEventListener('mouseup', e => {
+    if (!mouseDownPos || Math.abs(e.clientX - mouseDownPos.x) > 5) return;
+    const rect = renderer.domElement.getBoundingClientRect();
+    ndc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    ndc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(ndc, camera);
+    const hits = raycaster.intersectObjects(nucleonMeshes.concat(electronMeshes));
+    if (hits.length) selectMesh(hits[0].object);
+    else clearSelection();
+  });
+
+  // Animation Loop
+  let animId;
+  function animate(t) {
+    animId = requestAnimationFrame(animate);
+    controls.update();
+    spinGroups.forEach(g => g.rotation.z += (g.userData.speed || 0) * 0.03);
+    sparkles.forEach(s => {
+      const u = ((((t||0)*0.0002)*s.speed + s.phase) % 1 + 1) % 1;
+      const pt = s.curve.getPointAt(u);
+      s.sprite.position.set(pt.x, pt.y, 0);
+    });
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  // Export for script.js cleanup
+  window.threeScene = { renderer, animId };
   function clearSelection(){
     if (selected){
       const g = selected.userData && selected.userData.glow;
