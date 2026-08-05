@@ -269,17 +269,14 @@ function showSubject(hit) {
   else if (hit.type === "molecule") {
     els.subjectName.textContent = `${hit.data.name} (${hit.data.formula})`;
     els.subjectMeta.textContent = `${hit.data.atoms.length} atoms · ${hit.data.bonds.length} bonds`;
-    // Supports both Compounds3d.js (drawCompound3D) and fallbacks
-    if (typeof drawCompound3D === "function") {
-      drawCompound3D(hit.data);
-    } else if (typeof drawMolecule3D === "function") {
+    if (typeof drawMolecule3D === "function") {
       drawMolecule3D(hit.key, hit.data);
     }
   } 
   else if (hit.type === "alloy") {
     els.subjectName.textContent = hit.data.name;
     els.subjectMeta.textContent = `alloy`;
-    if (typeof drawAlloy3D === "function") drawAlloy3D(hit.data);
+    if (typeof drawAlloy3D === "function") drawAlloy3D(hit.key, hit.data);
   }
 
   showFacts(hit);
