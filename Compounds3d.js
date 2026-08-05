@@ -79,9 +79,15 @@ window.drawCompound3D = function(data) {
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(a.pos[0]*2, a.pos[1]*2, a.pos[2]*2);
         
+        // Safe lookups from updated file to prevent undefined errors
+        const elInfo = (typeof ELEMENTS !== 'undefined' && ELEMENTS[symbol]) ? ELEMENTS[symbol] : null;
+        const elName = elInfo ? elInfo.name : symbol;
+        const elDesc = elInfo ? (elInfo.blurb || "An atom in this molecule.") : "An atom in this molecule.";
+
         mesh.userData = { 
-            title: `${ELEMENTS[symbol].name} (${symbol})`, 
-            desc: ELEMENTS[symbol].blurb, baseEmissive: 0.2 
+            title: `${elName} (${symbol})`, 
+            desc: elDesc, 
+            baseEmissive: 0.2 
         };
 
         attachGlow(mesh, color, radius * 4, 0.3);
@@ -128,7 +134,7 @@ window.drawAlloy3D = function(data) {
     const { scene, camera, renderer, controls } = setupPremiumScene(host);
     const interactiveObjects = [];
     
-    // Fixed: Now using 'data.elements' to match your data.js structure
+    // Using 'data.elements' from your data.js structure
     const symbols = Object.keys(data.elements);
 
     for (let x = -1; x <= 1; x++) {
@@ -146,8 +152,11 @@ window.drawAlloy3D = function(data) {
                 );
                 mesh.position.set(x * 1.8, y * 1.8, z * 1.8);
                 
+                const elInfo = (typeof ELEMENTS !== 'undefined' && ELEMENTS[symbol]) ? ELEMENTS[symbol] : null;
+                const elName = elInfo ? elInfo.name : symbol;
+
                 mesh.userData = { 
-                    title: `${ELEMENTS[symbol].name} (Metallic Lattice)`, 
+                    title: `${elName} (Metallic Lattice)`, 
                     desc: `Crystalline structure of ${data.name}.`,
                     baseEmissive: 0.1
                 };
@@ -179,14 +188,23 @@ function initInteraction(camera, renderer, targets) {
         const hits = raycaster.intersectObjects(targets);
         if (hits.length > 0) {
             const d = hits[0].object.userData;
-            document.getElementById("subjectName").innerHTML = `<span style="color:#10FF78">${d.title}</span>`;
-            document.getElementById("viewerNote").textContent = d.desc;
+            const subjectNameEl = document.getElementById("subjectName");
+            const viewerNoteEl = document.getElementById("viewerNote");
+            if (subjectNameEl) subjectNameEl.innerHTML = `<span style="color:#10FF78">${d.title}</span>`;
+            if (viewerNoteEl) viewerNoteEl.textContent = d.desc;
         }
     });
 }
 
 function animateLoop(scene, camera, renderer, controls) {
-    function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
+    let animId;
+    function animate() { 
+        animId = requestAnimationFrame(animate); 
+        controls.update(); 
+        renderer.render(scene, camera); 
+    }
     animate();
-    window.threeScene = { renderer };
-       }
+    
+    // Connected to clearThree() lifecycle for memory management
+    window.threeScene = { renderer, get animId() { return animId; } };
+}
