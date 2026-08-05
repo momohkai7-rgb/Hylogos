@@ -125,15 +125,35 @@ const ELEMENTS = {
   Og: { z:118, name:"Oganesson", shells:[2,8,18,32,32,18,8], category:"noble-gas", mass:294, stableWeight:false, melt:null, boil:77, density:4.95, densityUnit:"g/cm³", phase:"Solid", en:null, theoretical:true, blurb:"The heaviest confirmed element on the table; predicted to be a solid, not a gas, under normal conditions despite sitting in the noble-gas column." },
 };
 
-// CPK-style colors per element symbol, used for the ball-and-stick viewer.
+// CPK-style colors per element symbol, expanded to include all transition,
+// post-transition, and rare earth metals required by the 50 new alloys.
 const ATOM_COLOR = {
   H: 0xf2f0ea, C: 0x2b2b2b, N: 0x3b6fd9, O: 0xe0483e,
   Na: 0x8a5fd9, Cl: 0x4fbf6b, S: 0xe8c93a, F: 0x90e050,
-  Mg: 0x8aff00, Ca: 0x3dff00, K: 0x8f40d4, default: 0x9a94b3,
+  Mg: 0x8aff00, Ca: 0x3dff00, K: 0x8f40d4,
+  Li: 0xcc80ff, B: 0xffb5b5, P: 0xff8f00, Si: 0xe8c99a,
+  Br: 0xa62929, In: 0xa67acc, W: 0x4a6b8a,
+  // transition / post-transition / rare-earth metals
+  Ti: 0xbfc2c7, V: 0xa6a6ab, Cr: 0x8a99c7, Mn: 0x9c7ac7,
+  Fe: 0xdd7a3c, Co: 0x5b7fb5, Ni: 0x8fbf8f, Cu: 0xd2691e,
+  Zn: 0x7a8ca3, Ga: 0xa0c8e0, Ge: 0x668f8f, Nb: 0x6fb5c9,
+  Mo: 0x4fb8b8, Cd: 0xffd98f, Sn: 0x668090, Sb: 0xb08fd8,
+  Pd: 0xb0c8d0, Ag: 0xd8dce0, Pt: 0xe0e0e6,
+  Au: 0xffd700, Hg: 0xd4d8dc, Pb: 0x5a6670, Bi: 0xc89ca0,
+  Nd: 0xc6a0e8, Zr: 0xa8c8c0, Al: 0xc8c8cf,
+  default: 0x9a94b3,
 };
+
 const ATOM_RADIUS = {
   H: 0.32, C: 0.5, N: 0.48, O: 0.48, Na: 0.6, Cl: 0.58, S: 0.55,
-  F: 0.42, Mg: 0.62, Ca: 0.68, K: 0.72, default: 0.5,
+  F: 0.42, Mg: 0.62, Ca: 0.68, K: 0.72,
+  Li: 0.58, B: 0.44, P: 0.52, Si: 0.56, Br: 0.56, In: 0.66,
+  Ti: 0.6, V: 0.58, Cr: 0.56, Mn: 0.56, Fe: 0.56, Co: 0.54,
+  Ni: 0.54, Cu: 0.54, Zn: 0.56, Ga: 0.58, Ge: 0.58, Nb: 0.62,
+  Mo: 0.62, Cd: 0.62, Sn: 0.64, Sb: 0.64, Pd: 0.62, Ag: 0.64,
+  W: 0.64, Pt: 0.64, Au: 0.64, Hg: 0.66, Pb: 0.68, Bi: 0.68,
+  Nd: 0.7, Zr: 0.64, Al: 0.6,
+  default: 0.5,
 };
 
 // Display label + accent color per element category, used by the facts panel.
