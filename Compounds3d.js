@@ -129,8 +129,10 @@ function compound3dInitScene(host) {
   return { scene, camera, renderer, glowTex: atom3dGlowTexture() };
 }
 
-/* ---- glowing bond: bright core cylinder + additive-blended outer layers,
-   plus traveling spark particles that flow along it ---- */
+/* ---- glowing bond: bright core cylinder + additive-blended outer layers
+   (same layering idea as atom3d's electron-ring threads), plus traveling
+   spark particles that flow along it — same clock/phase/lerp technique as
+   atom3d's electron sparkles, just along a straight line instead of a curve ---- */
 function compound3dBuildBond(group, pa, pb, glowColor) {
   const dir = new THREE.Vector3().subVectors(pb, pa);
   const len = dir.length();
@@ -173,7 +175,7 @@ function compound3dBuildBond(group, pa, pb, glowColor) {
 /* =========================================================================
    MOLECULES — ball-and-stick viewer
 ========================================================================= */
-window.drawCompound3D = function (key, mol) {
+window.drawMolecule3D = function (key, mol) {
   const host = els.threeHost;
   host.innerHTML = '';
   const { scene, camera, renderer, glowTex } = compound3dInitScene(host);
@@ -208,6 +210,7 @@ window.drawCompound3D = function (key, mol) {
     const pa = atomMeshes[ia].position, pb = atomMeshes[ib].position;
     const ca = ATOM_COLOR[mol.atoms[ia].el] ?? ATOM_COLOR.default;
     const cb = ATOM_COLOR[mol.atoms[ib].el] ?? ATOM_COLOR.default;
+    // blend the two atom colors for the bond's glow tint
     const blend = new THREE.Color(ca).lerp(new THREE.Color(cb), 0.5).getHex();
     const { meshes, sparkles } = compound3dBuildBond(molGroup, pa, pb, blend);
     bondSparkles.push(...sparkles);
@@ -218,7 +221,7 @@ window.drawCompound3D = function (key, mol) {
       glowLayers: [meshes[1], meshes[2]].map(m => ({ mesh: m, baseOpacity: m.material.opacity }))
     };
     meshes.forEach(m => { m.userData = bondData; });
-    bondMeshes.push(meshes[0]);
+    bondMeshes.push(meshes[0]); // only the core layer is raycast-clickable; its userData carries the glow-layer refs above
   });
 
   const camDistance = Math.max(4, maxExtent * 2.6);
@@ -282,14 +285,12 @@ window.drawCompound3D = function (key, mol) {
         go.material.opacity = 0.5;
       }
       const el = d.elData, cat = el && CATEGORY_META[el.category];
-      const elName = el ? el.name : ELEMENTS[d.el]?.name || d.el;
-      const elEn = el && el.en != null ? compound3dRow('Electronegativity', el.en) : '';
       infoPanel.innerHTML = `
         ${compound3dCloseBtn()}
-        <div style="font-family:var(--font-display);font-weight:600;font-size:12.5px">${elName} (${d.el})</div>
+        <div style="font-family:var(--font-display);font-weight:600;font-size:12.5px">${el ? el.name : d.el} (${d.el})</div>
         <div style="color:var(--text-dim);font-size:9.5px;margin-bottom:6px">part of ${mol.name}</div>
         ${cat ? compound3dRow('Category', cat.label) : ''}
-        ${elEn}`;
+        ${el && el.en != null ? compound3dRow('Electronegativity', el.en) : ''}`;
     } else {
       m.material.emissiveIntensity = d.baseEmissive * 1.6;
       if (d.glowLayers) d.glowLayers.forEach(gl => { gl.mesh.material.opacity = Math.min(1, gl.baseOpacity * 1.9); });
@@ -304,6 +305,10 @@ window.drawCompound3D = function (key, mol) {
     if (closeBtn) closeBtn.addEventListener('click', (e) => { e.stopPropagation(); clearSelection(); });
   }
 
+  // Same mousedown/mouseup + 5px-drag-threshold technique as atom3d.js —
+  // OrbitControls uses pointer capture internally, so click/pointer
+  // listeners on the same element desync its drag state. Mouse events
+  // aren't subject to pointer capture, so they stay clean.
   let mouseDownPos = null;
   const raycaster = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
@@ -389,6 +394,7 @@ window.drawAlloy3D = function (key, alloy) {
     atomMeshes.push(mesh);
   });
 
+  // ambient "electron sea" — small drifting glow points through the lattice
   const seaCount = 60;
   const seaPts = [];
   const clusterR = Math.max(...positions.map(p => p.length())) + SPHERE_R;
@@ -468,10 +474,9 @@ window.drawAlloy3D = function (key, alloy) {
       go.material.opacity = 0.5;
     }
     const el = d.elData, cat = el && CATEGORY_META[el.category];
-    const elName = el ? el.name : ELEMENTS[d.el]?.name || d.el;
     infoPanel.innerHTML = `
       ${compound3dCloseBtn()}
-      <div style="font-family:var(--font-display);font-weight:600;font-size:12.5px">${elName} (${d.el})</div>
+      <div style="font-family:var(--font-display);font-weight:600;font-size:12.5px">${el ? el.name : d.el} (${d.el})</div>
       <div style="color:var(--text-dim);font-size:9.5px;margin-bottom:6px">in this ${alloy.name} lattice</div>
       ${compound3dRow('Composition', d.pct + '%')}
       ${cat ? compound3dRow('Category', cat.label) : ''}`;
