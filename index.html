@@ -17,11 +17,11 @@
   <header class="hero">
    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 280" width="100%" height="100%" style="background-color: #000000; overflow: visible;">
   <defs>
-    <!-- Intense Radioactive Glow Filters -->
+    <!-- Radioactive Neon Glow Filters -->
     <filter id="emeraldGlow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="4" result="blur1"/>
-      <feGaussianBlur stdDeviation="10" result="blur2"/>
-      <feGaussianBlur stdDeviation="20" result="blur3"/>
+      <feGaussianBlur stdDeviation="5" result="blur1"/>
+      <feGaussianBlur stdDeviation="12" result="blur2"/>
+      <feGaussianBlur stdDeviation="22" result="blur3"/>
       <feMerge>
         <feMergeNode in="blur3"/>
         <feMergeNode in="blur2"/>
@@ -38,106 +38,100 @@
       </feMerge>
     </filter>
 
-    <!-- Radioactive Core Gradient -->
-    <linearGradient id="radioactiveNeon" x1="0%" y1="0%" x2="0%" y2="100%">
+    <!-- Radioactive Liquid Gradient -->
+    <linearGradient id="radioactiveLiquid" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="30%" stop-color="#7affb2"/>
+      <stop offset="25%" stop-color="#7affb2"/>
       <stop offset="100%" stop-color="#00ff66"/>
     </linearGradient>
   </defs>
 
-  <!-- Global Clean Base Styling for Sharp 2D Vector Look -->
+  <!-- Clean Bold Modern Sans-Serif Font Styling -->
   <style>
     .plain-white {
-      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       font-weight: 700;
-      font-size: 145px;
+      font-size: 140px;
       fill: #ffffff;
     }
   </style>
 
   <!-- ==================== LETTER: H ==================== -->
-  <text x="70" y="175" class="plain-white">H</text>
+  <text x="75" y="172" class="plain-white">H</text>
 
   <!-- ==================== LETTER: y ==================== -->
-  <text x="210" y="175" class="plain-white">y</text>
-  <!-- Subtle infection on right side of y creeping toward 'l' -->
-  <path d="M 285 155 L 293 162 L 290 170" stroke="#00ff66" stroke-width="2" fill="none" stroke-linecap="round" filter="url(#coreGlow)"/>
-  <circle cx="293" cy="162" r="2" fill="#7affb2" filter="url(#coreGlow)"/>
+  <text x="210" y="172" class="plain-white">y</text>
 
   <!-- ==================== LETTER: l ==================== -->
-  <text x="355" y="175" class="plain-white">l</text>
-  <!-- Subtle infection creeping into 'l' from the left -->
-  <path d="M 355 120 L 362 125 L 359 132" stroke="#00ff66" stroke-width="1.8" fill="none" stroke-linecap="round" filter="url(#coreGlow)"/>
-  <circle cx="362" cy="125" r="1.8" fill="#7affb2"/>
+  <text x="350" y="172" class="plain-white">l</text>
 
   <!-- ==================== FIRST RADIOACTIVE 'o' ==================== -->
-  <!-- Outer Radioactive Glow -->
-  <g filter="url(#emeraldGlow)" opacity="0.9">
-    <ellipse cx="465" cy="130" rx="42" ry="52" fill="#00ff66"/>
+  <!-- Outer Radioactive Glow Aura -->
+  <g filter="url(#emeraldGlow)" opacity="0.85">
+    <path d="M 455 78 C 488 78, 508 100, 508 132 C 508 164, 488 186, 455 186 C 422 186, 402 164, 402 132 C 402 100, 422 78, 455 78 Z
+             M 455 106 C 438 106, 430 116, 430 132 C 430 148, 438 158, 455 158 C 472 158, 480 148, 480 132 C 480 116, 472 106, 455 106 Z" 
+          fill="#00ff66" fill-rule="evenodd"/>
   </g>
-  <!-- Sharp Core 'o' with Vector Hole -->
+
+  <!-- Sharp Core Liquid Ring with Open Center Hole -->
   <g filter="url(#coreGlow)">
-    <path d="M 465 70 C 495 70, 515 95, 515 130 C 515 165, 495 190, 465 190 C 435 190, 415 165, 415 130 C 415 95, 435 70, 465 70 Z
-             M 465 102 C 448 102, 442 113, 442 130 C 442 147, 448 158, 465 158 C 482 158, 488 147, 488 130 C 488 113, 482 102, 465 102 Z" 
-          fill="url(#radioactiveNeon)" fill-rule="evenodd"/>
+    <path d="M 455 78 C 488 78, 508 100, 508 132 C 508 164, 488 186, 455 186 C 422 186, 402 164, 402 132 C 402 100, 422 78, 455 78 Z
+             M 455 106 C 438 106, 430 116, 430 132 C 430 148, 438 158, 455 158 C 472 158, 480 148, 480 132 C 480 116, 472 106, 455 106 Z" 
+          fill="url(#radioactiveLiquid)" fill-rule="evenodd"/>
   </g>
-  <!-- Multiple Radioactive Liquid Drips (First 'o') -->
+
+  <!-- Multiple Organic, Uneven Radioactive Drips (First 'o') -->
   <g filter="url(#coreGlow)">
     <!-- Top-right rim drip -->
-    <path d="M 495 85 Q 505 98, 500 108 A 2.5 2.5 0 0 1 493 104 Q 495 95, 495 85 Z" fill="#00ff66"/>
-    <!-- Right side cascading drip -->
-    <path d="M 512 135 Q 522 148, 517 158 A 3 3 0 0 1 508 153 Q 512 144, 512 135 Z" fill="#00ff66"/>
-    <circle cx="517" cy="163" r="2.5" fill="#ffffff"/>
-    <!-- Bottom center heavy drip -->
-    <path d="M 460 190 Q 455 212, 462 222 A 4 4 0 0 0 472 220 Q 467 202, 460 190 Z" fill="#00ff66"/>
-    <circle cx="467" cy="226" r="3" fill="#ffffff"/>
-    <!-- Bottom-left micro drip -->
-    <path d="M 430 180 Q 423 195, 428 202 A 2 2 0 0 0 435 197 Q 431 188, 430 180 Z" fill="#7affb2"/>
+    <path d="M 490 88 Q 502 98, 497 108 A 2 2 0 0 1 490 104 Q 493 96, 490 88 Z" fill="#00ff66"/>
+    <!-- Left outer side leak -->
+    <path d="M 402 130 Q 390 142, 396 150 A 2.5 2.5 0 0 0 404 145 Q 401 137, 402 130 Z" fill="#00ff66"/>
+    <!-- Inner top cavity drip (leaking down into the center hole) -->
+    <path d="M 450 106 Q 448 118, 453 124 A 1.8 1.8 0 0 0 458 120 Q 454 112, 450 106 Z" fill="#7affb2"/>
+    <!-- Heavy bottom-center main drip -->
+    <path d="M 450 186 Q 444 208, 452 218 A 3.5 3.5 0 0 0 462 215 Q 457 198, 450 186 Z" fill="#00ff66"/>
+    <circle cx="457" cy="222" r="2.8" fill="#ffffff"/>
+    <!-- Right side lower cascading droplet -->
+    <path d="M 500 155 Q 512 168, 507 178 A 2.2 2.2 0 0 1 499 173 Q 503 164, 500 155 Z" fill="#7affb2"/>
   </g>
 
 
   <!-- ==================== LETTER: g ==================== -->
-  <text x="560" y="175" class="plain-white">g</text>
-  <!-- Subtle infection creeping into 'g' from the first radioactive 'o' -->
-  <path d="M 558 115 L 567 122 L 563 130" stroke="#00ff66" stroke-width="2" fill="none" stroke-linecap="round" filter="url(#coreGlow)"/>
-  <circle cx="567" cy="122" r="2" fill="#7affb2"/>
-  <path d="M 560 160 L 568 165" stroke="#00ff66" stroke-width="1.5" fill="none"/>
+  <text x="545" y="172" class="plain-white">g</text>
 
 
   <!-- ==================== SECOND RADIOACTIVE 'o' ==================== -->
-  <!-- Outer Radioactive Glow -->
-  <g filter="url(#emeraldGlow)" opacity="0.9">
-    <ellipse cx="685" cy="130" rx="42" ry="52" fill="#00ff66"/>
+  <!-- Outer Radioactive Glow Aura -->
+  <g filter="url(#emeraldGlow)" opacity="0.85">
+    <path d="M 685 78 C 718 78, 738 100, 738 132 C 738 164, 718 186, 685 186 C 652 186, 632 164, 632 132 C 632 100, 652 78, 685 78 Z
+             M 685 106 C 668 106, 660 116, 660 132 C 660 148, 668 158, 685 158 C 702 158, 710 148, 710 132 C 710 116, 702 106, 685 106 Z" 
+          fill="#00ff66" fill-rule="evenodd"/>
   </g>
-  <!-- Sharp Core 'o' with Vector Hole -->
+
+  <!-- Sharp Core Liquid Ring with Open Center Hole -->
   <g filter="url(#coreGlow)">
-    <path d="M 685 70 C 715 70, 735 95, 735 130 C 735 165, 715 190, 685 190 C 655 190, 635 165, 635 130 C 635 95, 655 70, 685 70 Z
-             M 685 102 C 668 102, 662 113, 662 130 C 662 147, 668 158, 685 158 C 702 158, 708 147, 708 130 C 708 113, 702 102, 685 102 Z" 
-          fill="url(#radioactiveNeon)" fill-rule="evenodd"/>
+    <path d="M 685 78 C 718 78, 738 100, 738 132 C 738 164, 718 186, 685 186 C 652 186, 632 164, 632 132 C 632 100, 652 78, 685 78 Z
+             M 685 106 C 668 106, 660 116, 660 132 C 660 148, 668 158, 685 158 C 702 158, 710 148, 710 132 C 710 116, 702 106, 685 106 Z" 
+          fill="url(#radioactiveLiquid)" fill-rule="evenodd"/>
   </g>
-  <!-- Multiple Radioactive Liquid Drips (Second 'o') -->
+
+  <!-- Multiple Organic, Uneven Radioactive Drips (Second 'o') -->
   <g filter="url(#coreGlow)">
-    <!-- Top-left rim drip -->
-    <path d="M 655 82 Q 645 95, 650 105 A 2.5 2.5 0 0 0 658 101 Q 655 92, 655 82 Z" fill="#00ff66"/>
-    <!-- Left side midpoint drip -->
-    <path d="M 635 125 Q 623 138, 628 148 A 3 3 0 0 0 637 143 Q 633 134, 635 125 Z" fill="#00ff66"/>
-    <circle cx="628" cy="153" r="2.5" fill="#ffffff"/>
-    <!-- Bottom base drip -->
-    <path d="M 680 190 Q 675 210, 682 220 A 4 4 0 0 0 692 218 Q 687 200, 680 190 Z" fill="#00ff66"/>
-    <circle cx="687" cy="224" r="3" fill="#ffffff"/>
-    <!-- Right side lower drip -->
-    <path d="M 725 165 Q 735 178, 730 188 A 2.5 2.5 0 0 1 721 183 Q 725 174, 725 165 Z" fill="#7affb2"/>
+    <!-- Top-left rim leak -->
+    <path d="M 658 86 Q 647 96, 653 105 A 2 2 0 0 0 660 100 Q 657 93, 658 86 Z" fill="#00ff66"/>
+    <!-- Inner bottom-left cavity droplet -->
+    <path d="M 670 158 Q 667 168, 674 172 A 1.5 1.5 0 0 0 678 168 Q 673 162, 670 158 Z" fill="#7affb2"/>
+    <!-- Heavy bottom-center cascading drip -->
+    <path d="M 682 186 C 677 202, 688 214, 684 225 A 3.2 3.2 0 0 0 694 222 C 692 208, 687 195, 682 186 Z" fill="#00ff66"/>
+    <circle cx="690" cy="229" r="2.5" fill="#ffffff"/>
+    <!-- Right outer side drip -->
+    <path d="M 738 135 Q 750 146, 744 156 A 2.5 2.5 0 0 1 736 151 Q 740 143, 738 135 Z" fill="#00ff66"/>
   </g>
 
 
   <!-- ==================== LETTER: s ==================== -->
-  <text x="770" y="175" class="plain-white">s</text>
-  <!-- Subtle infection creeping into 's' from the second radioactive 'o' -->
-  <path d="M 768 115 L 777 122 L 774 130" stroke="#00ff66" stroke-width="2" fill="none" stroke-linecap="round" filter="url(#coreGlow)"/>
-  <circle cx="777" cy="122" r="2" fill="#7affb2"/>
-  <path d="M 770 162 L 779 168" stroke="#00ff66" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-   </svg>
+  <text x="760" y="172" class="plain-white">s</text>
+</svg>
     <p class="tagline">Search an element or a molecule. Watch its structure form. Ask what it means.</p>
   </header>
 
