@@ -371,3 +371,53 @@ function appendChat(role, text, pending = false) {
   div.textContent = text; els.chatLog.appendChild(div);
   els.chatLog.scrollTop = els.chatLog.scrollHeight; return div;
 }
+/* ===================== Chat logic ===================== */
+if (els.chatForm) {
+  const handleChatSubmit = async (e) => {
+    if (e) e.preventDefault(); // Stop page refresh
+    
+    const msg = els.chatInput.value.trim(); 
+    if (!msg) return;
+    
+    els.chatInput.value = ""; 
+    appendChat("user", msg);
+    
+    // Hide mobile keyboard after sending
+    els.chatInput.blur(); 
+
+    const pending = appendChat("ai", "Processing...", true);
+    try {
+      const res = await fetch("/api/chat", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ message: msg }) 
+      });
+      const data = await res.json();
+      pending.textContent = data.reply || "Error."; 
+      pending.classList.remove("pending");
+    } catch (err) { 
+      pending.textContent = "Offline or API missing."; 
+      pending.classList.remove("pending"); 
+    }
+  };
+
+  // Listen for normal form submission (clicking Ask or pressing Enter)
+  els.chatForm.addEventListener("submit", handleChatSubmit);
+
+  // Extra safety net for mobile phone keyboards
+  els.chatInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleChatSubmit(e);
+    }
+  });
+}
+
+function appendChat(role, text, pending = false) {
+  const div = document.createElement("div");
+  div.className = `chat-msg ${role}` + (pending ? " pending" : "");
+  div.textContent = text; 
+  els.chatLog.appendChild(div);
+  els.chatLog.scrollTop = els.chatLog.scrollHeight; 
+  return div;
+}
