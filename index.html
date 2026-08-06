@@ -42,6 +42,26 @@
       <p id="viewerNote" class="viewer-note"></p>
     </div>
 
+    <!-- NEW STRUCTURES PANEL -->
+    <div class="panel struct-panel" id="structPanel" style="display: none;">
+      <div class="panel-head">
+        <span id="structTitle">Chemical Structure</span>
+        <span id="structCounter" class="mono">1 / 1</span>
+      </div>
+      <div class="struct-carousel">
+        <button class="struct-nav struct-prev" id="structPrev" aria-label="Previous Structure">‹</button>
+        <div class="struct-canvas-host" id="structCanvasHost">
+          <!-- Rendered dynamically via script -->
+        </div>
+        <button class="struct-nav struct-next" id="structNext" aria-label="Next Structure">›</button>
+      </div>
+      <div class="struct-details">
+        <div class="struct-grid" id="structGrid">
+          <!-- Populated dynamically -->
+        </div>
+        <div class="struct-notes" id="structNotes">—</div>
+      </div>
+    </div>
     <div class="panel chat-panel">
       <div class="panel-head"><span>Ask MatAI</span><span class="mono" id="chatModel">groq · llama-3.3-70b</span></div>
       <div id="chatLog" class="chat-log">
@@ -53,7 +73,6 @@
       </form>
     </div>
   </section>
-
   <section id="factsSection" class="panel facts-panel hidden">
     <div class="panel-head">
       <span id="factsTitle">Facts</span>
