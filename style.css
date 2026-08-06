@@ -428,3 +428,99 @@ footer {
   font-size: 0.78rem;
   padding: 2rem 0 3rem;
 }
+/* ===== Upgraded Structures Carousel & Telemetry Panel ===== */
+.struct-panel {
+  display: flex;
+  flex-direction: column;
+}
+.struct-carousel {
+  position: relative;
+  height: 320px;
+  background: radial-gradient(60% 60% at 50% 45%, rgba(16,255,120,0.05), transparent 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+}
+.struct-canvas-host {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  transition: opacity 0.25s ease-in-out;
+}
+.struct-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(16, 12, 28, 0.85);
+  border: 1px solid var(--line);
+  color: var(--photon-blue);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.struct-nav:hover {
+  background: var(--panel);
+  color: var(--disk-hot);
+  border-color: var(--photon-blue);
+  box-shadow: 0 0 12px rgba(127,217,255,0.3);
+}
+.struct-prev { left: 12px; }
+.struct-next { right: 12px; }
+
+.struct-details {
+  padding: 1.1rem 1.25rem;
+  background: rgba(5, 4, 10, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.struct-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem 1.2rem;
+  background: rgba(16, 12, 28, 0.5);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+}
+@media (max-width: 600px) {
+  .struct-grid { grid-template-columns: 1fr; }
+}
+.struct-prop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+.struct-prop .prop-label { color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+.struct-prop .prop-val { color: var(--text-main); font-weight: 500; text-align: right; }
+
+.struct-notes-wrap {
+  border-top: 1px solid var(--line);
+  padding-top: 0.7rem;
+}
+.struct-notes-title {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--photon-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.25rem;
+}
+.struct-notes {
+  color: var(--text-dim);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
