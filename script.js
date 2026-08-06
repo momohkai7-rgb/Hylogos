@@ -574,7 +574,7 @@ function appendChat(role, text, pending = false) {
     ];
   }
 
-  // --- SCIENTIFIC SVG RENDERING ENGINE (Auto-scaled & Bounded) ---
+  // --- SCIENTIFIC SVG DRAWING ENGINE ---
   function getBaseSVGDefs() {
     return `<defs>
       <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
@@ -592,7 +592,6 @@ function appendChat(role, text, pending = false) {
     let svg = `<svg viewBox="0 0 340 230" width="100%" height="100%" style="background:transparent;">`;
     svg += getBaseSVGDefs();
     
-    // Auto-scale coordinates to fit inside box perfectly
     const coords = mol.atoms.map(a => ({ x: a.pos[0], y: a.pos[1] }));
     const xs = coords.map(c => c.x), ys = coords.map(c => c.y);
     const minX = Math.min(...xs), maxX = Math.max(...xs);
