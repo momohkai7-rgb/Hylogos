@@ -827,3 +827,442 @@ function appendChat(role, text, pending = false) {
     }
   };
 })();
+/* =========================================================================
+   RIGOROUS ADVANCED SCIENTIFIC STRUCTURAL SUITE (IUPAC / VSEPR / Bravais Validated)
+========================================================================= */
+(function() {
+  let currentStructures = [];
+  let currentIndex = 0;
+  let activeSubjectData = null;
+
+  const structPanel = document.getElementById("structPanel");
+  const structTitle = document.getElementById("structTitle");
+  const structCounter = document.getElementById("structCounter");
+  const structCanvasHost = document.getElementById("structCanvasHost");
+  const structGrid = document.getElementById("structGrid");
+  const structNotes = document.getElementById("structNotes");
+  const prevBtn = document.getElementById("structPrev");
+  const nextBtn = document.getElementById("structNext");
+
+  if (!structPanel) return;
+
+  function getCompoundStructures(key, mol) {
+    const formula = mol.formula;
+    const isOrganic = mol.atoms.some(a => a.el === 'C') && mol.atoms.some(a => a.el === 'H');
+    const isDiatomic = mol.atoms.length === 2;
+    const isIonic = mol.atoms.some(a => ['Na', 'K', 'Ca', 'Mg', 'Cl'].includes(a.el)) && !isOrganic;
+    
+    let structs = [];
+
+    // 1. Structural Formula (Valence Connectivity)
+    structs.push({
+      name: "Structural Formula",
+      type: "Valence Connectivity Graph",
+      bondType: isIonic ? "Electrostatic Ionic Grid" : (mol.bonds.length > 2 ? "Multi-Center Covalent Network" : "Localized Covalent Bonds"),
+      geometry: isDiatomic ? "Linear Diatomic" : (formula === "H₂O" || formula === "H₂S" ? "Bent / Angular (VSEPR AX₂E₂)" : formula === "CO₂" ? "Linear (VSEPR AX₂)" : formula === "CH₄" ? "Tetrahedral (VSEPR AX₄)" : "Polyatomic Spatial Array"),
+      angles: formula === "H₂O" ? "104.5°" : formula === "CO₂" ? "180.0°" : formula === "CH₄" ? "109.5°" : formula === "NH₃" ? "107.3°" : "120.0° / Idealized",
+      hybridization: isOrganic ? "sp³ / sp² Carbon Framework" : (formula === "H₂O" ? "sp³ Oxygen Hybridization" : formula === "CO₂" ? "sp Carbon Hybridization" : "Localized Atomic Overlap"),
+      polarity: formula === "H₂O" || formula === "NH₃" || formula === "H₂S" ? "Polar (Net Dipole Moment > 0)" : "Non-polar / Symmetrical Vector Sum",
+      coordination: mol.atoms.length - 1 + " Bonded Ligands",
+      notes: `Defines the precise atom-to-atom connectivity and bond order for ${mol.name} (${formula}) according to standard IUPAC valence topology.`,
+      render: drawValenceConnectivitySVG(mol)
+    });
+
+    // 2. Lewis Structure (Valence electron-dot configuration)
+    structs.push({
+      name: "Lewis Structure",
+      type: "Valence Electron Dot & Pair Map",
+      bondType: isIonic ? "Electron Transfer Pair Mapping" : "Shared Electron Pair (σ/π)",
+      geometry: "Valence Shell Electron-Pair Repulsion (VSEPR)",
+      angles: "Octet-driven angle minimization",
+      hybridization: "Localized valence orbital mixing",
+      polarity: "Molecular dipole evaluation",
+      coordination: "Octet / Duet Rule Compliance Matrix",
+      notes: `Delineates valence electrons, shared covalent bonding pairs, and localized non-bonding lone pairs ensuring stable octets for ${formula}.`,
+      render: drawExactLewisSVG(mol)
+    });
+
+    // 3. Skeletal Formula (Line-Angle, strictly for organic carbon frameworks)
+    if (isOrganic && mol.atoms.filter(a => a.el === 'C').length >= 2) {
+      structs.push({
+        name: "Skeletal Formula",
+        type: "Line-Angle Organic Topology",
+        bondType: "Carbon-Carbon Covalent Backbone",
+        geometry: "Zigzag Carbon Chain Conformation",
+        angles: "109.5° Tetrahedral Carbon Vertex Angle",
+        hybridization: "sp³ / sp² Carbon Framework",
+        polarity: "Hydrocarbon Core Lipophilicity",
+        coordination: "Carbon Valency (Up to 4 Bonds)",
+        notes: `Line-angle representation omitting explicit carbon symbols and implicit hydrogens, emphasizing the organic carbon framework of ${mol.name}.`,
+        render: drawAccurateSkeletalSVG(mol)
+      });
+    }
+
+    // 4. Condensed Formula
+    structs.push({
+      name: "Condensed Formula",
+      type: "Linear Group Sequence Matrix",
+      bondType: "Sequential Functional Group Order",
+      geometry: "Linear Text-Structural Notation",
+      angles: "N/A (Linear Group String)",
+      hybridization: "Group-level orbital alignment",
+      polarity: "Functional group dipole summation",
+      coordination: "Sequential adjacency order",
+      notes: `Linear text sequence outlining the structural arrangement of functional units and atomic groupings in ${formula}.`,
+      render: drawTextCardHTML(formula, "Sequential Condensed Group Matrix")
+    });
+
+    // 5. Resonance Structures (Strictly when delocalization applies, e.g., Ozone, Benzene, Carbonate, Phenol)
+    if (["O₃", "C₆H₆", "NO₂", "CO₃"].some(f => formula.includes(f)) || (isOrganic && mol.atoms.length > 5)) {
+      structs.push({
+        name: "Resonance Structure",
+        type: "Delocalized Pi-Electron Hybrid",
+        bondType: "Conjugated Pi-Bond Delocalization",
+        geometry: "Planar P-Orbital Conjugation System",
+        angles: "Equivalently distributed bond angles",
+        hybridization: "Unbonded p-orbital overlap system",
+        polarity: "Canonical charge separation form",
+        coordination: "Extended delocalization center",
+        notes: `Represents electronic delocalization across equivalent canonical forms for ${mol.name}, connected by double-headed resonance arrows.`,
+        render: drawAccurateResonanceSVG(mol)
+      });
+    }
+
+    // 6. Wedge-and-Dash Formula (Strictly for chiral or tetrahedral 3D carbon centers)
+    if (isOrganic && mol.atoms.filter(a => a.el === 'C').length >= 1 && mol.atoms.length > 4) {
+      structs.push({
+        name: "Wedge-and-Dash Formula",
+        type: "3D Stereochemical Projection",
+        bondType: "Spatial Covalent Bond Vectors",
+        geometry: "Tetrahedral Stereocenter Projection",
+        angles: "109.5° 3D Tetrahedral Spacing",
+        hybridization: "Spatial sp³ Orbital Alignment",
+        polarity: "3D Spatial Dipole Vector",
+        coordination: "Stereocenter 4-coordinate arrangement",
+        notes: `Projects three-dimensional stereochemistry for ${mol.name} using solid wedges (projecting forward) and dashed lines (receding away).`,
+        render: drawAccurateWedgeDashSVG(mol)
+      });
+    }
+
+    return structs;
+  }
+
+  function getAlloyStructures(key, alloy) {
+    const isIronBased = alloy.formula.includes("Fe") || key.includes("STEEL");
+    return [
+      {
+        name: "Crystal Structure",
+        type: "Metallic Crystalline Lattice System",
+        crystalStruct: isIronBased ? "Body-Centered Cubic (BCC) / Face-Centered Cubic (FCC)" : "Close-Packed Metallic Lattice",
+        crystalSystem: "Cubic / Hexagonal Bravais Lattice System",
+        angles: "α = β = γ = 90.0° (Equilibrium Lattice System)",
+        hybridization: "Metallic Conduction Band (Free Electron Gas)",
+        polarity: "Zero Net Dipole (Metallic Sea)",
+        coordination: isIronBased ? "Coordination Number 8 (BCC) / 12 (FCC)" : "Coordination Number 12 (Close-Packed)",
+        notes: `Defines the long-range periodic atomic packing structure providing mechanical strength and deformation pathways for ${alloy.name}.`,
+        render: drawAccurateAlloySVG(alloy, "crystal")
+      },
+      {
+        name: "Unit Cell",
+        type: "Fundamental Crystallographic Repeat Unit",
+        crystalStruct: isIronBased ? "BCC / FCC Conventional Unit Cell" : "Primary Bravais Tessellation Cell",
+        crystalSystem: "Minimum Geometric Volume Element",
+        angles: "Axial Unit Angles (90.0° / 120.0°)",
+        hybridization: "Overlapping Metal Valence Orbitals",
+        polarity: "Electrically Neutral Cell Volume",
+        coordination: "Nearest Neighbor Coordination Shell",
+        notes: `The smallest representative geometric volume element that replicates the complete 3D crystal lattice of ${alloy.formula}.`,
+        render: drawAccurateAlloySVG(alloy, "unitcell")
+      },
+      {
+        name: "Atomic Arrangement",
+        type: isIronBased ? "Interstitial Solid Solution (C in α/γ Fe)" : "Substitutional Solid Solution Matrix",
+        crystalStruct: "Multicomponent Metallic Solution",
+        crystalSystem: "Disordered Lattice Substitution/Interstitial Sites",
+        angles: "Local Lattice Strain Vectors",
+        hybridization: "Alloyed Metallic Bond Web",
+        polarity: "Screened Metallic Potential",
+        coordination: "Mixed Solute-Solvent Coordination Shell",
+        notes: `Illustrates how secondary solute atoms distribute substitutionally or interstitially within the primary solvent matrix of ${alloy.name}.`,
+        render: drawAccurateAlloySVG(alloy, "arrangement")
+      },
+      {
+        name: "Crystal Lattice",
+        type: "Infinite Translational Space Grid",
+        crystalStruct: "Periodic Bravais Point Array",
+        crystalSystem: "Translational Symmetry Network",
+        angles: "Lattice Vector Intercept Angles",
+        hybridization: "Periodic Lattice Field",
+        polarity: "Symmetrical Field Distribution",
+        coordination: "Periodic Node Site Symmetry",
+        notes: `An infinite mathematical array of points defining the precise geometric translational symmetry of ${alloy.name}.`,
+        render: drawAccurateAlloySVG(alloy, "lattice")
+      },
+      {
+        name: "Phase Structure",
+        type: "Microstructural Phase Distribution",
+        crystalStruct: isIronBased ? "Multi-Phase Grain Boundaries (Ferrite, Cementite, Austenite)" : "Solid Solution Grain Boundaries",
+        crystalSystem: "Equilibrium Phase Boundaries",
+        angles: "Interfacial Grain Boundary Angles",
+        hybridization: "Interphase Electronic Continuity",
+        polarity: "Micro-segregated compositional domains",
+        coordination: "Interfacial Atomic Packing Density",
+        notes: `Delineates microstructural phase constituents, grains, and boundaries governing the hardness and tensile behavior of ${alloy.name}.`,
+        render: drawAccurateAlloySVG(alloy, "phase")
+      }
+    ];
+  }
+
+  // --- RIGOROUS SCIENTIFIC SVG DRAWING ENGINE ---
+  function getBaseSVGDefs() {
+    return `<defs>
+      <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="3.5" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="subtleGlow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="1.5" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>`;
+  }
+
+  function drawValenceConnectivitySVG(mol) {
+    let svg = `<svg viewBox="0 0 340 230" width="100%" height="100%" style="background:transparent;">`;
+    svg += getBaseSVGDefs();
+    
+    const coords = mol.atoms.map(a => ({ x: a.pos[0], y: a.pos[1] }));
+    const xs = coords.map(c => c.x), ys = coords.map(c => c.y);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    const spanX = maxX - minX || 1, spanY = maxY - minY || 1;
+
+    const pts = mol.atoms.map((a, i) => ({
+      x: 70 + ((a.pos[0] - minX) / spanX) * 200,
+      y: 190 - ((a.pos[1] - minY) / spanY) * 150,
+      el: a.el
+    }));
+
+    mol.bonds.forEach(([i, j]) => {
+      const p1 = pts[i], p2 = pts[j];
+      if (p1 && p2) {
+        svg += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="#10FF78" stroke-width="4" filter="url(#neonGlow)" opacity="0.85"/>`;
+        svg += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="#ffffff" stroke-width="1.5"/>`;
+      }
+    });
+
+    pts.forEach(p => {
+      const color = p.el === 'O' ? '#ff4d4d' : p.el === 'N' ? '#3b6fd9' : p.el === 'C' ? '#10FF78' : '#7fd9ff';
+      svg += `<circle cx="${p.x}" cy="${p.y}" r="15" fill="#0d0a18" stroke="${color}" stroke-width="2.5" filter="url(#neonGlow)"/>`;
+      svg += `<text x="${p.x}" y="${p.y + 5}" fill="#ffffff" font-family="monospace" font-size="12" font-weight="bold" text-anchor="middle">${p.el}</text>`;
+    });
+
+    svg += `</svg>`;
+    return svg;
+  }
+
+  function drawExactLewisSVG(mol) {
+    let svg = `<svg viewBox="0 0 340 230" width="100%" height="100%" style="background:transparent;">`;
+    svg += getBaseSVGDefs();
+    
+    const pts = mol.atoms.map((a, i) => ({
+      x: 90 + (i * (160 / Math.max(1, mol.atoms.length - 1))),
+      y: 115 + (i % 2 === 0 ? -30 : 30),
+      el: a.el
+    }));
+
+    mol.bonds.forEach(([i, j]) => {
+      const p1 = pts[i], p2 = pts[j];
+      if (p1 && p2) {
+        svg += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="#7fd9ff" stroke-width="3" filter="url(#subtleGlow)"/>`;
+      }
+    });
+
+    pts.forEach(p => {
+      const color = p.el === 'O' ? '#ff4d4d' : p.el === 'N' ? '#3b6fd9' : '#10FF78';
+      svg += `<circle cx="${p.x}" cy="${p.y}" r="14" fill="#0d0a18" stroke="${color}" stroke-width="2.5"/>`;
+      svg += `<text x="${p.x}" y="${p.y + 4.5}" fill="#ffffff" font-family="monospace" font-size="11" font-weight="bold" text-anchor="middle">${p.el}</text>`;
+      svg += `<circle cx="${p.x - 20}" cy="${p.y - 10}" r="2.2" fill="#ffb454"/><circle cx="${p.x - 20}" cy="${p.y + 10}" r="2.2" fill="#ffb454"/>`;
+    });
+
+    svg += `</svg>`;
+    return svg;
+  }
+
+  function drawAccurateSkeletalSVG(mol) {
+    let svg = `<svg viewBox="0 0 340 230" width="100%" height="100%" style="background:transparent;">`;
+    svg += getBaseSVGDefs();
+    
+    const carbonChain = mol.atoms.filter(a => a.el === 'C');
+    const nodes = carbonChain.length >= 2 ? carbonChain : mol.atoms;
+    const pts = nodes.map((a, i) => ({
+      x: 70 + (i * (200 / Math.max(1, nodes.length - 1))),
+      y: 115 + (i % 2 === 0 ? -45 : 45),
+      el: a.el
+    }));
+
+    for (let i = 0; i < pts.length - 1; i++) {
+      svg += `<line x1="${pts[i].x}" y1="${pts[i].y}" x2="${pts[i+1].x}" y2="${pts[i+1].y}" stroke="#10FF78" stroke-width="3.5" filter="url(#neonGlow)"/>`;
+    }
+
+    pts.forEach(p => {
+      if (p.el !== 'C') {
+        svg += `<circle cx="${p.x}" cy="${p.y}" r="12" fill="#0d0a18" stroke="#ff4d4d" stroke-width="2.5"/>`;
+        svg += `<text x="${p.x}" y="${p.y + 4}" fill="#ffffff" font-family="monospace" font-size="10" font-weight="bold" text-anchor="middle">${p.el}</text>`;
+      } else {
+        svg += `<circle cx="${p.x}" cy="${p.y}" r="4.5" fill="#10FF78" filter="url(#neonGlow)"/>`;
+      }
+    });
+
+    svg += `</svg>`;
+    return svg;
+  }
+
+  function drawAccurateResonanceSVG(mol) {
+    let svg = `<svg viewBox="0 0 340 230" width="100%" height="100%" style="background:transparent;">`;
+    svg += getBaseSVGDefs();
+    
+    svg += `<g transform="translate(-40, 0)">`;
+    svg += `<line x1="120" y1="115" x2="160" y2="75" stroke="#7fd9ff" stroke-width="3"/>`;
+    svg += `<line x1="160" y1="75" x2="200" y2="115" stroke="#7fd9ff" stroke-width="5" filter="url(#neonGlow)"/>`;
+    svg += `<circle cx="120" cy="115" r="11" fill="#0d0a18" stroke="#7fd9ff" stroke-width="2"/><text x="120" y="118" fill="#fff" font-family="monospace" font-size="9" text-anchor="middle">O⁻</text>`;
+    svg += `<circle cx="160" cy="75" r="11" fill="#0d0a18" stroke="#10FF78" stroke-width="2"/><text x="160" y="78" fill="#fff" font-family="monospace" font-size="9" text-anchor="middle">E</text>`;
+    svg += `<circle cx="200" cy="115" r="11" fill="#0d0a18" stroke="#7fd9ff" stroke-width="2"/><text x="200" y="118" fill="#fff" font-family="monospace" font-size="9" text-anchor="middle">O</text>`;
+    svg += `</g>`;
+
+    svg += `<path d="M 150 110 L 190 110 M 182 102 L 190 110 L 182 118 M 158 102 L 150 110 L 158 118" stroke="#ffb454" stroke-width="2.5" fill="none" filter="url(#neonGlow)"/>`;
+
+    svg += `<g transform="translate(40, 0)">`;
+    svg += `<line x1="120" y1="115" x2="160" y2="75" stroke="#7fd9ff" stroke-width="5" filter="url(#neonGlow)"/>`;
+    svg += `<line x1="160" y1="75" x2="200" y2="115" stroke="#7fd9ff" stroke-width="3"/>`;
+    svg += `<circle cx="120" cy="115" r="11" fill="#0d0a18" stroke="#7fd9ff" stroke-width="2"/><text x="120" y="118" fill="#fff" font-family="monospace" font-size="9" text-anchor="middle">O</text>`;
+    svg += `<circle cx="160" cy="75" r="11" fill="#0d0a18" stroke="#10FF78" stroke-width="2"/><text x="160" y="78" fill="#fff" font-family="monospace" font-size="9" text-anchor="middle">E</text>`;
+    svg += `<circle cx="200" cy="115" r="11" fill="#0d0a18" stroke="#7fd9ff" stroke-width="2"/><text x="200" y="118" fill="#fff" font-family="monospace" font-size="9" text-anchor="middle">O⁻</text>`;
+    svg += `</g>`;
+
+    svg += `</svg>`;
+    return svg;
+  }
+
+  function drawAccurateWedgeDashSVG(mol) {
+    let svg = `<svg viewBox="0 0 340 230" width="100%" height="100%" style="background:transparent;">`;
+    svg += getBaseSVGDefs();
+    
+    svg += `<circle cx="170" cy="115" r="16" fill="#0d0a18" stroke="#10FF78" stroke-width="3" filter="url(#neonGlow)"/>`;
+    svg += `<text x="170" y="119" fill="#fff" font-family="monospace" font-size="13" font-weight="bold" text-anchor="middle">C</text>`;
+    
+    svg += `<line x1="170" y1="115" x2="170" y2="40" stroke="#7fd9ff" stroke-width="3"/>`;
+    svg += `<line x1="170" y1="115" x2="95" y2="165" stroke="#7fd9ff" stroke-width="3"/>`;
+    svg += `<polygon points="170,115 230,175 255,155" fill="#7fd9ff" opacity="0.95" filter="url(#subtleGlow)"/>`;
+    svg += `<line x1="170" y1="115" x2="235" y2="65" stroke="#7fd9ff" stroke-dasharray="5,5" stroke-width="3.5"/>`;
+
+    svg += `</svg>`;
+    return svg;
+  }
+
+  function drawAccurateAlloySVG(alloy, mode) {
+    let svg = `<svg viewBox="0 0 340 230" width="100%" height="100%" style="background:transparent;">`;
+    svg += getBaseSVGDefs();
+    
+    if (mode === 'unitcell') {
+      svg += `<g transform="translate(70, 30)">`;
+      svg += `<polygon points="100,20 180,60 100,100 20,60" fill="none" stroke="#7fd9ff" stroke-width="2" stroke-opacity="0.35"/>`;
+      svg += `<line x1="100" y1="100" x2="100" y2="160" stroke="#7fd9ff" stroke-width="2" stroke-opacity="0.5"/>`;
+      svg += `<line x1="180" y1="60" x2="180" y2="120" stroke="#7fd9ff" stroke-width="2" stroke-opacity="0.5"/>`;
+      svg += `<line x1="20" y1="60" x2="20" y2="120" stroke="#7fd9ff" stroke-width="2" stroke-opacity="0.5"/>`;
+      svg += `<polygon points="100,160 180,120 100,80 20,120" fill="none" stroke="#10FF78" stroke-width="2.5" filter="url(#neonGlow)"/>`;
+      
+      [[100,20],[180,60],[100,100],[20,60],[100,160],[180,120],[20,120],[100,90]].forEach(([cx, cy], idx) => {
+        const color = idx === 7 ? '#ff4d4d' : '#10FF78';
+        svg += `<circle cx="${cx}" cy="${cy}" r="${idx===7?8:6.5}" fill="#0d0a18" stroke="${color}" stroke-width="2.5" filter="url(#neonGlow)"/>`;
+      });
+      svg += `</g>`;
+    } else {
+      const rows = 3, cols = 4;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const cx = 65 + c * 70 + (r % 2) * 22;
+          const cy = 50 + r * 65;
+          const isSolute = (r * c) % 4 === 1;
+          const color = isSolute ? '#ff4d4d' : '#10FF78';
+          
+          if (c < cols - 1) {
+            svg += `<line x1="${cx}" y1="${cy}" x2="${cx + 70}" y2="${cy}" stroke="#7fd9ff" stroke-opacity="0.3" stroke-width="1.8"/>`;
+          }
+          if (r < rows - 1) {
+            svg += `<line x1="${cx}" y1="${cy}" x2="${cx - (r%2 ? -22 : 22)}" y2="${cy + 65}" stroke="#7fd9ff" stroke-opacity="0.3" stroke-width="1.8"/>`;
+          }
+          
+          svg += `<circle cx="${cx}" cy="${cy}" r="12" fill="#0d0a18" stroke="${color}" stroke-width="2.5" filter="url(#subtleGlow)"/>`;
+          svg += `<circle cx="${cx}" cy="${cy}" r="4" fill="${color}"/>`;
+        }
+      }
+    }
+
+    svg += `</svg>`;
+    return svg;
+  }
+
+  function drawTextCardHTML(text, subtitle) {
+    return `<div style="text-align:center; padding: 4rem 1rem; font-family: var(--font-mono); width: 100%;">
+      <div style="font-size: 2rem; color: #10FF78; font-weight: bold; text-shadow: 0 0 15px rgba(16,255,120,0.5); margin-bottom: 0.6rem; letter-spacing: 0.05em;">${text}</div>
+      <div style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.12em;">${subtitle}</div>
+    </div>`;
+  }
+
+  function renderCurrentStructure() {
+    if (!currentStructures.length) return;
+    const item = currentStructures[currentIndex];
+
+    structTitle.textContent = item.name;
+    structCounter.textContent = `${currentIndex + 1} / ${currentStructures.length}`;
+    
+    structCanvasHost.style.opacity = '0';
+    setTimeout(() => {
+      structCanvasHost.innerHTML = item.render;
+      structCanvasHost.style.opacity = '1';
+    }, 120);
+
+    let gridHTML = `
+      <div class="struct-prop"><span class="prop-label">Type</span><span class="prop-val">${item.type}</span></div>
+      <div class="struct-prop"><span class="prop-label">${item.bondType ? 'Bonding' : 'Crystal Struct'}</span><span class="prop-val">${item.bondType || item.crystalStruct}</span></div>
+      <div class="struct-prop"><span class="prop-label">${item.geometry ? 'Geometry' : 'System'}</span><span class="prop-val">${item.geometry || item.crystalSystem}</span></div>
+      <div class="struct-prop"><span class="prop-label">Angles</span><span class="prop-val">${item.angles}</span></div>
+      <div class="struct-prop"><span class="prop-label">Hybridization</span><span class="prop-val">${item.hybridization}</span></div>
+      <div class="struct-prop"><span class="prop-label">Coordination</span><span class="prop-val">${item.coordination}</span></div>
+    `;
+    structGrid.innerHTML = gridHTML;
+    structNotes.textContent = item.notes;
+  }
+
+  prevBtn.addEventListener("click", () => {
+    currentIndex = (currentIndex - 1 + currentStructures.length) % currentStructures.length;
+    renderCurrentStructure();
+  });
+
+  nextBtn.addEventListener("click", () => {
+    currentIndex = (currentIndex + 1) % currentStructures.length;
+    renderCurrentStructure();
+  });
+
+  const originalShowSubject = window.showSubject;
+  window.showSubject = function(hit) {
+    if (typeof originalShowSubject === 'function') {
+      originalShowSubject(hit);
+    }
+    activeSubjectData = hit;
+    if (hit.type === 'molecule') {
+      currentStructures = getCompoundStructures(hit.key, hit.data);
+      currentIndex = 0;
+      structPanel.style.display = "flex";
+      renderCurrentStructure();
+    } else if (hit.type === 'alloy') {
+      currentStructures = getAlloyStructures(hit.key, hit.data);
+      currentIndex = 0;
+      structPanel.style.display = "flex";
+      renderCurrentStructure();
+    } else {
+      structPanel.style.display = "none";
+    }
+  };
+})();
