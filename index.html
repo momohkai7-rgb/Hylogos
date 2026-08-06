@@ -42,26 +42,26 @@
       <p id="viewerNote" class="viewer-note"></p>
     </div>
 
-    <!-- NEW STRUCTURES PANEL -->
-    <div class="panel struct-panel" id="structPanel" style="display: none;">
+    <div id="structuresSection" class="panel structures-panel hidden">
       <div class="panel-head">
-        <span id="structTitle">Chemical Structure</span>
-        <span id="structCounter" class="mono">1 / 1</span>
+        <span>Structures</span>
+        <span id="structureCounter" class="mono">—</span>
       </div>
-      <div class="struct-carousel">
-        <button class="struct-nav struct-prev" id="structPrev" aria-label="Previous Structure">‹</button>
-        <div class="struct-canvas-host" id="structCanvasHost">
-          <!-- Rendered dynamically via script -->
+      <div class="structure-card-wrap">
+        <button id="structurePrev" class="structure-nav" type="button" aria-label="Previous structure">‹</button>
+        <div id="structureCard" class="structure-card">
+          <div class="structure-card-head">
+            <span id="structureName">—</span>
+          </div>
+          <canvas id="structureCanvas" class="structure-canvas"></canvas>
+          <div id="structureDots" class="struct-dots"></div>
         </div>
-        <button class="struct-nav struct-next" id="structNext" aria-label="Next Structure">›</button>
+        <button id="structureNext" class="structure-nav" type="button" aria-label="Next structure">›</button>
       </div>
-      <div class="struct-details">
-        <div class="struct-grid" id="structGrid">
-          <!-- Populated dynamically -->
-        </div>
-        <div class="struct-notes" id="structNotes">—</div>
-      </div>
+      <div id="structureInfoGrid" class="struct-info-grid"></div>
+      <p id="structureNotes" class="struct-notes"></p>
     </div>
+
     <div class="panel chat-panel">
       <div class="panel-head"><span>Ask MatAI</span><span class="mono" id="chatModel">groq · llama-3.3-70b</span></div>
       <div id="chatLog" class="chat-log">
@@ -73,6 +73,7 @@
       </form>
     </div>
   </section>
+
   <section id="factsSection" class="panel facts-panel hidden">
     <div class="panel-head">
       <span id="factsTitle">Facts</span>
@@ -107,8 +108,10 @@
 <script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
 <script src="https://unpkg.com/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
 <script src="data.js"></script>
+<script src="structures-data.js"></script>
 <script src="atom3d.js"></script>
 <script src="Compounds3d.js"></script>
+<script src="structures.js"></script>
 <script src="ptable.js"></script>
 <script src="script.js"></script>
 </body>
