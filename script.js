@@ -266,6 +266,7 @@ function showSubject(hit) {
     els.subjectMeta.textContent = `Z=${hit.data.z} · N=${a - hit.data.z} · A=${a}`;
     if (typeof drawAtom3D === "function") drawAtom3D(hit.key, hit.data);
     if (typeof structuresHide === "function") structuresHide();
+    if (typeof discovererShow === "function") discovererShow(hit.key);
   } 
   else if (hit.type === "molecule") {
     els.subjectName.textContent = `${hit.data.name} (${hit.data.formula})`;
@@ -274,12 +275,14 @@ function showSubject(hit) {
       drawMolecule3D(hit.key, hit.data);
     }
     if (typeof structuresShow === "function") structuresShow("molecule", hit.key);
+    if (typeof discovererHide === "function") discovererHide();
   } 
   else if (hit.type === "alloy") {
     els.subjectName.textContent = hit.data.name;
     els.subjectMeta.textContent = `alloy`;
     if (typeof drawAlloy3D === "function") drawAlloy3D(hit.key, hit.data);
     if (typeof structuresShow === "function") structuresShow("alloy", hit.key);
+    if (typeof discovererHide === "function") discovererHide();
   }
 
   showFacts(hit);
