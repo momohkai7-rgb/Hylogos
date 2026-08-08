@@ -1,4 +1,4 @@
-/* ===================== Scientific Radar & Backdrop logic ===================== */
+/* ===================== Cosmic backdrop + orbital search ring ===================== */
 (function backdrop() {
   const canvas = document.getElementById("starfield");
   const ctx = canvas.getContext("2d");
@@ -6,8 +6,6 @@
   
   let stars = [];
   let motes = [];
-  let radarDots = []; // Storage for the red detection pips
-  let sweepAngle = 0;
   const hole = { cx: 0, cy: 0, r: 0 };
 
   const rmQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -17,9 +15,13 @@
   const ELEMENT_SYMBOLS = (typeof ELEMENTS !== "undefined") ? Object.keys(ELEMENTS) : ["H", "O", "Fe", "Na", "C", "Au", "Ag", "Ti"];
   const NEON_COLORS = ["#ff0055", "#00ffcc", "#ffff33", "#cc33ff", "#33ff77", "#ff9900", "#00ccff"];
 
-  // Radar Emerald Tones
-  const EMERALD = "rgba(16, 255, 120,";
-  const RED_DETECTION = "rgba(255, 40, 40,";
+  // three orbital rings around the search circle, echoing the wordmark's
+  // amber->blue gradient rather than an unrelated scanner palette
+  const ORBITS = [
+    { rxMul: 1.32, ryMul: 0.40, tilt:  0.35, speed:  0.16, phase: 0.0, rgb: "127,217,255" }, // photon-blue
+    { rxMul: 1.55, ryMul: 0.28, tilt: -0.55, speed: -0.11, phase: 2.3, rgb: "255,180,84"  }, // disk-amber
+    { rxMul: 1.18, ryMul: 0.52, tilt:  1.05, speed:  0.21, phase: 4.4, rgb: "255,242,214" }, // disk-hot
+  ];
 
   function spawnMote() {
     const sym = ELEMENT_SYMBOLS[Math.floor(Math.random() * ELEMENT_SYMBOLS.length)];
@@ -33,20 +35,6 @@
       color: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
       box: size,
     };
-  }
-
-  function spawnRadarDot() {
-    if (radarDots.length > 5) return;
-    const ang = Math.random() * Math.PI * 2;
-    const dist = Math.random() * (hole.r * 0.85);
-    radarDots.push({
-      x: Math.cos(ang) * dist,
-      y: Math.sin(ang) * dist,
-      alpha: 0,
-      life: 0,
-      maxLife: 200 + Math.random() * 300,
-      pulseSpeed: 0.02 + Math.random() * 0.05
-    });
   }
 
   function resize() {
@@ -73,85 +61,71 @@
     }
   }
 
-  function drawRadar(t) {
+  // layered-alpha glow stroke/dot — NOT shadowBlur, which rendered
+  // inconsistently across devices earlier in this project
+  function glowStroke(drawPath, rgb, coreWidth, glowWidth, alpha) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = 4; i >= 1; i--) {
+      ctx.globalAlpha = alpha * (i / 4) * 0.5;
+      ctx.lineWidth = coreWidth + (glowWidth * i) / 4;
+      ctx.strokeStyle = `rgba(${rgb},1)`;
+      drawPath();
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = coreWidth;
+    ctx.strokeStyle = `rgba(${rgb},1)`;
+    drawPath();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function glowDot(x, y, r, rgb) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = 4; i >= 1; i--) {
+      ctx.globalAlpha = 0.12 * (i / 4);
+      ctx.fillStyle = `rgba(${rgb},1)`;
+      ctx.beginPath(); ctx.arc(x, y, r + (r * 1.8 * i) / 4, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+    ctx.save();
+    ctx.fillStyle = `rgba(${rgb},1)`;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawOrbitals(t) {
     const { cx, cy, r } = hole;
     if (r <= 0) return;
 
     ctx.save();
     ctx.translate(cx, cy);
 
-    // 1. Dark Glass circular surface
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(4, 12, 10, 0.85)";
-    ctx.fill();
+    // soft warm ambient glow behind the whole assembly, like a distant core
+    const coreGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 1.6);
+    coreGlow.addColorStop(0, "rgba(255,180,84,0.16)");
+    coreGlow.addColorStop(0.55, "rgba(127,217,255,0.05)");
+    coreGlow.addColorStop(1, "rgba(127,217,255,0)");
+    ctx.fillStyle = coreGlow;
+    ctx.beginPath(); ctx.arc(0, 0, r * 1.6, 0, Math.PI * 2); ctx.fill();
 
-    // 2. Glowing Emerald Outer Ring
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.strokeStyle = `${EMERALD} 0.8)`;
-    ctx.lineWidth = 2;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = `${EMERALD} 0.5)`;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
+    ORBITS.forEach(o => {
+      const rx = r * o.rxMul, ry = r * o.ryMul;
+      ctx.save();
+      ctx.rotate(o.tilt);
+      glowStroke(() => { ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); }, o.rgb, 1, 5, 0.28);
 
-    // 3. Concentric Rings (Scientific instrument style)
-    ctx.setLineDash([2, 4]);
-    ctx.strokeStyle = `${EMERALD} 0.15)`;
-    ctx.lineWidth = 1;
-    [0.3, 0.6, 0.85].forEach(scale => {
-      ctx.beginPath();
-      ctx.arc(0, 0, r * scale, 0, Math.PI * 2);
-      ctx.stroke();
+      // one traveling particle per ring, same technique as the atom
+      // viewer's electron sparkles and the bond plasma particles
+      const angle = reducedMotion ? o.phase : (t * 0.00035 * o.speed * 10 + o.phase);
+      const px = Math.cos(angle) * rx, py = Math.sin(angle) * ry;
+      glowDot(px, py, 2.6, o.rgb);
+      ctx.restore();
     });
-    ctx.setLineDash([]);
-
-    // 4. Crosshairs
-    ctx.beginPath();
-    ctx.moveTo(-r * 0.95, 0); ctx.lineTo(r * 0.95, 0);
-    ctx.moveTo(0, -r * 0.95); ctx.lineTo(0, r * 0.95);
-    ctx.strokeStyle = `${EMERALD} 0.1)`;
-    ctx.stroke();
-
-    // 5. Detection Dots (Red)
-    if (Math.random() < 0.01) spawnRadarDot();
-    radarDots = radarDots.filter(d => d.life < d.maxLife);
-    radarDots.forEach(d => {
-      d.life++;
-      const pulse = 0.5 + 0.5 * Math.sin(t * d.pulseSpeed);
-      const alpha = Math.sin((d.life / d.maxLife) * Math.PI);
-      ctx.beginPath();
-      ctx.arc(d.x, d.y, 3, 0, Math.PI * 2);
-      ctx.fillStyle = `${RED_DETECTION} ${alpha * pulse * 0.8})`;
-      ctx.shadowBlur = 8;
-      ctx.shadowColor = `${RED_DETECTION} 0.6)`;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    });
-
-    // 6. Radar Sweep (Emerald Gradient)
-    if (!reducedMotion) sweepAngle += 0.025;
-    ctx.save();
-    ctx.rotate(sweepAngle);
-    const sweep = ctx.createConicGradient(0, 0, 0);
-    sweep.addColorStop(0, `${EMERALD} 0.4)`);
-    sweep.addColorStop(0.1, `${EMERALD} 0.1)`);
-    sweep.addColorStop(0.25, `${EMERALD} 0)`);
-    ctx.fillStyle = sweep;
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.arc(0, 0, r, -0.2, 0.2);
-    ctx.fill();
-    
-    // Sweep leading edge
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(r, 0);
-    ctx.strokeStyle = `${EMERALD} 0.6)`;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    ctx.restore();
 
     ctx.restore();
   }
@@ -198,7 +172,7 @@
       ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
     }
     updateMotes();
-    drawRadar(t);
+    drawOrbitals(t);
     requestAnimationFrame(tick);
   }
 
