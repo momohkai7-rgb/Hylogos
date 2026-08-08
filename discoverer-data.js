@@ -26,6 +26,12 @@ function discovererPortraitUrl(filename) {
 }
 
 const DISCOVERERS = {
+  marie_curie: {
+    name: "Marie Curie", nationality: "Polish-French", profession: "Physicist & chemist",
+    born: "7 November 1867", died: "4 July 1934",
+    portrait: discovererPortraitUrl("Marie_Curie_1903.jpg"),
+    bio: "Working with almost no funding in a converted shed, Curie processed tons of pitchblende ore alongside her husband Pierre and isolated two new elements in 1898 — polonium, named for her native Poland, and radium. She remains the only person ever to win Nobel Prizes in two different sciences (physics and chemistry)."
+  },
   cavendish: {
     name: "Henry Cavendish", nationality: "British", profession: "Natural philosopher & chemist",
     born: "10 October 1731", died: "24 February 1810",
@@ -54,7 +60,19 @@ const DISCOVERERS = {
     name: "Sir Humphry Davy", nationality: "English", profession: "Chemist",
     born: "17 December 1778", died: "29 May 1829",
     portrait: discovererPortraitUrl("Sir_Humphry_Davy,_Bt_by_Sir_Thomas_Lawrence.jpg"),
-    bio: "Using the recently-invented voltaic pile, Davy isolated an extraordinary run of reactive metals by electrolysis in 1807–1808 — potassium, sodium, calcium, strontium, barium, and magnesium — simply by passing current through their molten compounds, a technique no one had applied at that scale before."
+    bio: "Using the recently-invented voltaic pile, Davy isolated an extraordinary run of reactive metals by electrolysis in 1807–1808 — potassium, sodium, calcium, strontium, barium, and magnesium — simply by passing current through their molten compounds, a technique no one had applied at that scale before. He also isolated boron in 1808, within weeks of two French chemists doing the same independently."
+  },
+  dorn: {
+    name: "Friedrich Ernst Dorn", nationality: "German", profession: "Physicist",
+    born: "27 July 1848", died: "16 June 1916",
+    portrait: null,
+    bio: "While studying radium's decay in 1900, Dorn noticed the samples kept emitting a radioactive gas even when sealed away from anything else — radon, the first noble gas found to be radioactive, and proof that radioactive elements could transmute into entirely different substances."
+  },
+  albertus_magnus: {
+    name: "Albertus Magnus", nationality: "German", profession: "Friar, philosopher & alchemist",
+    born: "c. 1200", died: "15 November 1280",
+    portrait: null,
+    bio: "A medieval Dominican friar and one of the most influential scholars of his age, Albertus is traditionally credited with isolating arsenic around 1250 by heating orpiment with soap — making it, alongside phosphorus centuries later, one of the very few elements with a discoverer known from before the age of modern chemistry. No genuine portrait survives from his lifetime."
   },
   berzelius: {
     name: "Jöns Jacob Berzelius", nationality: "Swedish", profession: "Chemist",
@@ -272,6 +290,36 @@ const DISCOVERERS = {
     portrait: null,
     bio: "A reluctant publisher who preferred announcing discoveries orally at meetings, Mosander found lanthanum hiding inside cerium oxide in 1839, then split yttria into two more new components in 1843 — terbium and erbium. He'd trained directly under Berzelius and eventually succeeded him as professor of chemistry."
   },
+  vauquelin: {
+    name: "Nicolas-Louis Vauquelin", nationality: "French", profession: "Chemist & pharmacist",
+    born: "16 May 1763", died: "14 November 1829",
+    portrait: null,
+    bio: "A former peasant's son turned leading analytical chemist, Vauquelin found chromium in a Siberian lead ore in 1797, then beryllium oxide inside beryl and emerald crystals the following year — the pure beryllium metal itself wasn't isolated until decades later, by Wöhler and Bussy independently in 1828."
+  },
+  hatchett: {
+    name: "Charles Hatchett", nationality: "English", profession: "Mineralogist & analytical chemist",
+    born: "2 January 1765", died: "10 March 1847",
+    portrait: null,
+    bio: "A self-taught chemist and son of a royal coachbuilder, Hatchett examined a century-old American mineral sample from the British Museum's collection in 1801 and found it contained an unknown metal, which he named columbium — only renamed niobium decades later once its relationship to tantalum was untangled."
+  },
+  klaproth: {
+    name: "Martin Heinrich Klaproth", nationality: "German", profession: "Apothecary & chemist",
+    born: "1 December 1743", died: "1 January 1817",
+    portrait: null,
+    bio: "The leading analytical chemist of his era, Klaproth identified uranium in pitchblende ore and zirconium in a Ceylon gemstone in the very same year, 1789 — naming uranium after the recently-discovered planet Uranus. He also independently rediscovered and named titanium in 1795, unaware William Gregor had already found it four years earlier."
+  },
+  gregor: {
+    name: "William Gregor", nationality: "English", profession: "Clergyman & mineralogist",
+    born: "25 December 1761", died: "11 June 1817",
+    portrait: null,
+    bio: "A country parson with a serious side interest in mineralogy, Gregor identified an unfamiliar metallic oxide in black sand from his own Cornwall parish in 1791, proposing the name 'menachanite' — but his find went largely unnoticed until Klaproth independently rediscovered the same element and gave it the name that stuck."
+  },
+  pierre_curie: {
+    name: "Pierre Curie", nationality: "French", profession: "Physicist & chemist",
+    born: "15 May 1859", died: "19 April 1906",
+    portrait: discovererPortraitUrl("Pierre_Curie_by_Dujardin_c1906.jpg"),
+    bio: "Already an accomplished physicist known for discovering piezoelectricity, Pierre set aside his own research to help his wife Marie process tons of pitchblende ore, isolating polonium and radium alongside her in 1898. The couple shared half the 1903 Nobel Prize in Physics — the first married couple to win one together — before Pierre was killed in a street accident just three years later."
+  },
   arfwedson: {
     name: "Johan August Arfwedson", nationality: "Swedish", profession: "Chemist",
     born: "12 January 1792", died: "28 October 1841",
@@ -303,6 +351,9 @@ const ELEMENT_DISCOVERY = {
   Sr: { mode: 'solo', id: 'davy', year: 1808, location: "London, England" },
   Ba: { mode: 'solo', id: 'davy', year: 1808, location: "London, England" },
   Mg: { mode: 'solo', id: 'davy', year: 1808, location: "London, England" },
+  B:  { mode: 'solo', id: 'davy', year: 1808, location: "London, England" },
+  Rn: { mode: 'solo', id: 'dorn', year: 1900, location: "Halle, Germany" },
+  As: { mode: 'solo', id: 'albertus_magnus', year: "c. 1250", location: "Cologne, Germany" },
 
   /* ---- pair, one or both portraits still pending further search ---- */
   O:  { mode: 'pair', ids: ['scheele', 'priestley'], year: "1771–1774", location: "Sweden and England", note: "Independently discovered; priority is genuinely disputed." },
@@ -313,11 +364,17 @@ const ELEMENT_DISCOVERY = {
   La: { mode: 'solo', id: 'mosander', year: 1839, location: "Stockholm, Sweden" },
   Tb: { mode: 'solo', id: 'mosander', year: 1843, location: "Stockholm, Sweden" },
   Er: { mode: 'solo', id: 'mosander', year: 1843, location: "Stockholm, Sweden" },
+  Be: { mode: 'solo', id: 'vauquelin', year: 1798, location: "Paris, France" },
+  Cr: { mode: 'solo', id: 'vauquelin', year: 1797, location: "Paris, France" },
+  Nb: { mode: 'solo', id: 'hatchett', year: 1801, location: "London, England" },
+  U:  { mode: 'solo', id: 'klaproth', year: 1789, location: "Berlin, Germany" },
+  Zr: { mode: 'solo', id: 'klaproth', year: 1789, location: "Berlin, Germany" },
+  Ti: { mode: 'pair', ids: ['gregor', 'klaproth'], year: "1791 / 1795", location: "Cornwall, England / Berlin, Germany", note: "Gregor found it first but it went unnoticed; Klaproth independently rediscovered and named it four years later." },
   He: { mode: 'pending' },
   W:  { mode: 'pending' },
   In: { mode: 'pending' },
-  Po: { mode: 'pending' },
-  Ra: { mode: 'pending' },
+  Po: { mode: 'pair', ids: ['marie_curie', 'pierre_curie'], year: 1898, location: "Paris, France" },
+  Ra: { mode: 'pair', ids: ['marie_curie', 'pierre_curie'], year: 1898, location: "Paris, France" },
   Hf: { mode: 'pending' },
   Np: { mode: 'pending' },
   Tc: { mode: 'pending' },
@@ -364,14 +421,7 @@ const ELEMENT_DISCOVERY = {
   Nd: { mode: 'solo', id: 'auer_welsbach', year: 1885, location: "Vienna, Austria" },
 
   /* ---- solo, portrait not yet sourced ---- */
-  As: { mode: 'pending' },
-  Rn: { mode: 'pending' },
-  B:  { mode: 'pending' },
-  Zr: { mode: 'pending' }, Nb: { mode: 'pending' }, Ru: { mode: 'pending' },
-  Pm: { mode: 'pending' },
-  U:  { mode: 'pending' },
-  Be: { mode: 'pending' }, Ti: { mode: 'pending' },
-  Cr: { mode: 'pending' },
+  Ru: { mode: 'pending' },
 
   /* ---- many (3+ people / lab-credited) — fully populated, no photos ---- */
   Re: { mode: 'many', year: 1925, location: "Berlin, Germany",
@@ -512,6 +562,14 @@ const ELEMENT_DISCOVERY = {
   Ts: { mode: 'many', year: 2010, location: "Dubna, Russia",
     people: [{ name: "Yuri Oganessian's team", nationality: "Russian & American", profession: "Nuclear physicists" }],
     paragraph: "A Dubna–Oak Ridge–Vanderbilt collaboration, tennessine is named for the state of Tennessee, home to Oak Ridge National Laboratory and Vanderbilt University, both central to the discovery." },
+  Pm: { mode: 'many', year: 1945, location: "Oak Ridge, Tennessee, USA",
+    people: [
+      { name: "Jacob A. Marinsky", nationality: "American", profession: "Chemist" },
+      { name: "Lawrence E. Glendenin", nationality: "American", profession: "Chemist" },
+      { name: "Charles D. Coryell", nationality: "American", profession: "Chemist" },
+    ],
+    paragraph: "The last rare earth to be found, promethium was separated from uranium fission byproducts at Oak Ridge in 1945 during Manhattan Project-era research — fittingly named for Prometheus, who stole fire for humanity, since the element's discovery came wrapped in the same nuclear technology as the atomic bomb." },
+
   Og: { mode: 'many', year: 2002, location: "Dubna, Russia",
     people: [
       { name: "Yuri Oganessian", nationality: "Russian (Armenian descent)", profession: "Nuclear physicist" },
