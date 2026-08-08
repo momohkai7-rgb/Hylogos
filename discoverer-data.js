@@ -110,6 +110,174 @@ const DISCOVERERS = {
     portrait: null,
     bio: "Brandt proved in 1735 that the blue color long seen in certain glasses and glazes came from a previously-unrecognized metal, not from bismuth as everyone assumed — cobalt, the first metal identified since antiquity by a known individual. No contemporary portrait of Brandt is known to survive."
   },
+  gahn: {
+    name: "Johan Gottlieb Gahn", nationality: "Swedish", profession: "Chemist & mineralogist",
+    born: "19 August 1745", died: "8 December 1818",
+    portrait: discovererPortraitUrl("Johan_Gottlieb_Gahn_by_Lorens_Pasch.jpg"),
+    bio: "Notoriously reluctant to publish his own findings, Gahn isolated manganese metal in 1774 by reducing manganese dioxide with carbon, freely sharing the discovery with his close friends Scheele and Bergman rather than claiming credit loudly himself. He and Scheele also discovered that bone contains phosphorus."
+  },
+  hjelm: {
+    name: "Peter Jacob Hjelm", nationality: "Swedish", profession: "Chemist",
+    born: "2 October 1746", died: "7 October 1813",
+    portrait: null,
+    bio: "Four years after Scheele identified molybdenum's characteristic oxide but couldn't isolate the metal itself, Hjelm succeeded in 1781 by reducing molybdic acid with carbon in an oxygen-free atmosphere, producing a near-pure dark metal powder."
+  },
+  muller_reichenstein: {
+    name: "Franz-Joseph Müller von Reichenstein", nationality: "Austrian", profession: "Mineralogist & mining engineer",
+    born: "1740 or 1742 (disputed)", died: "12 October 1825",
+    portrait: null,
+    bio: "While analyzing gold ore in Transylvania in 1782, Müller isolated a substance he suspected was a new element but couldn't fully confirm — his work went unnoticed for over a decade until Martin Klaproth requested a sample, verified it, and named it tellurium in 1798. (The portrait long associated with Müller — even printed on a commemorative stamp — has since been identified as his son instead.)"
+  },
+  courtois: {
+    name: "Bernard Courtois", nationality: "French", profession: "Chemist",
+    born: "8 February 1777", died: "27 September 1838",
+    portrait: null,
+    bio: "While processing seaweed ash for saltpeter during the Napoleonic Wars in 1811, Courtois added too much acid and watched a violet vapor rise off the mixture, condensing into dark crystals — iodine. He died a year before photography was invented, so despite what some sites claim, no genuine portrait or photo of him survives."
+  },
+  stromeyer: {
+    name: "Friedrich Stromeyer", nationality: "German", profession: "Chemist & physician",
+    born: "2 August 1776", died: "18 August 1835",
+    portrait: discovererPortraitUrl("Friedrich_Stromeyer.jpg"),
+    bio: "As a professor also responsible for inspecting local apothecary supplies, Stromeyer noticed in 1817 that some zinc carbonate samples turned yellow when heated rather than staying white — tracing the impurity down revealed cadmium, a new element hiding inside what everyone assumed was simple zinc ore."
+  },
+  balard: {
+    name: "Antoine Jérôme Balard", nationality: "French", profession: "Chemist",
+    born: "30 September 1802", died: "30 April 1876",
+    portrait: discovererPortraitUrl("Antoine_Jerome_Balard.jpg"),
+    bio: "Working with seawater residues in Montpellier, Balard isolated bromine in 1826 and correctly identified it as a new element related to chlorine and iodine. German chemist Carl Löwig had actually prepared the same substance a year earlier but published later — both are now credited as co-discoverers."
+  },
+  crookes: {
+    name: "Sir William Crookes", nationality: "English", profession: "Chemist & physicist",
+    born: "17 June 1832", died: "4 April 1919",
+    portrait: discovererPortraitUrl("Portrait_of_William_Crookes_(1832-1919),_Chemist_and_Physicist_(2550746151).jpg"),
+    bio: "While examining the residue from sulfuric acid production using flame spectroscopy in 1861, Crookes spotted an unfamiliar bright green spectral line — thallium. He later became a pioneer of vacuum-tube physics, and the 'Crookes tube' he invented helped pave the way toward the discovery of X-rays and the electron."
+  },
+  moissan: {
+    name: "Henri Moissan", nationality: "French", profession: "Chemist & pharmacist",
+    born: "28 September 1852", died: "20 February 1907",
+    portrait: discovererPortraitUrl("PSM_V70_D480_Henri_Moissan.png"),
+    bio: "Fluorine had resisted isolation for decades — several earlier chemists were seriously injured or killed trying — before Moissan finally succeeded in 1886 by electrolyzing potassium fluoride dissolved in hydrofluoric acid inside a platinum apparatus. It won him the 1906 Nobel Prize in Chemistry."
+  },
+  boisbaudran: {
+    name: "Paul-Émile Lecoq de Boisbaudran", nationality: "French", profession: "Chemist (self-taught)",
+    born: "18 April 1838", died: "28 May 1912",
+    portrait: null,
+    bio: "An entirely self-taught chemist, Boisbaudran became a master of spectroscopy and used it to identify three new elements from his own private laboratory: gallium in 1875 — the first of Mendeleev's predicted-but-undiscovered elements to actually turn up — followed by samarium (1879) and dysprosium (1886)."
+  },
+  winkler: {
+    name: "Clemens Winkler", nationality: "German", profession: "Chemist",
+    born: "26 December 1838", died: "8 October 1904",
+    portrait: null,
+    bio: "While analyzing a newly-found silver mineral called argyrodite in 1886, Winkler found roughly 7% of its mass was unaccounted for by any known element — the missing piece turned out to be germanium, the third of Mendeleev's predicted elements to be confirmed, and Winkler named it for his homeland."
+  },
+  nilson: {
+    name: "Lars Fredrik Nilson", nationality: "Swedish", profession: "Chemist",
+    born: "27 May 1840", died: "14 May 1899",
+    portrait: null,
+    bio: "While separating rare-earth minerals at Uppsala in 1879, Nilson isolated scandium — later shown to be the missing 'eka-boron' Mendeleev had predicted a decade earlier. He later turned his attention to agricultural chemistry, introducing sugar beet farming to Sweden."
+  },
+  oersted: {
+    name: "Hans Christian Ørsted", nationality: "Danish", profession: "Physicist & chemist",
+    born: "14 August 1777", died: "9 March 1851",
+    portrait: null,
+    bio: "Already famous for discovering that electric currents generate magnetic fields, Ørsted produced impure aluminium metal in 1825 — but didn't think much of the result himself, and the achievement went largely unrecognized for a century until historians revisited his notes."
+  },
+  debierne: {
+    name: "André-Louis Debierne", nationality: "French", profession: "Chemist",
+    born: "14 July 1874", died: "31 August 1949",
+    portrait: null,
+    bio: "A close friend and collaborator of Pierre and Marie Curie, Debierne discovered actinium in 1899 while continuing the couple's work processing pitchblende ore. After Pierre's death he stayed on as Marie's research partner, and the two later produced visible metallic radium together in 1911."
+  },
+  gadolin: {
+    name: "Johan Gadolin", nationality: "Finnish", profession: "Chemist, physicist & mineralogist",
+    born: "5 June 1760", died: "15 August 1852",
+    portrait: null,
+    bio: "Analyzing a black mineral from a Swedish quarry in 1794, Gadolin identified a previously unknown 'earth' that was later confirmed to contain yttrium — the first rare-earth element found, and the discovery that opened up the entire lanthanide corner of the periodic table. The element gadolinium was later named in his honor."
+  },
+  cleve: {
+    name: "Per Teodor Cleve", nationality: "Swedish", profession: "Chemist, biologist & oceanographer",
+    born: "10 February 1840", died: "18 June 1905",
+    portrait: null,
+    bio: "While purifying a sample of erbium oxide in 1879, Cleve realized it wasn't pure at all — separating out a brown substance he named holmium (after Stockholm) and a green one he named thulium (after a mythical name for Scandinavia), both in the same year."
+  },
+  marignac: {
+    name: "Jean Charles Galissard de Marignac", nationality: "Swiss", profession: "Chemist",
+    born: "24 April 1817", died: "15 April 1894",
+    portrait: null,
+    bio: "A meticulous measurer of atomic weights, Marignac extracted ytterbium from what everyone assumed was pure erbium oxide in 1878, then found gadolinium two years later while analyzing samarskite ore — his precision work on rare earths later hinted at the very existence of isotopes."
+  },
+  demarcay: {
+    name: "Eugène-Anatole Demarçay", nationality: "French", profession: "Chemist",
+    born: "1 January 1852", died: "5 March 1903",
+    portrait: null,
+    bio: "Suspecting since 1896 that samples of 'pure' samarium were secretly contaminated, Demarçay built a specialized high-temperature spark spectroscope to prove it, finally isolating europium in 1901. He'd also helped Marie and Pierre Curie confirm radium's existence three years earlier, spotting its telltale spectral line."
+  },
+  urbain: {
+    name: "Georges Urbain", nationality: "French", profession: "Chemist",
+    born: "12 April 1872", died: "5 November 1938",
+    portrait: null,
+    bio: "After years spent separating and characterizing rare earths, Urbain isolated lutetium from ytterbium ore in 1907 — the last stable rare earth to be discovered. American chemist Charles James found the same element independently around the same time, and priority between them is still debated."
+  },
+  perey: {
+    name: "Marguerite Perey", nationality: "French", profession: "Laboratory technician & later physicist",
+    born: "19 October 1909", died: "13 May 1975",
+    portrait: null,
+    bio: "Working as a lab technician for Marie Curie's old research group, Perey noticed unexplained radioactive decay products in a purified actinium sample in 1939 — francium, the last element found in nature rather than made artificially. She later became the first woman elected to the French Académie des Sciences, though tragically died of cancer likely caused by decades of radiation exposure."
+  },
+  wollaston: {
+    name: "William Hyde Wollaston", nationality: "English", profession: "Chemist & physicist",
+    born: "6 August 1766", died: "22 December 1828",
+    portrait: null,
+    bio: "While developing a process to purify platinum ore into workable metal with his partner Smithson Tennant, Wollaston noticed leftover residues contained two more new metals — palladium in 1802, named for a newly-discovered asteroid, and rhodium in 1804, named for the rose color of one of its compounds."
+  },
+  tennant: {
+    name: "Smithson Tennant", nationality: "English", profession: "Chemist",
+    born: "1761", died: "1815",
+    portrait: null,
+    bio: "While Wollaston worked the soluble part of their platinum ore residue, Tennant tackled the insoluble black powder left behind — extracting both iridium and osmium from it in 1804. No portrait of Tennant is known to survive, unusually for someone this well-documented."
+  },
+  auer_welsbach: {
+    name: "Carl Auer von Welsbach", nationality: "Austrian", profession: "Chemist & inventor",
+    born: "1 September 1858", died: "4 August 1929",
+    portrait: discovererPortraitUrl("Auer_von_Welsbach.jpg"),
+    bio: "The element 'didymium' had sat unquestioned in chemistry for decades before Auer von Welsbach used fractional crystallization in 1885 to split it into two genuinely distinct elements — green-salted praseodymium and pink-salted neodymium. He also invented the gas mantle that made gaslight dramatically brighter, funding his later research."
+  },
+  bunsen: {
+    name: "Robert Bunsen", nationality: "German", profession: "Chemist",
+    born: "30 March 1811", died: "16 August 1899",
+    portrait: null,
+    bio: "Having just built the first practical flame spectroscope with Gustav Kirchhoff, Bunsen processed 40 tons of mineral water down to just 50 grams of salt to confirm caesium in 1860, then found rubidium the following year the same way — both named for the colors of their telltale spectral lines."
+  },
+  kirchhoff: {
+    name: "Gustav Kirchhoff", nationality: "German", profession: "Physicist",
+    born: "12 March 1824", died: "17 October 1887",
+    portrait: null,
+    bio: "Working alongside Bunsen, Kirchhoff helped invent spectral analysis itself and used it to identify caesium (1860) and rubidium (1861) — a technique so powerful it let him identify 30 elements in the Sun's own light without ever leaving Earth."
+  },
+  sefstrom: {
+    name: "Nils Gabriel Sefström", nationality: "Swedish", profession: "Chemist & metallurgist",
+    born: "2 June 1787", died: "30 November 1845",
+    portrait: null,
+    bio: "While investigating why certain steel batches turned brittle in 1830, Sefström traced the cause to a previously unrecognized metal — vanadium, named for a Norse goddess. Mexican mineralogist Andrés Manuel del Río had actually found the same element in 1801 but was talked out of the claim; Sefström's independent rediscovery is what stuck."
+  },
+  ekeberg: {
+    name: "Anders Gustaf Ekeberg", nationality: "Swedish", profession: "Chemist",
+    born: "16 January 1767", died: "11 February 1813",
+    portrait: null,
+    bio: "Analyzing minerals from the same Ytterby quarry that yielded several other new elements, Ekeberg isolated tantalum in 1802 — naming it for the Greek myth of Tantalus, since the metal stubbornly refused to dissolve in acid no matter what he tried. He worked partially deaf and blind in one eye after a lab explosion."
+  },
+  mosander: {
+    name: "Carl Gustaf Mosander", nationality: "Swedish", profession: "Chemist",
+    born: "10 September 1797", died: "15 October 1858",
+    portrait: null,
+    bio: "A reluctant publisher who preferred announcing discoveries orally at meetings, Mosander found lanthanum hiding inside cerium oxide in 1839, then split yttria into two more new components in 1843 — terbium and erbium. He'd trained directly under Berzelius and eventually succeeded him as professor of chemistry."
+  },
+  arfwedson: {
+    name: "Johan August Arfwedson", nationality: "Swedish", profession: "Chemist",
+    born: "12 January 1792", died: "28 October 1841",
+    portrait: discovererPortraitUrl("Berzelius_Reseanteckningar_Johan_Arfwedson.png"),
+    bio: "Working in Berzelius's own private laboratory, the 25-year-old Arfwedson noticed in 1817 that a mineral called petalite contained an alkali metal lighter than any known — lithium. Berzelius, generous with credit, announced the find himself but named Arfwedson as the actual discoverer."
+  },
 };
 
 /* ---- ancient elements: known since antiquity, no individual discoverer ---- */
@@ -138,10 +306,15 @@ const ELEMENT_DISCOVERY = {
 
   /* ---- pair, one or both portraits still pending further search ---- */
   O:  { mode: 'pair', ids: ['scheele', 'priestley'], year: "1771–1774", location: "Sweden and England", note: "Independently discovered; priority is genuinely disputed." },
+  Cs: { mode: 'pair', ids: ['bunsen', 'kirchhoff'], year: 1860, location: "Heidelberg, Germany" },
+  Rb: { mode: 'pair', ids: ['bunsen', 'kirchhoff'], year: 1861, location: "Heidelberg, Germany" },
+  V:  { mode: 'solo', id: 'sefstrom', year: 1830, location: "Falun, Sweden" },
+  Ta: { mode: 'solo', id: 'ekeberg', year: 1802, location: "Uppsala, Sweden" },
+  La: { mode: 'solo', id: 'mosander', year: 1839, location: "Stockholm, Sweden" },
+  Tb: { mode: 'solo', id: 'mosander', year: 1843, location: "Stockholm, Sweden" },
+  Er: { mode: 'solo', id: 'mosander', year: 1843, location: "Stockholm, Sweden" },
   He: { mode: 'pending' },
   W:  { mode: 'pending' },
-  Cs: { mode: 'pending' },
-  Rb: { mode: 'pending' },
   In: { mode: 'pending' },
   Po: { mode: 'pending' },
   Ra: { mode: 'pending' },
@@ -159,25 +332,45 @@ const ELEMENT_DISCOVERY = {
   Bi: { mode: 'solo', id: 'geoffroy_bismuth', year: 1753, location: "Paris, France" },
   P:  { mode: 'solo', id: 'brand', year: 1669, location: "Hamburg, Germany" },
   Co: { mode: 'solo', id: 'brandt', year: 1735, location: "Sweden" },
+  Mn: { mode: 'solo', id: 'gahn', year: 1774, location: "Sweden" },
+  Mo: { mode: 'solo', id: 'hjelm', year: 1781, location: "Sweden" },
+  Te: { mode: 'solo', id: 'muller_reichenstein', year: 1782, location: "Transylvania (modern Romania)" },
+  I:  { mode: 'solo', id: 'courtois', year: 1811, location: "Paris, France" },
+  Li: { mode: 'solo', id: 'arfwedson', year: 1817, location: "Stockholm, Sweden" },
+  Cd: { mode: 'solo', id: 'stromeyer', year: 1817, location: "Göttingen, Germany" },
+  Br: { mode: 'solo', id: 'balard', year: 1826, location: "Montpellier, France" },
+  Tl: { mode: 'solo', id: 'crookes', year: 1861, location: "London, England" },
+  F:  { mode: 'solo', id: 'moissan', year: 1886, location: "Paris, France" },
+  Ga: { mode: 'solo', id: 'boisbaudran', year: 1875, location: "Paris, France" },
+  Sm: { mode: 'solo', id: 'boisbaudran', year: 1879, location: "Paris, France" },
+  Dy: { mode: 'solo', id: 'boisbaudran', year: 1886, location: "Paris, France" },
+  Ge: { mode: 'solo', id: 'winkler', year: 1886, location: "Freiberg, Germany" },
+  Sc: { mode: 'solo', id: 'nilson', year: 1879, location: "Uppsala, Sweden" },
+  Al: { mode: 'solo', id: 'oersted', year: 1825, location: "Copenhagen, Denmark" },
+  Ac: { mode: 'solo', id: 'debierne', year: 1899, location: "Paris, France" },
+  Y:  { mode: 'solo', id: 'gadolin', year: 1794, location: "Turku, Finland" },
+  Ho: { mode: 'solo', id: 'cleve', year: 1879, location: "Uppsala, Sweden" },
+  Tm: { mode: 'solo', id: 'cleve', year: 1879, location: "Uppsala, Sweden" },
+  Yb: { mode: 'solo', id: 'marignac', year: 1878, location: "Geneva, Switzerland" },
+  Gd: { mode: 'solo', id: 'marignac', year: 1880, location: "Geneva, Switzerland" },
+  Eu: { mode: 'solo', id: 'demarcay', year: 1901, location: "Paris, France" },
+  Lu: { mode: 'solo', id: 'urbain', year: 1907, location: "Paris, France" },
+  Fr: { mode: 'solo', id: 'perey', year: 1939, location: "Paris, France" },
+  Pd: { mode: 'solo', id: 'wollaston', year: 1802, location: "London, England" },
+  Rh: { mode: 'solo', id: 'wollaston', year: 1804, location: "London, England" },
+  Ir: { mode: 'solo', id: 'tennant', year: 1804, location: "London, England" },
+  Os: { mode: 'solo', id: 'tennant', year: 1804, location: "London, England" },
+  Pr: { mode: 'solo', id: 'auer_welsbach', year: 1885, location: "Vienna, Austria" },
+  Nd: { mode: 'solo', id: 'auer_welsbach', year: 1885, location: "Vienna, Austria" },
 
   /* ---- solo, portrait not yet sourced ---- */
   As: { mode: 'pending' },
-  Mn: { mode: 'pending' },
-  Mo: { mode: 'pending' }, Te: { mode: 'pending' },
-  Y:  { mode: 'pending' }, I:  { mode: 'pending' },
-  Cd: { mode: 'pending' }, Li: { mode: 'pending' }, Al: { mode: 'pending' },
-  Br: { mode: 'pending' }, Tl: { mode: 'pending' }, F:  { mode: 'pending' },
-  Ga: { mode: 'pending' }, Sm: { mode: 'pending' }, Dy: { mode: 'pending' },
-  Ge: { mode: 'pending' }, Sc: { mode: 'pending' }, Tm: { mode: 'pending' },
-  Ho: { mode: 'pending' }, Gd: { mode: 'pending' }, Yb: { mode: 'pending' },
-  Ac: { mode: 'pending' }, Eu: { mode: 'pending' }, Lu: { mode: 'pending' },
-  Rn: { mode: 'pending' }, Fr: { mode: 'pending' }, Pd: { mode: 'pending' },
-  Rh: { mode: 'pending' }, Ir: { mode: 'pending' }, Os: { mode: 'pending' },
-  Pr: { mode: 'pending' }, Nd: { mode: 'pending' }, B:  { mode: 'pending' },
+  Rn: { mode: 'pending' },
+  B:  { mode: 'pending' },
   Zr: { mode: 'pending' }, Nb: { mode: 'pending' }, Ru: { mode: 'pending' },
-  Ta: { mode: 'pending' }, La: { mode: 'pending' }, Pm: { mode: 'pending' },
-  Tb: { mode: 'pending' }, Er: { mode: 'pending' }, U:  { mode: 'pending' },
-  Be: { mode: 'pending' }, Ti: { mode: 'pending' }, V:  { mode: 'pending' },
+  Pm: { mode: 'pending' },
+  U:  { mode: 'pending' },
+  Be: { mode: 'pending' }, Ti: { mode: 'pending' },
   Cr: { mode: 'pending' },
 
   /* ---- many (3+ people / lab-credited) — fully populated, no photos ---- */
