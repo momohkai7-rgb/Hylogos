@@ -6,7 +6,6 @@
   
   let stars = [];
   let motes = [];
-  let particles = []; // tiny sparks that shed off each mote as it moves
   let viewW = 0, viewH = 0; // logical (CSS-pixel) canvas size, kept separate from the
                              // dpr-scaled backing store so crispness doesn't break bounds math
   const hole = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
@@ -16,11 +15,10 @@
   rmQuery.addEventListener("change", e => { reducedMotion = e.matches; });
 
   const ELEMENT_SYMBOLS = (typeof ELEMENTS !== "undefined") ? Object.keys(ELEMENTS) : ["H", "O", "Fe", "Na", "C", "Au", "Ag", "Ti"];
-  // muted versions of the same hue spread — full-saturation neon read as
-  // a disconnected rainbow next to the site's warm, dim cosmic palette;
-  // pulling saturation and brightness down keeps the same variety while
-  // fitting in rather than popping out
-  const NEON_COLORS = ["#d69a5c", "#c97490", "#8f74ad", "#5a9bb0", "#5fa889", "#c06a4e"];
+  // several distinct shades of neon green rather than one hue repeated —
+  // lime, spring, chartreuse, emerald, yellow-green — so tiles are still
+  // visually distinguishable while staying unmistakably "radioactive green"
+  const NEON_COLORS = ["#39ff14", "#00ff9c", "#7fff00", "#00e676", "#adff2f"];
 
   // single neon-green scan line sweeping across the search bar — reuses
   // the same emerald as the search text itself, so it reads as one theme
@@ -45,55 +43,6 @@
       color: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
       box: size,
     };
-  }
-
-  // one tiny spark, shed from the trailing edge of a moving mote — this
-  // is now the only trailing effect (the old comet-tail line tracked the
-  // box's centre point, which is what made it look like it came out of
-  // the middle of the square; spawning here, just past the box's own
-  // edge, is what makes it read as coming off the square itself).
-  function spawnSpark(m) {
-    const speed = Math.hypot(m.vx, m.vy) || 0.001;
-    const bx = -m.vx / speed, by = -m.vy / speed; // unit vector pointing backward
-    const jitter = (Math.random() - 0.5) * 0.9;   // narrow cone around "backward"
-    const cos = Math.cos(jitter), sin = Math.sin(jitter);
-    const dx = bx * cos - by * sin, dy = bx * sin + by * cos;
-    // start just outside the box's trailing edge, not at its centre
-    const cx = m.x + m.box / 2 + bx * (m.box * 0.62);
-    const cy = m.y + m.box / 2 + by * (m.box * 0.62);
-    particles.push({
-      x: cx, y: cy,
-      vx: dx * (0.25 + Math.random() * 0.45) + m.vx * 0.1,
-      vy: dy * (0.25 + Math.random() * 0.45) + m.vy * 0.1,
-      life: 0,
-      maxLife: 20 + Math.random() * 18,
-      size: 1.3 + Math.random() * 1.6,
-      color: m.color,
-    });
-  }
-
-  function updateParticles() {
-    if (particles.length > 260) particles.splice(0, particles.length - 260); // hard cap, just in case
-    ctx.save();
-    ctx.globalCompositeOperation = "lighter";
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      p.life++;
-      const t = p.life / p.maxLife;
-      if (t >= 1) { particles.splice(i, 1); continue; }
-      p.x += p.vx; p.y += p.vy;
-      p.vx *= 0.96; p.vy *= 0.96;
-      const size = Math.max(0.4, p.size * (1 - t * 0.7));
-      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 2.2);
-      g.addColorStop(0, p.color);
-      g.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.globalAlpha = (1 - t) * 0.85;
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, size * 2.2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
   }
 
   function resize() {
@@ -259,19 +208,25 @@
 
   function drawMotes() {
     for (const m of motes) {
-      if (Math.random() < 0.55) spawnSpark(m);
-      if (Math.random() < 0.55) spawnSpark(m); // two independent rolls — a denser, livelier trail than one higher-probability roll would give
+      // draw at rounded coordinates, not the raw float position — the
+      // physics (m.x/m.y) stay smooth sub-pixel floats, but rendering
+      // text and thin strokes at a constantly-shifting fractional pixel
+      // offset is what was making the letters look like they were
+      // twinkling. Snapping just the drawing position fixes that while
+      // motion itself stays perfectly smooth.
+      const dx = Math.round(m.x), dy = Math.round(m.y);
 
-      // soft glow halo behind the tile — this is what reads as "glowy"
-      // at a glance, before you even register the crisp border/text
+      // soft glow halo behind the tile — pushed further for a proper
+      // radioactive-glow look rather than a subtle accent
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
-      const hx = m.x + m.box / 2, hy = m.y + m.box / 2;
-      const haloR = m.box * 0.95;
+      const hx = dx + m.box / 2, hy = dy + m.box / 2;
+      const haloR = m.box * 1.35;
       const halo = ctx.createRadialGradient(hx, hy, 0, hx, hy, haloR);
       halo.addColorStop(0, m.color);
+      halo.addColorStop(0.4, m.color);
       halo.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.globalAlpha = 0.22;
+      ctx.globalAlpha = 0.38;
       ctx.fillStyle = halo;
       ctx.beginPath();
       ctx.arc(hx, hy, haloR, 0, Math.PI * 2);
@@ -281,7 +236,7 @@
       // dark tile behind everything
       ctx.save();
       ctx.globalAlpha = 0.55;
-      roundRectPath(m.x, m.y, m.box, m.box, 4);
+      roundRectPath(dx, dy, m.box, m.box, 4);
       ctx.fillStyle = "rgba(13,10,24,0.9)";
       ctx.fill();
       ctx.restore();
@@ -292,11 +247,11 @@
       // keeps the glow on the border only, so the symbol stays sharp.
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
-      for (let i = 3; i >= 1; i--) {
-        ctx.globalAlpha = 0.14 * i;
-        ctx.lineWidth = 1.6 + i * 2;
+      for (let i = 4; i >= 1; i--) {
+        ctx.globalAlpha = 0.16 * i;
+        ctx.lineWidth = 1.6 + i * 2.4;
         ctx.strokeStyle = m.color;
-        roundRectPath(m.x, m.y, m.box, m.box, 4);
+        roundRectPath(dx, dy, m.box, m.box, 4);
         ctx.stroke();
       }
       ctx.restore();
@@ -304,13 +259,13 @@
       // crisp border line + crisp glyph, no shadow/blur on either
       ctx.save();
       ctx.strokeStyle = m.color; ctx.lineWidth = 1.6;
-      roundRectPath(m.x, m.y, m.box, m.box, 4);
+      roundRectPath(dx, dy, m.box, m.box, 4);
       ctx.stroke();
       ctx.fillStyle = m.color;
       ctx.font = `bold ${Math.round(m.box * 0.33)}px monospace`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(m.sym, m.x + m.box / 2, m.y + m.box / 2);
+      ctx.fillText(m.sym, dx + m.box / 2, dy + m.box / 2);
       ctx.restore();
     }
   }
@@ -331,7 +286,6 @@
       ctx.globalAlpha = 0.2 + 0.4 * twinkle;
       ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
     }
-    updateParticles(); // drawn first so a mote's box+text render on top and mask any spark still tucked close behind it
     updateMotes();
     drawScanner(t);
     requestAnimationFrame(tick);
