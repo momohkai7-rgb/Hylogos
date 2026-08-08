@@ -16,20 +16,26 @@
   rmQuery.addEventListener("change", e => { reducedMotion = e.matches; });
 
   const ELEMENT_SYMBOLS = (typeof ELEMENTS !== "undefined") ? Object.keys(ELEMENTS) : ["H", "O", "Fe", "Na", "C", "Au", "Ag", "Ti"];
-  // a wider spread of saturated neon hues — the old set leaned on two
-  // near-identical greens plus a pale cream that read as washed-out
-  // rather than glowy, so this swaps in clearer, more distinct neon tones
-  const NEON_COLORS = ["#ffb454", "#ff3fa0", "#a855f7", "#33e6ff", "#39ff8f", "#ff5c3a"];
+  // muted versions of the same hue spread — full-saturation neon read as
+  // a disconnected rainbow next to the site's warm, dim cosmic palette;
+  // pulling saturation and brightness down keeps the same variety while
+  // fitting in rather than popping out
+  const NEON_COLORS = ["#d69a5c", "#c97490", "#8f74ad", "#5a9bb0", "#5fa889", "#c06a4e"];
 
   // single neon-green scan line sweeping across the search bar — reuses
   // the same emerald as the search text itself, so it reads as one theme
   const SCAN_RGB = "16,255,120";
   const SCAN_PERIOD = 2600; // ms per left-to-right sweep
 
+  function pickNewColor(current) {
+    const others = NEON_COLORS.filter(c => c !== current);
+    return others[Math.floor(Math.random() * others.length)];
+  }
+
   function spawnMote() {
     const sym = ELEMENT_SYMBOLS[Math.floor(Math.random() * ELEMENT_SYMBOLS.length)];
-    const size = (25 + Math.random() * 10) * 1.15;  // 15% bigger
-    const speed = 0.7;                              // 30% slower
+    const size = 20 + Math.random() * 28; // 20-48px — clearly distinct sizes without tiny/huge extremes
+    const speed = 0.7;
     return {
       x: Math.random() * (window.innerWidth - 60) + 30,
       y: Math.random() * (window.innerHeight - 60) + 30,
@@ -204,17 +210,55 @@
     ctx.closePath();
   }
 
-  function updateMotes() {
+  function moveMotes() {
     for (const m of motes) {
       m.x += m.vx; m.y += m.vy;
       let hit = false;
       if (m.x <= 0 || m.x + m.box >= viewW) { m.vx *= -1; hit = true; }
       if (m.y <= 0 || m.y + m.box >= viewH) { m.vy *= -1; hit = true; }
-      if (hit) {
-        const others = NEON_COLORS.filter(c => c !== m.color);
-        m.color = others[Math.floor(Math.random() * others.length)];
-      }
+      if (hit) m.color = pickNewColor(m.color);
+    }
+  }
 
+  // same bounce-and-recolor treatment as hitting the screen edge, but
+  // triggered by two motes' tiles overlapping instead. Whichever axis has
+  // the shallower overlap is the one they just crossed, so that's the
+  // axis that gets reflected; both tiles are also nudged apart along it
+  // so they don't stay overlapped and keep re-triggering next frame.
+  function resolveMoteCollisions() {
+    for (let i = 0; i < motes.length; i++) {
+      const a = motes[i];
+      for (let j = i + 1; j < motes.length; j++) {
+        const b = motes[j];
+        if (a.x >= b.x + b.box || a.x + a.box <= b.x ||
+            a.y >= b.y + b.box || a.y + a.box <= b.y) continue; // no overlap
+
+        const overlapX = Math.min(a.x + a.box, b.x + b.box) - Math.max(a.x, b.x);
+        const overlapY = Math.min(a.y + a.box, b.y + b.box) - Math.max(a.y, b.y);
+        const aLeft = (a.x + a.box / 2) < (b.x + b.box / 2);
+        const aAbove = (a.y + a.box / 2) < (b.y + b.box / 2);
+
+        if (overlapX < overlapY) {
+          const push = overlapX / 2 + 0.5;
+          a.x += aLeft ? -push : push;
+          b.x += aLeft ? push : -push;
+          a.vx = (aLeft ? -1 : 1) * Math.abs(a.vx || 1);
+          b.vx = (aLeft ? 1 : -1) * Math.abs(b.vx || 1);
+        } else {
+          const push = overlapY / 2 + 0.5;
+          a.y += aAbove ? -push : push;
+          b.y += aAbove ? push : -push;
+          a.vy = (aAbove ? -1 : 1) * Math.abs(a.vy || 1);
+          b.vy = (aAbove ? 1 : -1) * Math.abs(b.vy || 1);
+        }
+        a.color = pickNewColor(a.color);
+        b.color = pickNewColor(b.color);
+      }
+    }
+  }
+
+  function drawMotes() {
+    for (const m of motes) {
       if (Math.random() < 0.55) spawnSpark(m);
       if (Math.random() < 0.55) spawnSpark(m); // two independent rolls — a denser, livelier trail than one higher-probability roll would give
 
@@ -269,6 +313,12 @@
       ctx.fillText(m.sym, m.x + m.box / 2, m.y + m.box / 2);
       ctx.restore();
     }
+  }
+
+  function updateMotes() {
+    moveMotes();
+    resolveMoteCollisions();
+    drawMotes();
   }
 
   function tick(t) {
