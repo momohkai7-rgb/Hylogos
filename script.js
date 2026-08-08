@@ -6,7 +6,7 @@
   
   let stars = [];
   let motes = [];
-  const hole = { cx: 0, cy: 0, r: 0 };
+  const hole = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
 
   const rmQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   let reducedMotion = rmQuery.matches;
@@ -15,13 +15,10 @@
   const ELEMENT_SYMBOLS = (typeof ELEMENTS !== "undefined") ? Object.keys(ELEMENTS) : ["H", "O", "Fe", "Na", "C", "Au", "Ag", "Ti"];
   const NEON_COLORS = ["#ff0055", "#00ffcc", "#ffff33", "#cc33ff", "#33ff77", "#ff9900", "#00ccff"];
 
-  // three orbital rings around the search circle, echoing the wordmark's
-  // amber->blue gradient rather than an unrelated scanner palette
-  const ORBITS = [
-    { rxMul: 1.32, ryMul: 0.40, tilt:  0.35, speed:  0.16, phase: 0.0, rgb: "127,217,255" }, // photon-blue
-    { rxMul: 1.55, ryMul: 0.28, tilt: -0.55, speed: -0.11, phase: 2.3, rgb: "255,180,84"  }, // disk-amber
-    { rxMul: 1.18, ryMul: 0.52, tilt:  1.05, speed:  0.21, phase: 4.4, rgb: "255,242,214" }, // disk-hot
-  ];
+  // single neon-green scan line sweeping across the search bar — reuses
+  // the same emerald as the search text itself, so it reads as one theme
+  const SCAN_RGB = "16,255,120";
+  const SCAN_PERIOD = 2600; // ms per left-to-right sweep
 
   function spawnMote() {
     const sym = ELEMENT_SYMBOLS[Math.floor(Math.random() * ELEMENT_SYMBOLS.length)];
@@ -55,9 +52,12 @@
   function updateHolePosition() {
     if (searchEl) {
       const rect = searchEl.getBoundingClientRect();
-      hole.cx = rect.left + rect.width / 2;
-      hole.cy = rect.top + rect.height / 2;
-      hole.r = rect.width / 2;
+      hole.left = rect.left;
+      hole.right = rect.right;
+      hole.top = rect.top;
+      hole.bottom = rect.bottom;
+      hole.width = rect.width;
+      hole.height = rect.height;
     }
   }
 
@@ -83,49 +83,45 @@
     ctx.restore();
   }
 
-  function glowDot(x, y, r, rgb) {
-    ctx.save();
-    ctx.globalCompositeOperation = "lighter";
-    for (let i = 4; i >= 1; i--) {
-      ctx.globalAlpha = 0.12 * (i / 4);
-      ctx.fillStyle = `rgba(${rgb},1)`;
-      ctx.beginPath(); ctx.arc(x, y, r + (r * 1.8 * i) / 4, 0, Math.PI * 2); ctx.fill();
+  function drawScanner(t) {
+    const { left, top, width, height } = hole;
+    if (width <= 0 || height <= 0) return;
+
+    const pad = Math.min(8, width * 0.04);
+    const x0 = left + pad, x1 = left + width - pad;
+    const span = x1 - x0;
+    if (span <= 0) return;
+
+    const progress = reducedMotion ? 0.5 : ((t % SCAN_PERIOD) / SCAN_PERIOD);
+    const x = x0 + span * progress;
+
+    // fade the line out/in right at the loop point, so the reset from
+    // right edge back to left edge never reads as a hard, visible cut
+    const edge = 0.07;
+    let fade = 1;
+    if (!reducedMotion) {
+      if (progress < edge) fade = progress / edge;
+      else if (progress > 1 - edge) fade = (1 - progress) / edge;
     }
-    ctx.restore();
-    ctx.save();
-    ctx.fillStyle = `rgba(${rgb},1)`;
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-    ctx.restore();
-  }
-
-  function drawOrbitals(t) {
-    const { cx, cy, r } = hole;
-    if (r <= 0) return;
 
     ctx.save();
-    ctx.translate(cx, cy);
+    roundRectPath(left, top, width, height, Math.min(width, height) / 2);
+    ctx.clip();
 
-    // soft warm ambient glow behind the whole assembly, like a distant core
-    const coreGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 1.6);
-    coreGlow.addColorStop(0, "rgba(255,180,84,0.16)");
-    coreGlow.addColorStop(0.55, "rgba(127,217,255,0.05)");
-    coreGlow.addColorStop(1, "rgba(127,217,255,0)");
-    ctx.fillStyle = coreGlow;
-    ctx.beginPath(); ctx.arc(0, 0, r * 1.6, 0, Math.PI * 2); ctx.fill();
+    // very slight fading trail behind the line, in the direction it came from
+    const trailLen = Math.min(70, span * 0.4);
+    const trail = ctx.createLinearGradient(x - trailLen, 0, x, 0);
+    trail.addColorStop(0, `rgba(${SCAN_RGB},0)`);
+    trail.addColorStop(1, `rgba(${SCAN_RGB},${(0.16 * fade).toFixed(3)})`);
+    ctx.fillStyle = trail;
+    ctx.fillRect(x - trailLen, top, trailLen, height);
 
-    ORBITS.forEach(o => {
-      const rx = r * o.rxMul, ry = r * o.ryMul;
-      ctx.save();
-      ctx.rotate(o.tilt);
-      glowStroke(() => { ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); }, o.rgb, 1, 5, 0.28);
-
-      // one traveling particle per ring, same technique as the atom
-      // viewer's electron sparkles and the bond plasma particles
-      const angle = reducedMotion ? o.phase : (t * 0.00035 * o.speed * 10 + o.phase);
-      const px = Math.cos(angle) * rx, py = Math.sin(angle) * ry;
-      glowDot(px, py, 2.6, o.rgb);
-      ctx.restore();
-    });
+    // thin glowing scan line itself
+    glowStroke(() => {
+      ctx.beginPath();
+      ctx.moveTo(x, top + 2);
+      ctx.lineTo(x, top + height - 2);
+    }, SCAN_RGB, 1, 5, 0.55 * fade);
 
     ctx.restore();
   }
@@ -172,7 +168,7 @@
       ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
     }
     updateMotes();
-    drawOrbitals(t);
+    drawScanner(t);
     requestAnimationFrame(tick);
   }
 
