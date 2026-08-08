@@ -16,11 +16,10 @@
   rmQuery.addEventListener("change", e => { reducedMotion = e.matches; });
 
   const ELEMENT_SYMBOLS = (typeof ELEMENTS !== "undefined") ? Object.keys(ELEMENTS) : ["H", "O", "Fe", "Na", "C", "Au", "Ag", "Ti"];
-  // pulled straight from the site's own palette (--disk-amber, --disk-hot,
-  // --photon-blue, --struct-green, and the search/scanner emerald) instead
-  // of an unrelated rainbow set, so the trail/spark glow reads as the same
-  // theme as the rest of the page rather than clashing with it.
-  const NEON_COLORS = ["#ffb454", "#fff2d6", "#7fd9ff", "#42ffb0", "#10ff78"];
+  // a wider spread of saturated neon hues — the old set leaned on two
+  // near-identical greens plus a pale cream that read as washed-out
+  // rather than glowy, so this swaps in clearer, more distinct neon tones
+  const NEON_COLORS = ["#ffb454", "#ff3fa0", "#a855f7", "#33e6ff", "#39ff8f", "#ff5c3a"];
 
   // single neon-green scan line sweeping across the search bar — reuses
   // the same emerald as the search text itself, so it reads as one theme
@@ -39,34 +38,36 @@
       sym: sym,
       color: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
       box: size,
-      trail: [],
     };
   }
 
-  // one tiny spark, shed from the trailing edge of a moving mote
+  // one tiny spark, shed from the trailing edge of a moving mote — this
+  // is now the only trailing effect (the old comet-tail line tracked the
+  // box's centre point, which is what made it look like it came out of
+  // the middle of the square; spawning here, just past the box's own
+  // edge, is what makes it read as coming off the square itself).
   function spawnSpark(m) {
     const speed = Math.hypot(m.vx, m.vy) || 0.001;
     const bx = -m.vx / speed, by = -m.vy / speed; // unit vector pointing backward
     const jitter = (Math.random() - 0.5) * 0.9;   // narrow cone around "backward"
     const cos = Math.cos(jitter), sin = Math.sin(jitter);
     const dx = bx * cos - by * sin, dy = bx * sin + by * cos;
-    // start a bit outside the box already, not at its center, so a fresh
-    // spark doesn't flash directly on top of the letter
-    const cx = m.x + m.box / 2 + bx * (m.box * 0.68);
-    const cy = m.y + m.box / 2 + by * (m.box * 0.68);
+    // start just outside the box's trailing edge, not at its centre
+    const cx = m.x + m.box / 2 + bx * (m.box * 0.62);
+    const cy = m.y + m.box / 2 + by * (m.box * 0.62);
     particles.push({
       x: cx, y: cy,
       vx: dx * (0.25 + Math.random() * 0.45) + m.vx * 0.1,
       vy: dy * (0.25 + Math.random() * 0.45) + m.vy * 0.1,
       life: 0,
-      maxLife: 18 + Math.random() * 16,
-      size: 0.8 + Math.random() * 1.1,
+      maxLife: 20 + Math.random() * 18,
+      size: 1.3 + Math.random() * 1.6,
       color: m.color,
     });
   }
 
   function updateParticles() {
-    if (particles.length > 220) particles.splice(0, particles.length - 220); // hard cap, just in case
+    if (particles.length > 260) particles.splice(0, particles.length - 260); // hard cap, just in case
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
     for (let i = particles.length - 1; i >= 0; i--) {
@@ -76,35 +77,15 @@
       if (t >= 1) { particles.splice(i, 1); continue; }
       p.x += p.vx; p.y += p.vy;
       p.vx *= 0.96; p.vy *= 0.96;
-      ctx.globalAlpha = (1 - t) * 0.6;
-      ctx.fillStyle = p.color;
+      const size = Math.max(0.4, p.size * (1 - t * 0.7));
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 2.2);
+      g.addColorStop(0, p.color);
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.globalAlpha = (1 - t) * 0.85;
+      ctx.fillStyle = g;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, Math.max(0.35, p.size * (1 - t * 0.7)), 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, size * 2.2, 0, Math.PI * 2);
       ctx.fill();
-    }
-    ctx.restore();
-  }
-
-  // fading, tapering streak through a mote's recent positions — the comet
-  // tail. Needs to physically reach past the box's own footprint or it
-  // just gets drawn over and hidden — trail length is sized so the total
-  // path length comfortably clears the largest box at the current speed.
-  const TAIL_LEN = 46;
-  function drawTail(m) {
-    const n = m.trail.length;
-    if (n < 2) return;
-    ctx.save();
-    ctx.globalCompositeOperation = "lighter";
-    ctx.lineCap = "round";
-    for (let i = 1; i < n; i++) {
-      const t = i / n; // 0 = oldest/faintest tip, 1 = newest, right at the box
-      ctx.globalAlpha = Math.min(0.85, 0.08 + t * 0.75);
-      ctx.lineWidth = 1.1 + t * t * (m.box * 0.3);
-      ctx.strokeStyle = m.color;
-      ctx.beginPath();
-      ctx.moveTo(m.trail[i - 1].x, m.trail[i - 1].y);
-      ctx.lineTo(m.trail[i].x, m.trail[i].y);
-      ctx.stroke();
     }
     ctx.restore();
   }
@@ -234,10 +215,24 @@
         m.color = others[Math.floor(Math.random() * others.length)];
       }
 
-      m.trail.push({ x: m.x + m.box / 2, y: m.y + m.box / 2 });
-      if (m.trail.length > TAIL_LEN) m.trail.shift();
-      if (Math.random() < 0.16) spawnSpark(m);
-      drawTail(m);
+      if (Math.random() < 0.55) spawnSpark(m);
+      if (Math.random() < 0.55) spawnSpark(m); // two independent rolls — a denser, livelier trail than one higher-probability roll would give
+
+      // soft glow halo behind the tile — this is what reads as "glowy"
+      // at a glance, before you even register the crisp border/text
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+      const hx = m.x + m.box / 2, hy = m.y + m.box / 2;
+      const haloR = m.box * 0.95;
+      const halo = ctx.createRadialGradient(hx, hy, 0, hx, hy, haloR);
+      halo.addColorStop(0, m.color);
+      halo.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(hx, hy, haloR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
 
       // dark tile behind everything
       ctx.save();
