@@ -246,8 +246,10 @@
     }
   }
 
-  // Faint connecting line between two tiles drifting close together, like a
-  // bond forming — brightens as they approach, fades as they separate.
+  // Connecting line between two tiles drifting close together, like a bond
+  // forming — brightens as they approach, and cuts off cleanly the moment
+  // their tiles are close enough to actually touch, rather than lingering
+  // as a fading line after they've already collided.
   const BOND_DIST = 140;
   function drawBonds() {
     for (let i = 0; i < motes.length; i++) {
@@ -259,19 +261,42 @@
         const dist = Math.hypot(ax - bx, ay - by);
         if (dist >= BOND_DIST) continue;
 
-        const strength = 1 - dist / BOND_DIST; // 0 at threshold, 1 when touching
+        // once they're close enough to actually touch, the bond is gone —
+        // not just faint
+        const touchDist = (a.box + b.box) / 2 + 4;
+        if (dist <= touchDist) continue;
+
+        // eased rather than linear, so the bond reads as visible well
+        // before the last few pixels of approach, not just right at contact
+        const strength = (BOND_DIST - dist) / (BOND_DIST - touchDist);
+        const eased = Math.pow(strength, 0.6);
+
         const grad = ctx.createLinearGradient(ax, ay, bx, by);
         grad.addColorStop(0, a.color);
         grad.addColorStop(1, b.color);
+
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
-        ctx.globalAlpha = 0.4 * strength;
         ctx.strokeStyle = grad;
-        ctx.lineWidth = 1.2;
+        ctx.lineCap = "round";
+
+        // soft outer glow, then a crisp inner line — same two-layer idea
+        // as the tiles' own glow, kept to just two passes so it stays
+        // readable rather than turning into a bright blown-out beam
+        ctx.globalAlpha = 0.26 * eased;
+        ctx.lineWidth = 4.5;
         ctx.beginPath();
         ctx.moveTo(ax, ay);
         ctx.lineTo(bx, by);
         ctx.stroke();
+
+        ctx.globalAlpha = 0.75 * eased;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(bx, by);
+        ctx.stroke();
+
         ctx.restore();
       }
     }
