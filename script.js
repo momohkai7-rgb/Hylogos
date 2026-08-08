@@ -6,6 +6,7 @@
   
   let stars = [];
   let motes = [];
+  let particles = []; // tiny sparks that shed off each mote as it moves
   let viewW = 0, viewH = 0; // logical (CSS-pixel) canvas size, kept separate from the
                              // dpr-scaled backing store so crispness doesn't break bounds math
   const hole = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
@@ -15,7 +16,11 @@
   rmQuery.addEventListener("change", e => { reducedMotion = e.matches; });
 
   const ELEMENT_SYMBOLS = (typeof ELEMENTS !== "undefined") ? Object.keys(ELEMENTS) : ["H", "O", "Fe", "Na", "C", "Au", "Ag", "Ti"];
-  const NEON_COLORS = ["#ff0055", "#00ffcc", "#ffff33", "#cc33ff", "#33ff77", "#ff9900", "#00ccff"];
+  // pulled straight from the site's own palette (--disk-amber, --disk-hot,
+  // --photon-blue, --struct-green, and the search/scanner emerald) instead
+  // of an unrelated rainbow set, so the trail/spark glow reads as the same
+  // theme as the rest of the page rather than clashing with it.
+  const NEON_COLORS = ["#ffb454", "#fff2d6", "#7fd9ff", "#42ffb0", "#10ff78"];
 
   // single neon-green scan line sweeping across the search bar — reuses
   // the same emerald as the search text itself, so it reads as one theme
@@ -34,7 +39,74 @@
       sym: sym,
       color: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
       box: size,
+      trail: [],
     };
+  }
+
+  // one tiny spark, shed from the trailing edge of a moving mote
+  function spawnSpark(m) {
+    const speed = Math.hypot(m.vx, m.vy) || 0.001;
+    const bx = -m.vx / speed, by = -m.vy / speed; // unit vector pointing backward
+    const jitter = (Math.random() - 0.5) * 0.9;   // narrow cone around "backward"
+    const cos = Math.cos(jitter), sin = Math.sin(jitter);
+    const dx = bx * cos - by * sin, dy = bx * sin + by * cos;
+    // start a bit outside the box already, not at its center, so a fresh
+    // spark doesn't flash directly on top of the letter
+    const cx = m.x + m.box / 2 + bx * (m.box * 0.68);
+    const cy = m.y + m.box / 2 + by * (m.box * 0.68);
+    particles.push({
+      x: cx, y: cy,
+      vx: dx * (0.25 + Math.random() * 0.45) + m.vx * 0.1,
+      vy: dy * (0.25 + Math.random() * 0.45) + m.vy * 0.1,
+      life: 0,
+      maxLife: 18 + Math.random() * 16,
+      size: 0.8 + Math.random() * 1.1,
+      color: m.color,
+    });
+  }
+
+  function updateParticles() {
+    if (particles.length > 220) particles.splice(0, particles.length - 220); // hard cap, just in case
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.life++;
+      const t = p.life / p.maxLife;
+      if (t >= 1) { particles.splice(i, 1); continue; }
+      p.x += p.vx; p.y += p.vy;
+      p.vx *= 0.96; p.vy *= 0.96;
+      ctx.globalAlpha = (1 - t) * 0.6;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, Math.max(0.35, p.size * (1 - t * 0.7)), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // fading, tapering streak through a mote's recent positions — the comet
+  // tail. Needs to physically reach past the box's own footprint or it
+  // just gets drawn over and hidden — trail length is sized so the total
+  // path length comfortably clears the largest box at the current speed.
+  const TAIL_LEN = 46;
+  function drawTail(m) {
+    const n = m.trail.length;
+    if (n < 2) return;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.lineCap = "round";
+    for (let i = 1; i < n; i++) {
+      const t = i / n; // 0 = oldest/faintest tip, 1 = newest, right at the box
+      ctx.globalAlpha = Math.min(0.85, 0.08 + t * 0.75);
+      ctx.lineWidth = 1.1 + t * t * (m.box * 0.3);
+      ctx.strokeStyle = m.color;
+      ctx.beginPath();
+      ctx.moveTo(m.trail[i - 1].x, m.trail[i - 1].y);
+      ctx.lineTo(m.trail[i].x, m.trail[i].y);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 
   function resize() {
@@ -162,6 +234,11 @@
         m.color = others[Math.floor(Math.random() * others.length)];
       }
 
+      m.trail.push({ x: m.x + m.box / 2, y: m.y + m.box / 2 });
+      if (m.trail.length > TAIL_LEN) m.trail.shift();
+      if (Math.random() < 0.16) spawnSpark(m);
+      drawTail(m);
+
       // dark tile behind everything
       ctx.save();
       ctx.globalAlpha = 0.55;
@@ -209,6 +286,7 @@
       ctx.globalAlpha = 0.2 + 0.4 * twinkle;
       ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
     }
+    updateParticles(); // drawn first so a mote's box+text render on top and mask any spark still tucked close behind it
     updateMotes();
     drawScanner(t);
     requestAnimationFrame(tick);
