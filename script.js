@@ -6,6 +6,8 @@
   
   let stars = [];
   let motes = [];
+  let viewW = 0, viewH = 0; // logical (CSS-pixel) canvas size, kept separate from the
+                             // dpr-scaled backing store so crispness doesn't break bounds math
   const hole = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
 
   const rmQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -22,12 +24,13 @@
 
   function spawnMote() {
     const sym = ELEMENT_SYMBOLS[Math.floor(Math.random() * ELEMENT_SYMBOLS.length)];
-    const size = 25 + Math.random() * 10;
+    const size = (25 + Math.random() * 10) * 1.15;  // 15% bigger
+    const speed = 0.7;                              // 30% slower
     return {
       x: Math.random() * (window.innerWidth - 60) + 30,
       y: Math.random() * (window.innerHeight - 60) + 30,
-      vx: (Math.random() > 0.5 ? 1 : -1) * (1.2 + Math.random() * 0.8),
-      vy: (Math.random() > 0.5 ? 1 : -1) * (1.2 + Math.random() * 0.8),
+      vx: (Math.random() > 0.5 ? 1 : -1) * (1.2 + Math.random() * 0.8) * speed,
+      vy: (Math.random() > 0.5 ? 1 : -1) * (1.2 + Math.random() * 0.8) * speed,
       sym: sym,
       color: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
       box: size,
@@ -35,12 +38,24 @@
   }
 
   function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    const starCount = Math.floor((canvas.width * canvas.height) / 9000);
+    // Draw at the screen's real pixel density, not just CSS pixels — on any
+    // Retina-class display, a 1x-resolution canvas gets stretched by the
+    // browser to fill the physical screen, which is what was reading as
+    // "fuzzy" (small text/symbols show it worst). Capped at 2x so very
+    // high-density phone screens don't push an oversized backing store.
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    viewW = window.innerWidth;
+    viewH = window.innerHeight;
+    canvas.width = Math.round(viewW * dpr);
+    canvas.height = Math.round(viewH * dpr);
+    canvas.style.width = viewW + "px";
+    canvas.style.height = viewH + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // all draw calls below stay in CSS-pixel coordinates
+
+    const starCount = Math.floor((viewW * viewH) / 9000);
     stars = Array.from({ length: starCount }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
+      x: Math.random() * viewW,
+      y: Math.random() * viewH,
       r: Math.random() * 1.2 + 0.2,
       phase: Math.random() * Math.PI * 2,
       speed: Math.random() * 0.02 + 0.005,
@@ -140,26 +155,53 @@
     for (const m of motes) {
       m.x += m.vx; m.y += m.vy;
       let hit = false;
-      if (m.x <= 0 || m.x + m.box >= canvas.width) { m.vx *= -1; hit = true; }
-      if (m.y <= 0 || m.y + m.box >= canvas.height) { m.vy *= -1; hit = true; }
+      if (m.x <= 0 || m.x + m.box >= viewW) { m.vx *= -1; hit = true; }
+      if (m.y <= 0 || m.y + m.box >= viewH) { m.vy *= -1; hit = true; }
       if (hit) {
         const others = NEON_COLORS.filter(c => c !== m.color);
         m.color = others[Math.floor(Math.random() * others.length)];
       }
+
+      // dark tile behind everything
+      ctx.save();
       ctx.globalAlpha = 0.55;
-      ctx.shadowColor = m.color; ctx.shadowBlur = 10;
       roundRectPath(m.x, m.y, m.box, m.box, 4);
-      ctx.fillStyle = "rgba(13,10,24,0.9)"; ctx.fill();
-      ctx.strokeStyle = m.color; ctx.lineWidth = 1.6; ctx.stroke();
-      ctx.fillStyle = m.color; ctx.font = `bold 10px monospace`; ctx.textAlign = "center";
-      ctx.textBaseline = "middle"; ctx.fillText(m.sym, m.x + m.box / 2, m.y + m.box / 2);
-      ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+      ctx.fillStyle = "rgba(13,10,24,0.9)";
+      ctx.fill();
+      ctx.restore();
+
+      // neon glow around the border — layered low-alpha strokes, same
+      // technique as the search-bar scanner line. shadowBlur used to sit
+      // on top of the glyph fillText too and soften the letters; this
+      // keeps the glow on the border only, so the symbol stays sharp.
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+      for (let i = 3; i >= 1; i--) {
+        ctx.globalAlpha = 0.14 * i;
+        ctx.lineWidth = 1.6 + i * 2;
+        ctx.strokeStyle = m.color;
+        roundRectPath(m.x, m.y, m.box, m.box, 4);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // crisp border line + crisp glyph, no shadow/blur on either
+      ctx.save();
+      ctx.strokeStyle = m.color; ctx.lineWidth = 1.6;
+      roundRectPath(m.x, m.y, m.box, m.box, 4);
+      ctx.stroke();
+      ctx.fillStyle = m.color;
+      ctx.font = `bold ${Math.round(m.box * 0.33)}px monospace`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(m.sym, m.x + m.box / 2, m.y + m.box / 2);
+      ctx.restore();
     }
   }
 
   function tick(t) {
     updateHolePosition();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, viewW, viewH);
     // Draw background stars
     ctx.fillStyle = "#e8e4f0";
     for (const s of stars) {
