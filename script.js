@@ -216,17 +216,17 @@
       // motion itself stays perfectly smooth.
       const dx = Math.round(m.x), dy = Math.round(m.y);
 
-      // soft glow halo behind the tile — pushed further for a proper
-      // radioactive-glow look rather than a subtle accent
+      // soft ambient glow behind the tile — a gentle "radioactive" bloom,
+      // scaled back so it reads as a background detail, not a spotlight
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
       const hx = dx + m.box / 2, hy = dy + m.box / 2;
-      const haloR = m.box * 1.35;
+      const haloR = m.box * 1.15;
       const halo = ctx.createRadialGradient(hx, hy, 0, hx, hy, haloR);
       halo.addColorStop(0, m.color);
       halo.addColorStop(0.4, m.color);
       halo.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.globalAlpha = 0.38;
+      ctx.globalAlpha = 0.22;
       ctx.fillStyle = halo;
       ctx.beginPath();
       ctx.arc(hx, hy, haloR, 0, Math.PI * 2);
@@ -241,24 +241,25 @@
       ctx.fill();
       ctx.restore();
 
-      // neon glow around the border — layered low-alpha strokes, same
-      // technique as the search-bar scanner line. shadowBlur used to sit
-      // on top of the glyph fillText too and soften the letters; this
-      // keeps the glow on the border only, so the symbol stays sharp.
+      // neon glow around the border — thinner, tighter layers than before,
+      // so the edge reads as a fine glowing line, not a thick colored band
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
-      for (let i = 4; i >= 1; i--) {
-        ctx.globalAlpha = 0.16 * i;
-        ctx.lineWidth = 1.6 + i * 2.4;
+      for (let i = 3; i >= 1; i--) {
+        ctx.globalAlpha = 0.11 * i;
+        ctx.lineWidth = 1 + i * 1.4;
         ctx.strokeStyle = m.color;
         roundRectPath(dx, dy, m.box, m.box, 4);
         ctx.stroke();
       }
       ctx.restore();
 
-      // crisp border line + crisp glyph, no shadow/blur on either
+      // crisp border line + crisp glyph — thin stroke, alpha explicitly
+      // pinned to 1 (belt-and-suspenders against any future alpha leak),
+      // no shadow/blur on either
       ctx.save();
-      ctx.strokeStyle = m.color; ctx.lineWidth = 1.6;
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = m.color; ctx.lineWidth = 1;
       roundRectPath(dx, dy, m.box, m.box, 4);
       ctx.stroke();
       ctx.fillStyle = m.color;
@@ -280,12 +281,14 @@
     updateHolePosition();
     ctx.clearRect(0, 0, viewW, viewH);
     // Draw background stars
+    ctx.save();
     ctx.fillStyle = "#e8e4f0";
     for (const s of stars) {
       const twinkle = reducedMotion ? 0.5 : Math.abs(Math.sin(s.phase + t * s.speed));
       ctx.globalAlpha = 0.2 + 0.4 * twinkle;
       ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
     }
+    ctx.restore(); // undo the per-star alpha so it can't leak into what's drawn next
     updateMotes();
     drawScanner(t);
     requestAnimationFrame(tick);
