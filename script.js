@@ -28,12 +28,73 @@
   function moteColor(sym) {
     if (typeof ELEMENTS === "undefined" || !ELEMENTS[sym]) return FALLBACK_COLOR;
     const meta = (typeof CATEGORY_META !== "undefined") && CATEGORY_META[ELEMENTS[sym].category];
-    return meta ? meta.color : FALLBACK_COLOR;
+    return jitterColor(meta ? meta.color : FALLBACK_COLOR);
   }
 
   function hexToRgb(hex) {
     const h = hex.replace("#", "");
     return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+  }
+
+  function rgbToHex(r, g, b) {
+    const c = v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+    return `#${c(r)}${c(g)}${c(b)}`;
+  }
+
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s; const l = (max + min) / 2;
+    if (max === min) { h = s = 0; }
+    else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        default: h = (r - g) / d + 4;
+      }
+      h /= 6;
+    }
+    return [h * 360, s * 100, l * 100];
+  }
+
+  function hslToRgb(h, s, l) {
+    h /= 360; s /= 100; l /= 100;
+    let r, g, b;
+    if (s === 0) { r = g = b = l; }
+    else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+    return [r * 255, g * 255, b * 255];
+  }
+
+  // A category's color is a single fixed swatch, so every mote of that
+  // category would otherwise be visually identical — this nudges hue,
+  // saturation, and lightness a bit differently each time, so the same
+  // category still reads as a clear family of shades rather than one flat
+  // repeated color, giving more overall variety on screen without losing
+  // the tie to real chemistry.
+  function jitterColor(hex) {
+    const [r, g, b] = hexToRgb(hex);
+    const [h, s, l] = rgbToHsl(r, g, b);
+    const h2 = (h + (Math.random() * 36 - 18) + 360) % 360;
+    const s2 = Math.min(100, Math.max(40, s + (Math.random() * 16 - 8)));
+    const l2 = Math.min(75, Math.max(30, l + (Math.random() * 20 - 10)));
+    const [nr, ng, nb] = hslToRgb(h2, s2, l2);
+    return rgbToHex(nr, ng, nb);
   }
 
   function spawnMote() {
@@ -79,7 +140,7 @@
       speed: Math.random() * 0.02 + 0.005,
     }));
     updateHolePosition();
-    if (motes.length === 0) for (let i = 0; i < 10; i++) motes.push(spawnMote());
+    if (motes.length === 0) for (let i = 0; i < 14; i++) motes.push(spawnMote());
   }
 
   function updateHolePosition() {
