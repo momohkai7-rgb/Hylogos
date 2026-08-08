@@ -15,19 +15,25 @@
   rmQuery.addEventListener("change", e => { reducedMotion = e.matches; });
 
   const ELEMENT_SYMBOLS = (typeof ELEMENTS !== "undefined") ? Object.keys(ELEMENTS) : ["H", "O", "Fe", "Na", "C", "Au", "Ag", "Ti"];
-  // several distinct shades of neon green rather than one hue repeated —
-  // lime, spring, chartreuse, emerald, yellow-green — so tiles are still
-  // visually distinguishable while staying unmistakably "radioactive green"
-  const NEON_COLORS = ["#39ff14", "#00ff9c", "#7fff00", "#00e676", "#adff2f"];
+  // fallback only for the rare case CATEGORY_META hasn't loaded yet
+  const FALLBACK_COLOR = "#39ff14";
 
   // single neon-green scan line sweeping across the search bar — reuses
   // the same emerald as the search text itself, so it reads as one theme
   const SCAN_RGB = "16,255,120";
   const SCAN_PERIOD = 2600; // ms per left-to-right sweep
 
-  function pickNewColor(current) {
-    const others = NEON_COLORS.filter(c => c !== current);
-    return others[Math.floor(Math.random() * others.length)];
+  // Real periodic-table category color, not a random pick — ties the ambient
+  // background to actual chemistry instead of arbitrary neon shades.
+  function moteColor(sym) {
+    if (typeof ELEMENTS === "undefined" || !ELEMENTS[sym]) return FALLBACK_COLOR;
+    const meta = (typeof CATEGORY_META !== "undefined") && CATEGORY_META[ELEMENTS[sym].category];
+    return meta ? meta.color : FALLBACK_COLOR;
+  }
+
+  function hexToRgb(hex) {
+    const h = hex.replace("#", "");
+    return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
   }
 
   function spawnMote() {
@@ -40,8 +46,12 @@
       vx: (Math.random() > 0.5 ? 1 : -1) * (1.2 + Math.random() * 0.8) * speed,
       vy: (Math.random() > 0.5 ? 1 : -1) * (1.2 + Math.random() * 0.8) * speed,
       sym: sym,
-      color: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
+      color: moteColor(sym),
       box: size,
+      trail: [],
+      trailCounter: 0,
+      pulseStart: 0,
+      pulseDuration: 0,
     };
   }
 
@@ -161,11 +171,20 @@
 
   function moveMotes() {
     for (const m of motes) {
+      // sample trail history every 3rd frame — a trail built from every
+      // single frame at this drift speed is too short to read; sampling
+      // less often lets it span real distance without a huge history array
+      m.trailCounter = (m.trailCounter || 0) + 1;
+      if (m.trailCounter % 3 === 0) {
+        m.trail.push({ x: m.x + m.box / 2, y: m.y + m.box / 2 });
+        if (m.trail.length > 9) m.trail.shift();
+      }
+
       m.x += m.vx; m.y += m.vy;
       let hit = false;
       if (m.x <= 0 || m.x + m.box >= viewW) { m.vx *= -1; hit = true; }
       if (m.y <= 0 || m.y + m.box >= viewH) { m.vy *= -1; hit = true; }
-      if (hit) m.color = pickNewColor(m.color);
+      if (hit) { m.pulseStart = performance.now(); m.pulseDuration = 350; } // quick flash, not a full search-pulse
     }
   }
 
@@ -200,8 +219,60 @@
           a.vy = (aAbove ? -1 : 1) * Math.abs(a.vy || 1);
           b.vy = (aAbove ? 1 : -1) * Math.abs(b.vy || 1);
         }
-        a.color = pickNewColor(a.color);
-        b.color = pickNewColor(b.color);
+        a.pulseStart = performance.now(); a.pulseDuration = 350;
+        b.pulseStart = performance.now(); b.pulseDuration = 350;
+      }
+    }
+  }
+
+  // Fading trail behind each tile as it drifts — same layered-alpha
+  // technique as the scanner line, just walked along the tile's recent path
+  // instead of a fixed line, so it reads as smooth drift rather than
+  // teleporting frame to frame.
+  function drawTrails() {
+    for (const m of motes) {
+      if (m.trail.length < 2) continue;
+      const rgb = hexToRgb(m.color).join(",");
+      const cx = m.x + m.box / 2, cy = m.y + m.box / 2;
+      const pts = [...m.trail, { x: cx, y: cy }];
+      for (let i = 0; i < pts.length - 1; i++) {
+        const segAlpha = 0.22 * (i / (pts.length - 1)); // oldest end near-zero, fades in toward the tile
+        glowStroke(() => {
+          ctx.beginPath();
+          ctx.moveTo(pts[i].x, pts[i].y);
+          ctx.lineTo(pts[i + 1].x, pts[i + 1].y);
+        }, rgb, 1, 4, segAlpha);
+      }
+    }
+  }
+
+  // Faint connecting line between two tiles drifting close together, like a
+  // bond forming — brightens as they approach, fades as they separate.
+  const BOND_DIST = 140;
+  function drawBonds() {
+    for (let i = 0; i < motes.length; i++) {
+      const a = motes[i];
+      const ax = a.x + a.box / 2, ay = a.y + a.box / 2;
+      for (let j = i + 1; j < motes.length; j++) {
+        const b = motes[j];
+        const bx = b.x + b.box / 2, by = b.y + b.box / 2;
+        const dist = Math.hypot(ax - bx, ay - by);
+        if (dist >= BOND_DIST) continue;
+
+        const strength = 1 - dist / BOND_DIST; // 0 at threshold, 1 when touching
+        const grad = ctx.createLinearGradient(ax, ay, bx, by);
+        grad.addColorStop(0, a.color);
+        grad.addColorStop(1, b.color);
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        ctx.globalAlpha = 0.4 * strength;
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(bx, by);
+        ctx.stroke();
+        ctx.restore();
       }
     }
   }
@@ -216,17 +287,26 @@
       // motion itself stays perfectly smooth.
       const dx = Math.round(m.x), dy = Math.round(m.y);
 
+      // 1 right when a pulse starts, decaying to 0 over its duration —
+      // drives both the bounce-flash and the search tie-in below
+      let pulseBoost = 0;
+      if (m.pulseDuration > 0) {
+        const elapsed = performance.now() - m.pulseStart;
+        pulseBoost = Math.max(0, 1 - elapsed / m.pulseDuration);
+      }
+
       // soft ambient glow behind the tile — a gentle "radioactive" bloom,
-      // scaled back so it reads as a background detail, not a spotlight
+      // scaled back so it reads as a background detail, not a spotlight.
+      // Pulses brighter and wider briefly on impact or when searched.
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
       const hx = dx + m.box / 2, hy = dy + m.box / 2;
-      const haloR = m.box * 1.15;
+      const haloR = m.box * (1.15 + pulseBoost * 0.9);
       const halo = ctx.createRadialGradient(hx, hy, 0, hx, hy, haloR);
       halo.addColorStop(0, m.color);
       halo.addColorStop(0.4, m.color);
       halo.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.globalAlpha = 0.22;
+      ctx.globalAlpha = 0.22 + pulseBoost * 0.55;
       ctx.fillStyle = halo;
       ctx.beginPath();
       ctx.arc(hx, hy, haloR, 0, Math.PI * 2);
@@ -246,7 +326,7 @@
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
       for (let i = 3; i >= 1; i--) {
-        ctx.globalAlpha = 0.11 * i;
+        ctx.globalAlpha = (0.11 * i) + pulseBoost * 0.18;
         ctx.lineWidth = 1 + i * 1.4;
         ctx.strokeStyle = m.color;
         roundRectPath(dx, dy, m.box, m.box, 4);
@@ -271,9 +351,28 @@
     }
   }
 
+  // Called from the site logic below whenever an element is searched — ties
+  // the ambient background to what's actually happening on the site. If no
+  // current tile already represents that element, one is repurposed so the
+  // effect is always visible rather than a rare coincidence.
+  window.pulseElementMote = function (sym) {
+    if (!sym || motes.length === 0) return;
+    let target = motes.find(m => m.sym === sym);
+    if (!target) {
+      target = motes[Math.floor(Math.random() * motes.length)];
+      target.sym = sym;
+      target.color = moteColor(sym);
+      target.trail = [];
+    }
+    target.pulseStart = performance.now();
+    target.pulseDuration = 1400;
+  };
+
   function updateMotes() {
     moveMotes();
     resolveMoteCollisions();
+    drawTrails();
+    drawBonds();
     drawMotes();
   }
 
@@ -355,6 +454,7 @@ function showSubject(hit) {
     if (typeof drawAtom3D === "function") drawAtom3D(hit.key, hit.data);
     if (typeof structuresHide === "function") structuresHide();
     if (typeof discovererShow === "function") discovererShow(hit.key);
+    if (typeof window.pulseElementMote === "function") window.pulseElementMote(hit.key);
   } 
   else if (hit.type === "molecule") {
     els.subjectName.textContent = `${hit.data.name} (${hit.data.formula})`;
