@@ -112,7 +112,7 @@
     const trailLen = Math.min(70, span * 0.4);
     const trail = ctx.createLinearGradient(x - trailLen, 0, x, 0);
     trail.addColorStop(0, `rgba(${SCAN_RGB},0)`);
-    trail.addColorStop(1, `rgba(${SCAN_RGB},${(0.16 * fade).toFixed(3)})`);
+    trail.addColorStop(1, `rgba(${SCAN_RGB},${(0.32 * fade).toFixed(3)})`);
     ctx.fillStyle = trail;
     ctx.fillRect(x - trailLen, top, trailLen, height);
 
@@ -121,7 +121,7 @@
       ctx.beginPath();
       ctx.moveTo(x, top + 2);
       ctx.lineTo(x, top + height - 2);
-    }, SCAN_RGB, 1, 5, 0.55 * fade);
+    }, SCAN_RGB, 1.4, 8, 0.9 * fade);
 
     ctx.restore();
   }
