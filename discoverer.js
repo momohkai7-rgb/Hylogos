@@ -5,11 +5,15 @@
 ========================================================================= */
 
 function discovererCardHtml(d) {
-  return `
-    <div class="disc-portrait-wrap">
-      <img class="disc-portrait" src="${d.portrait}" alt="${d.name}" loading="lazy"
+  const initials = d.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+  const portraitBlock = d.portrait
+    ? `<img class="disc-portrait" src="${d.portrait}" alt="${d.name}" loading="lazy"
            onerror="this.closest('.disc-portrait-wrap').classList.add('disc-portrait-fallback')">
-      <div class="disc-portrait-fallback-label">${d.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+       <div class="disc-portrait-fallback-label">${initials}</div>`
+    : `<div class="disc-portrait-fallback-label" style="display:flex">${initials}</div>`;
+  return `
+    <div class="disc-portrait-wrap${d.portrait ? '' : ' disc-portrait-fallback'}">
+      ${portraitBlock}
     </div>
     <div class="disc-name">${d.name}</div>
     <div class="disc-meta">${d.nationality} · ${d.profession}</div>
