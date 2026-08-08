@@ -205,10 +205,6 @@ const els = {
 /* ===================== Search logic ===================== */
 let searchDebounce = null;
 if (els.search) {
-  els.search.placeholder = "search…";
-  els.search.style.background = "transparent";
-  els.search.style.border = "none";
-  els.search.style.textAlign = "center";
   els.search.style.color = "#10FF78"; // Emerald Text
 
   els.search.addEventListener("input", () => {
