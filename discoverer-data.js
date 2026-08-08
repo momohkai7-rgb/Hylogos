@@ -74,6 +74,42 @@ const DISCOVERERS = {
     portrait: discovererPortraitUrl("Sir_William_Ramsay.jpg"),
     bio: "After isolating argon with Lord Rayleigh in 1894, Ramsay reasoned a whole undiscovered family of gases must exist and went looking — finding helium terrestrially in 1895, then neon, krypton, and xenon in 1898 with Morris Travers, by fractionally distilling liquid air. He won the 1904 Nobel Prize in Chemistry for it."
   },
+  cronstedt: {
+    name: "Axel Fredrik Cronstedt", nationality: "Swedish", profession: "Mineralogist & chemist",
+    born: "23 December 1722", died: "19 August 1765",
+    portrait: discovererPortraitUrl("Axel_Fredrik_Cronstedt.JPG"),
+    bio: "A mining-bureau mineralogist working with ore samples, Cronstedt isolated nickel in 1751 from kupfernickel ('devil's copper') — ore that miners had long cursed for looking like copper but refusing to yield any. He's also considered a founder of modern mineralogy for advocating chemical, not just visual, mineral classification."
+  },
+  ulloa: {
+    name: "Antonio de Ulloa", nationality: "Spanish", profession: "Naval officer & astronomer",
+    born: "12 January 1716", died: "3 July 1795",
+    portrait: discovererPortraitUrl("Almirante_Antonio_de_Ulloa.jpg"),
+    bio: "While surveying South America for a Spanish-French geodesic expedition in the 1730s, Ulloa published the first detailed European scientific description of platinum, found alongside gold in Colombian rivers — though indigenous South Americans had already been working the metal for centuries before Europeans took note."
+  },
+  marggraf: {
+    name: "Andreas Sigismund Marggraf", nationality: "German", profession: "Chemist",
+    born: "3 March 1709", died: "7 August 1782",
+    portrait: null,
+    bio: "A pioneer of analytical chemistry in Berlin, Marggraf isolated pure metallic zinc in 1746 by heating calamine with charcoal in a closed vessel — impure zinc had been smelted in India and China for centuries, but Marggraf was first to produce and describe the pure metal in the West."
+  },
+  geoffroy_bismuth: {
+    name: "Claude François Geoffroy", nationality: "French", profession: "Chemist",
+    born: "1729", died: "18 June 1753",
+    portrait: null,
+    bio: "Working in Paris, Geoffroy proved in 1753 that bismuth was a genuinely distinct metal rather than a variant of lead, tin, or antimony as it had long been assumed to be — a conclusion he reached and published only shortly before his own death at just 24."
+  },
+  brand: {
+    name: "Hennig Brand", nationality: "German", profession: "Alchemist",
+    born: "c. 1630", died: "c. 1710",
+    portrait: null,
+    bio: "Searching for the mythical philosopher's stone by boiling down and heating enormous quantities of urine, Brand accidentally isolated a glowing white waxy substance in 1669 — phosphorus, the first element discovered by a known individual rather than known since antiquity. No portrait of Brand survives; the famous painting of his discovery was made over a century after his death."
+  },
+  brandt: {
+    name: "Georg Brandt", nationality: "Swedish", profession: "Chemist & mineralogist",
+    born: "26 June 1694", died: "29 April 1768",
+    portrait: null,
+    bio: "Brandt proved in 1735 that the blue color long seen in certain glasses and glazes came from a previously-unrecognized metal, not from bismuth as everyone assumed — cobalt, the first metal identified since antiquity by a known individual. No contemporary portrait of Brandt is known to survive."
+  },
 };
 
 /* ---- ancient elements: known since antiquity, no individual discoverer ---- */
@@ -117,11 +153,18 @@ const ELEMENT_DISCOVERY = {
   Kr: { mode: 'pending' },
   Xe: { mode: 'pending' },
 
+  Ni: { mode: 'solo', id: 'cronstedt', year: 1751, location: "Sweden" },
+  Pt: { mode: 'solo', id: 'ulloa', year: 1735, location: "Colombia (South America)" },
+  Zn: { mode: 'solo', id: 'marggraf', year: 1746, location: "Berlin, Germany" },
+  Bi: { mode: 'solo', id: 'geoffroy_bismuth', year: 1753, location: "Paris, France" },
+  P:  { mode: 'solo', id: 'brand', year: 1669, location: "Hamburg, Germany" },
+  Co: { mode: 'solo', id: 'brandt', year: 1735, location: "Sweden" },
+
   /* ---- solo, portrait not yet sourced ---- */
-  P:  { mode: 'pending' }, As: { mode: 'pending' }, Zn: { mode: 'pending' },
-  Bi: { mode: 'pending' }, Pt: { mode: 'pending' }, Mn: { mode: 'pending' },
-  Mo: { mode: 'pending' }, Te: { mode: 'pending' }, Ni: { mode: 'pending' },
-  Co: { mode: 'pending' }, Y:  { mode: 'pending' }, I:  { mode: 'pending' },
+  As: { mode: 'pending' },
+  Mn: { mode: 'pending' },
+  Mo: { mode: 'pending' }, Te: { mode: 'pending' },
+  Y:  { mode: 'pending' }, I:  { mode: 'pending' },
   Cd: { mode: 'pending' }, Li: { mode: 'pending' }, Al: { mode: 'pending' },
   Br: { mode: 'pending' }, Tl: { mode: 'pending' }, F:  { mode: 'pending' },
   Ga: { mode: 'pending' }, Sm: { mode: 'pending' }, Dy: { mode: 'pending' },
