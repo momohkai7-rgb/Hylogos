@@ -1,4 +1,4 @@
-// Hylogosme: reference data — all 118 known elements, plus a small library of
+// MatAIme: reference data — all 118 known elements, plus a small library of
 // common molecules with idealized 3D geometry.
 // Element property values are standard reference figures (IUPAC-style); for
 // superheavy elements (Z 104+) melt/boil/density are theoretical predictions —
