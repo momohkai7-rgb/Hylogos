@@ -1,4 +1,4 @@
-// Hylogos: reference data — all 118 known elements, plus a small library of
+// Hylogosme: reference data — all 118 known elements, plus a small library of
 // common molecules with idealized 3D geometry.
 // Element property values are standard reference figures (IUPAC-style); for
 // superheavy elements (Z 104+) melt/boil/density are theoretical predictions —
@@ -626,6 +626,97 @@ const ALLOYS = {
   ZERON_100:        { name:"Zeron 100",              formula:"Fe–Cr–Ni–Mo", blurb:"Super duplex stainless steel — excellent corrosion resistance in seawater and chlorides. Offshore oil and gas pipelines.", elements:{Fe:60,Cr:25,Ni:7,Mo:3.5,W:0.7,Cu:0.7}, properties:{density:"7.8 g/cm³", tensileStrength:"760 MPa"} },
 };
 
+// ── data expansion batch 2: 27 molecules + 29 alloys ──
+Object.assign(ATOM_COLOR, { I: 0x940094, Xe: 0x429eb0 });
+Object.assign(ATOM_RADIUS, { I: 0.7, Xe: 0.7 });
+
+MOLECULE_BLURBS.HBR = "A strong acid in water; used industrially to make inorganic bromide compounds.";
+MOLECULE_BLURBS.HI = "The strongest of the hydrohalic acids; used to make some pharmaceuticals and as a reducing agent.";
+MOLECULE_BLURBS.ICL = "An interhalogen compound that acts as a milder, more selective iodinating agent than iodine itself.";
+MOLECULE_BLURBS.CAF2 = "Found naturally as the mineral fluorite; historically the main source of fluorine and hydrofluoric acid.";
+MOLECULE_BLURBS.MGF2 = "Highly transparent from the ultraviolet into the infrared, so it's used as a coating on camera and telescope lenses.";
+MOLECULE_BLURBS.ALF3 = "An intermediate in producing aluminum metal, added to the electrolysis bath to lower its melting point.";
+MOLECULE_BLURBS.KBR = "Once widely prescribed as a sedative and anticonvulsant before modern medications replaced it.";
+MOLECULE_BLURBS.KI = "Added to table salt to prevent iodine-deficiency disorders; also distributed near nuclear plants to block thyroid radiation uptake.";
+MOLECULE_BLURBS.FECL2 = "A common iron source in water treatment, used to help precipitate out other contaminants.";
+MOLECULE_BLURBS.NIO = "A dull green solid used as a pigment in ceramics and ceramic glazes for centuries.";
+MOLECULE_BLURBS.MNO2 = "The active material inside ordinary alkaline and zinc-carbon batteries.";
+MOLECULE_BLURBS.HCLO = "The active disinfecting molecule in chlorinated pool water and bleach solutions — your own white blood cells make it too.";
+MOLECULE_BLURBS.PF3 = "Highly toxic, similar in danger to carbon monoxide, since it also binds strongly to blood hemoglobin.";
+MOLECULE_BLURBS.PCL3 = "A key industrial intermediate used to manufacture pesticides and flame retardants.";
+MOLECULE_BLURBS.XEO3 = "A dangerously explosive solid — one of the few noble-gas compounds unstable enough to detonate.";
+MOLECULE_BLURBS.SIF4 = "Released when hydrofluoric acid reacts with glass or sand; used industrially to make high-purity silicon.";
+MOLECULE_BLURBS.CLF3 = "So reactive it can ignite sand, asbestos, and glass on contact; used to clean chemical vapor deposition chambers.";
+MOLECULE_BLURBS.IF5 = "A powerful fluorinating agent used in organic synthesis to selectively introduce fluorine atoms.";
+MOLECULE_BLURBS.N2O5 = "The anhydride of nitric acid; a key nighttime reservoir molecule in atmospheric chemistry.";
+MOLECULE_BLURBS.PF5 = "A strong Lewis acid used as a catalyst and, notably, as a dopant to make conductive polymers.";
+MOLECULE_BLURBS.CH3CHO = "Formed naturally as fruit ripens; also produced in the body as an intermediate when metabolizing alcohol.";
+MOLECULE_BLURBS.C2H6O_DME = "An isomer of ethanol with completely different properties — a gas at room temperature, used as an aerosol propellant.";
+MOLECULE_BLURBS.CH3NH2 = "A fishy-smelling gas released by decaying organisms; also used to manufacture pesticides and pharmaceuticals.";
+MOLECULE_BLURBS.C2H5NH2 = "A building block in pharmaceutical and pesticide synthesis, with a strong ammonia-like odor.";
+MOLECULE_BLURBS.CH3CN = "A common solvent in chemistry labs and in HPLC analysis, prized for dissolving both polar and nonpolar compounds.";
+MOLECULE_BLURBS.GLYCINE = "The simplest amino acid and the only one that isn't chiral; a building block of proteins throughout the body.";
+MOLECULE_BLURBS.PYRIDINE = "A foul-smelling aromatic solvent; its ring structure appears throughout biology, including in vitamin B3 (niacin).";
+
+MOLECULES.HBR = { name:"Hydrogen bromide", formula:"HBr", atoms:[{el:"H",pos:[0.705,0,0]},{el:"Br",pos:[-0.705,0,0]}], bonds:[[0,1]] };
+MOLECULES.HI = { name:"Hydrogen iodide", formula:"HI", atoms:[{el:"H",pos:[0.805,0,0]},{el:"I",pos:[-0.805,0,0]}], bonds:[[0,1]] };
+MOLECULES.ICL = { name:"Iodine monochloride", formula:"ICl", atoms:[{el:"I",pos:[1.16,0,0]},{el:"Cl",pos:[-1.16,0,0]}], bonds:[[0,1]] };
+MOLECULES.CAF2 = { name:"Calcium fluoride", formula:"CaF₂", atoms:[{el:"Ca",pos:[1.18,0,0]},{el:"F",pos:[-1.18,0,0]}], bonds:[[0,1]] };
+MOLECULES.MGF2 = { name:"Magnesium fluoride", formula:"MgF₂", atoms:[{el:"Mg",pos:[0.995,0,0]},{el:"F",pos:[-0.995,0,0]}], bonds:[[0,1]] };
+MOLECULES.ALF3 = { name:"Aluminum fluoride", formula:"AlF₃", atoms:[{el:"Al",pos:[0.83,0,0]},{el:"F",pos:[-0.83,0,0]}], bonds:[[0,1]] };
+MOLECULES.KBR = { name:"Potassium bromide", formula:"KBr", atoms:[{el:"K",pos:[1.41,0,0]},{el:"Br",pos:[-1.41,0,0]}], bonds:[[0,1]] };
+MOLECULES.KI = { name:"Potassium iodide", formula:"KI", atoms:[{el:"K",pos:[1.525,0,0]},{el:"I",pos:[-1.525,0,0]}], bonds:[[0,1]] };
+MOLECULES.FECL2 = { name:"Iron(II) chloride", formula:"FeCl₂", atoms:[{el:"Fe",pos:[1.2,0,0]},{el:"Cl",pos:[-1.2,0,0]}], bonds:[[0,1]] };
+MOLECULES.NIO = { name:"Nickel(II) oxide", formula:"NiO", atoms:[{el:"Ni",pos:[1.045,0,0]},{el:"O",pos:[-1.045,0,0]}], bonds:[[0,1]] };
+MOLECULES.MNO2 = { name:"Manganese dioxide", formula:"MnO₂", atoms:[{el:"Mn",pos:[0.94,0,0]},{el:"O",pos:[-0.94,0,0]}], bonds:[[0,1]] };
+MOLECULES.HCLO = { name:"Hypochlorous acid", formula:"HClO", atoms:[{el:"O",pos:[0,0,0]},{el:"H",pos:[0.218,0.945,0]},{el:"Cl",pos:[-1.69,0,0]}], bonds:[[0,1],[0,2]] };
+MOLECULES.PF3 = { name:"Phosphorus trifluoride", formula:"PF₃", atoms:[{el:"P",pos:[0,0,0]},{el:"F",pos:[1.366,0.0,-0.774]},{el:"F",pos:[-0.683,1.183,-0.774]},{el:"F",pos:[-0.683,-1.183,-0.774]}], bonds:[[0,1],[0,2],[0,3]] };
+MOLECULES.PCL3 = { name:"Phosphorus trichloride", formula:"PCl₃", atoms:[{el:"P",pos:[0,0,0]},{el:"Cl",pos:[1.808,0.0,-0.944]},{el:"Cl",pos:[-0.904,1.566,-0.944]},{el:"Cl",pos:[-0.904,-1.566,-0.944]}], bonds:[[0,1],[0,2],[0,3]] };
+MOLECULES.XEO3 = { name:"Xenon trioxide", formula:"XeO₃", atoms:[{el:"Xe",pos:[0,0,0]},{el:"O",pos:[1.59,0.0,-0.754]},{el:"O",pos:[-0.795,1.377,-0.754]},{el:"O",pos:[-0.795,-1.377,-0.754]}], bonds:[[0,1],[0,2],[0,3]] };
+MOLECULES.SIF4 = { name:"Silicon tetrafluoride", formula:"SiF₄", atoms:[{el:"Si",pos:[0,0,0]},{el:"F",pos:[0.895,0.895,0.895]},{el:"F",pos:[0.895,-0.895,-0.895]},{el:"F",pos:[-0.895,0.895,-0.895]},{el:"F",pos:[-0.895,-0.895,0.895]}], bonds:[[0,1],[0,2],[0,3],[0,4]] };
+MOLECULES.CLF3 = { name:"Chlorine trifluoride", formula:"ClF₃", atoms:[{el:"Cl",pos:[0,0,0]},{el:"F",pos:[1.7,0,0]},{el:"F",pos:[-1.7,0,0]},{el:"F",pos:[0,1.7,0]}], bonds:[[0,1],[0,2],[0,3]] };
+MOLECULES.IF5 = { name:"Iodine pentafluoride", formula:"IF₅", atoms:[{el:"I",pos:[0,0,0]},{el:"F",pos:[1.87,0.0,-0.468]},{el:"F",pos:[0.0,1.87,-0.468]},{el:"F",pos:[-1.87,0.0,-0.468]},{el:"F",pos:[-0.0,-1.87,-0.468]},{el:"F",pos:[0,0,1.84]}], bonds:[[0,1],[0,2],[0,3],[0,4],[0,5]] };
+MOLECULES.N2O5 = { name:"Dinitrogen pentoxide (NO2 unit)", formula:"N₂O₅", atoms:[{el:"N",pos:[0,0,0]},{el:"O",pos:[0.0,1.2,0]},{el:"O",pos:[-1.039,-0.6,0]},{el:"O",pos:[1.039,-0.6,0]}], bonds:[[0,1],[0,2],[0,3]] };
+MOLECULES.PF5 = { name:"Phosphorus pentafluoride", formula:"PF₅", atoms:[{el:"P",pos:[0,0,0]},{el:"F",pos:[1.53,0.0,0]},{el:"F",pos:[-0.765,1.325,0]},{el:"F",pos:[-0.765,-1.325,0]},{el:"F",pos:[0,0,1.58]},{el:"F",pos:[0,0,-1.58]}], bonds:[[0,1],[0,2],[0,3],[0,4],[0,5]] };
+MOLECULES.CH3CHO = { name:"Acetaldehyde", formula:"CH₃CHO", atoms:[{el:"C",pos:[0,0,0]},{el:"O",pos:[0,1.21,0]},{el:"C",pos:[-0.75,-1.299,0]},{el:"H",pos:[0.545,-0.944,0]},{el:"H",pos:[-0.564,-0.976,1.024]},{el:"H",pos:[-1.332,-0.533,-0.512]},{el:"H",pos:[0.205,-1.42,-0.512]}], bonds:[[0,1],[0,2],[0,3],[2,4],[2,5],[2,6]] };
+MOLECULES.C2H6O_DME = { name:"Dimethyl ether", formula:"(CH₃)₂O", atoms:[{el:"O",pos:[0,0,0]},{el:"C",pos:[1.165,0.794,0]},{el:"C",pos:[-1.165,0.794,0]},{el:"H",pos:[1.474,1.003,1.024]},{el:"H",pos:[0.974,1.737,-0.512]},{el:"H",pos:[1.973,0.27,-0.512]},{el:"H",pos:[-1.474,1.003,1.024]},{el:"H",pos:[-1.973,0.27,-0.512]},{el:"H",pos:[-0.974,1.737,-0.512]}], bonds:[[0,1],[0,2],[1,3],[1,4],[1,5],[2,6],[2,7],[2,8]] };
+MOLECULES.CH3NH2 = { name:"Methylamine", formula:"CH₃NH₂", atoms:[{el:"C",pos:[0,0,0]},{el:"N",pos:[0.849,0.849,0.849]},{el:"H",pos:[0.629,-0.629,-0.629]},{el:"H",pos:[-0.629,0.629,-0.629]},{el:"H",pos:[-0.629,-0.629,0.629]},{el:"H",pos:[0.661,0.661,1.823]},{el:"H",pos:[1.436,1.436,0.273]}], bonds:[[0,1],[0,2],[0,3],[0,4],[1,5],[1,6]] };
+MOLECULES.C2H5NH2 = { name:"Ethylamine", formula:"C₂H₅NH₂", atoms:[{el:"C",pos:[0,0,0]},{el:"C",pos:[0.889,0.889,0.889]},{el:"N",pos:[1.738,0.04,0.04]},{el:"H",pos:[0.629,-0.629,-0.629]},{el:"H",pos:[-0.629,0.629,-0.629]},{el:"H",pos:[-0.629,-0.629,0.629]},{el:"H",pos:[1.518,0.26,1.518]},{el:"H",pos:[1.518,1.518,0.26]},{el:"H",pos:[1.926,-0.148,1.015]},{el:"H",pos:[1.151,0.627,-0.535]}], bonds:[[0,1],[1,2],[0,3],[0,4],[0,5],[1,6],[1,7],[2,8],[2,9]] };
+MOLECULES.CH3CN = { name:"Acetonitrile", formula:"CH₃CN", atoms:[{el:"C",pos:[0,0,0]},{el:"C",pos:[1.46,0,0]},{el:"N",pos:[2.62,0,0]},{el:"H",pos:[-0.373,0.0,1.024]},{el:"H",pos:[-0.373,-0.887,-0.512]},{el:"H",pos:[-0.373,0.887,-0.512]}], bonds:[[0,1],[1,2],[0,3],[0,4],[0,5]] };
+MOLECULES.GLYCINE = { name:"Glycine", formula:"NH₂CH₂COOH", atoms:[{el:"C",pos:[0,0,0]},{el:"N",pos:[0.837,0.837,0.837]},{el:"C",pos:[0.878,-0.878,-0.878]},{el:"H",pos:[-0.629,0.629,-0.629]},{el:"H",pos:[-0.629,-0.629,0.629]},{el:"H",pos:[0.649,0.649,1.812]},{el:"H",pos:[1.424,1.424,0.262]},{el:"O",pos:[1.365,-1.365,0.104]},{el:"O",pos:[1.192,-1.192,-2.141]},{el:"H",pos:[1.642,-1.642,-2.874]}], bonds:[[0,1],[0,2],[0,3],[0,4],[1,5],[1,6],[2,7],[2,8],[8,9]] };
+MOLECULES.PYRIDINE = { name:"Pyridine", formula:"C₅H₅N", atoms:[{el:"N",pos:[1.39,0.0,0]},{el:"C",pos:[0.695,1.204,0]},{el:"C",pos:[-0.695,1.204,0]},{el:"C",pos:[-1.39,0.0,0]},{el:"C",pos:[-0.695,-1.204,0]},{el:"C",pos:[0.695,-1.204,0]},{el:"H",pos:[1.24,2.148,0]},{el:"H",pos:[-1.24,2.148,0]},{el:"H",pos:[-2.48,0.0,0]},{el:"H",pos:[-1.24,-2.148,0]},{el:"H",pos:[1.24,-2.148,0]}], bonds:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[1,6],[2,7],[3,8],[4,9],[5,10]] };
+
+ALLOYS.YELLOW_GOLD = { name:"Yellow gold (18K)", formula:"Au–Ag–Cu", blurb:"75% pure gold alloyed with silver and copper for durability — the classic warm-toned jewelry gold.", elements:{Au:75,Ag:12.5,Cu:12.5}, properties:{density:"15.2–15.6 g/cm³", meltingPoint:"900–940 °C"} };
+ALLOYS.ELECTRUM = { name:"Electrum", formula:"Au–Ag", blurb:"A naturally-occurring gold-silver alloy used for some of the very first coins ever minted, in ancient Lydia.", elements:{Au:70,Ag:30}, properties:{density:"14.6–15.4 g/cm³", meltingPoint:"900–1020 °C"} };
+ALLOYS.NICHROME = { name:"Nichrome", formula:"Ni–Cr", blurb:"Resists oxidation even white-hot, which is why it's the standard resistive wire in toasters and hair dryers.", elements:{Ni:80,Cr:20}, properties:{density:"8.4 g/cm³", meltingPoint:"1400 °C", resistivity:"1.10×10⁻⁶ Ω·m"} };
+ALLOYS.CHROMEL = { name:"Chromel", formula:"Ni–Cr", blurb:"Paired with alumel to form Type K thermocouples, the most common industrial temperature sensor.", elements:{Ni:90,Cr:10}, properties:{density:"8.73 g/cm³", meltingPoint:"1425 °C"} };
+ALLOYS.ALUMEL = { name:"Alumel", formula:"Ni–Al–Mn–Si", blurb:"The other half of a Type K thermocouple pair, chosen for a predictable voltage response to heat.", elements:{Ni:95,Al:2,Mn:2,Si:1}, properties:{density:"8.6 g/cm³", meltingPoint:"1400 °C"} };
+ALLOYS.MUMETAL = { name:"Mu-metal", formula:"Ni–Fe–Cu–Mo", blurb:"Extremely good at redirecting magnetic fields around itself — used to shield sensitive electronics and CRTs.", elements:{Ni:77,Fe:14,Cu:5,Mo:4}, properties:{density:"8.7 g/cm³", meltingPoint:"1424–1450 °C"} };
+ALLOYS.FERROCHROME = { name:"Ferrochrome", formula:"Fe–Cr", blurb:"A bulk feedstock alloy added to molten steel to introduce chromium — the first step toward stainless steel.", elements:{Fe:48,Cr:52}, properties:{density:"7.5 g/cm³", meltingPoint:"1500–1600 °C"} };
+ALLOYS.SILICON_BRONZE = { name:"Silicon bronze", formula:"Cu–Si", blurb:"Highly weldable and corrosion-resistant; used for boat fittings, architectural hardware, and fine art casting.", elements:{Cu:96,Si:3,Mn:1}, properties:{density:"8.53 g/cm³", tensileStrength:"380–650 MPa"} };
+ALLOYS.BELL_METAL = { name:"Bell metal", formula:"Cu–Sn", blurb:"A tin-rich bronze specifically tuned to ring with a clear, resonant tone when cast into bells.", elements:{Cu:78,Sn:22}, properties:{density:"8.7–8.8 g/cm³", meltingPoint:"850–1000 °C"} };
+ALLOYS.SPECULUM_METAL = { name:"Speculum metal", formula:"Cu–Sn", blurb:"Historically polished into mirrors for early reflecting telescopes, before modern silvered glass took over.", elements:{Cu:67,Sn:33}, properties:{density:"8.9 g/cm³", meltingPoint:"~800 °C"} };
+ALLOYS.NICKEL_SILVER = { name:"Nickel silver", formula:"Cu–Ni–Zn", blurb:"Contains no actual silver — the nickel just makes this copper-zinc alloy look silvery-white.", elements:{Cu:60,Ni:20,Zn:20}, properties:{density:"8.7 g/cm³", meltingPoint:"1030–1100 °C"} };
+ALLOYS.TYPE_METAL = { name:"Type metal", formula:"Pb–Sb–Sn", blurb:"Cast into individual letters for centuries of printing presses; antimony makes it expand slightly as it cools, sharpening the letterform.", elements:{Pb:82,Sb:15,Sn:3}, properties:{density:"9.6–10.1 g/cm³", meltingPoint:"240–260 °C"} };
+ALLOYS.ZAMAK = { name:"Zamak", formula:"Zn–Al–Cu", blurb:"Easy to die-cast into fine detail at low cost — the metal behind most toy cars and door handles.", elements:{Zn:95,Al:4,Cu:1}, properties:{density:"6.6 g/cm³", meltingPoint:"380–390 °C", tensileStrength:"220–330 MPa"} };
+ALLOYS.AZ31_MAGNESIUM = { name:"AZ31 magnesium alloy", formula:"Mg–Al–Zn", blurb:"One of the lightest structural alloys in common use, found in laptop cases and racing wheels.", elements:{Mg:96,Al:3,Zn:1}, properties:{density:"1.77 g/cm³", tensileStrength:"260 MPa"} };
+ALLOYS.BERYLLIUM_COPPER = { name:"Beryllium copper", formula:"Cu–Be", blurb:"As strong as some steels but non-sparking, so it's used for tools around flammable gases and in precision springs.", elements:{Cu:98,Be:2}, properties:{density:"8.3 g/cm³", tensileStrength:"690–1310 MPa"} };
+ALLOYS.TUNGSTEN_HEAVY_ALLOY = { name:"Tungsten heavy alloy", formula:"W–Ni–Fe", blurb:"Nearly as dense as gold but far cheaper — used as a non-toxic replacement for lead in weights and radiation shielding.", elements:{W:90,Ni:7,Fe:3}, properties:{density:"17.0–18.5 g/cm³", tensileStrength:"760–1000 MPa"} };
+ALLOYS.PLATINUM_IRIDIUM = { name:"Platinum-iridium", formula:"Pt–Ir", blurb:"Its extreme dimensional stability made it the material chosen for the international kilogram standard, retired in 2019.", elements:{Pt:90,Ir:10}, properties:{density:"21.5 g/cm³", meltingPoint:"1795–1800 °C"} };
+ALLOYS.FIELDS_METAL = { name:"Field's metal", formula:"Bi–In–Sn", blurb:"A non-toxic, low-melting alloy (no lead or cadmium) that melts in hot water — a safer Wood's metal substitute.", elements:{Bi:32.5,In:51,Sn:16.5}, properties:{density:"7.9–8.6 g/cm³", meltingPoint:"62 °C"} };
+ALLOYS.ROSES_METAL = { name:"Rose's metal", formula:"Bi–Pb–Sn", blurb:"An older low-melting alloy, historically cast into fusible plugs that release pressure if a boiler overheats.", elements:{Bi:50,Pb:28,Sn:22}, properties:{density:"9.7 g/cm³", meltingPoint:"94–98 °C"} };
+ALLOYS.GALVALUME = { name:"Galvalume", formula:"Al–Zn–Si", blurb:"A zinc-aluminum coating on steel sheet that combines zinc's sacrificial protection with aluminum's long-term durability.", elements:{Al:55,Zn:43.4,Si:1.6}, properties:{density:"6.6–7.0 g/cm³", meltingPoint:"600 °C"} };
+ALLOYS.HADFIELD_STEEL = { name:"Hadfield (manganese) steel", formula:"Fe–Mn–C", blurb:"Work-hardens on impact rather than deforming — used in rock-crusher jaws, rail switches, and safe walls.", elements:{Fe:86,Mn:13,C:1}, properties:{density:"7.8 g/cm³", tensileStrength:"860–1000 MPa"} };
+ALLOYS.MARAGING_STEEL = { name:"Maraging steel", formula:"Fe–Ni–Co–Mo", blurb:"Combines very high strength with good toughness by aging rather than quenching; used in rocket casings and tooling.", elements:{Fe:68,Ni:18,Co:9,Mo:5}, properties:{density:"8.0–8.1 g/cm³", tensileStrength:"1700–2400 MPa"} };
+ALLOYS.WEATHERING_STEEL = { name:"Weathering steel (Corten)", formula:"Fe–Cu–Cr–Ni", blurb:"Forms a stable rust patina that protects the metal beneath it, so it's left deliberately unpainted in bridges and sculpture.", elements:{Fe:95.5,Cu:0.3,Cr:0.8,Ni:0.4,Mn:1.25,C:0.12,Si:1.63}, properties:{density:"7.85 g/cm³", tensileStrength:"485 MPa"} };
+ALLOYS.DAMASCUS_STEEL = { name:"Damascus steel", formula:"Fe–C", blurb:"Historic pattern-welded steel prized for its distinctive banded surface and reputation for a keen, resilient edge.", elements:{Fe:98.5,C:1.5}, properties:{density:"7.8 g/cm³", tensileStrength:"~1000 MPa"} };
+ALLOYS.BILLON = { name:"Billon", formula:"Ag–Cu", blurb:"A low-silver alloy historically used to stretch precious metal further in coinage.", elements:{Ag:25,Cu:75}, properties:{density:"9.0–9.5 g/cm³", meltingPoint:"850–950 °C"} };
+ALLOYS.SHAKUDO = { name:"Shakudo", formula:"Cu–Au", blurb:"A Japanese decorative alloy patinated to a deep blue-black, historically used on sword fittings.", elements:{Cu:96,Au:4}, properties:{density:"8.9–9.0 g/cm³", meltingPoint:"1000–1020 °C"} };
+ALLOYS.COBALT_CHROME = { name:"Cobalt-chrome (CoCrMo)", formula:"Co–Cr–Mo", blurb:"Extremely wear-resistant and biocompatible — the standard alloy for artificial hip and knee joints.", elements:{Co:63,Cr:28,Mo:6,Ni:1,Mn:1,Si:1}, properties:{density:"8.3–9.2 g/cm³", tensileStrength:"655–1172 MPa"} };
+ALLOYS.SOLDER_INDIUM = { name:"Indium solder", formula:"In–Sn", blurb:"A low-temperature, very soft solder used to join components that can't tolerate the heat of ordinary solder, like some optics.", elements:{In:52,Sn:48}, properties:{density:"7.3 g/cm³", meltingPoint:"118 °C"} };
+ALLOYS.OSMIRIDIUM = { name:"Osmiridium", formula:"Os–Ir", blurb:"Among the hardest and most corrosion-resistant metal combinations known — historically used for durable fountain-pen nib tips.", elements:{Os:50,Ir:50}, properties:{density:"~22.6 g/cm³", meltingPoint:"~2400 °C"} };
+
+
 /* =========================================================================
    CERTIFIED SCIENTIFIC & METALLURGICAL DATA REPOSITORY 
    (Coordinates, Crystal Systems & VSEPR Data from PubChem, COD, & Materials Project)
@@ -654,138 +745,4 @@ const SCIENTIFIC_STRUCTURES = {
         geometry: "Tetrahedral Domain Distribution",
         angles: "109.5° Electron Domain Spacing",
         hybridization: "Localized Atomic Orbitals",
-        coordination: "8 Valence Electrons Around Oxygen",
-        notes: "Exact electronic distribution configuration mapped from authoritative chemical datasets.",
-        coords: { atoms: [{el:'O', x:0, y:0}, {el:'H', x:70, y:0}, {el:'H', x:-70, y:0}], bonds: [[0,1],[0,2]], lonePairs: [0] }
-      }
-    ]
-  },
-  CO2: {
-    name: "Carbon dioxide",
-    formula: "CO₂",
-    sourceDatabase: "Crystallography Open Database (COD)",
-    representations: [
-      {
-        name: "Linear Covalent Framework",
-        type: "X-ray Diffraction Molecular Coordinates",
-        bonding: "Double Covalent (σ + 2π Systems)",
-        geometry: "Linear (AX₂ VSEPR)",
-        angles: "180.0° Perfect Symmetry",
-        hybridization: "sp Carbon, sp² Oxygens",
-        coordination: "2 Terminal Oxygens",
-        notes: "X-ray diffraction structural parameters from the Crystallography Open Database, styled with Hylogos neon lines.",
-        coords: { atoms: [{el:'C', x:0, y:0}, {el:'O', x:80, y:0}, {el:'O', x:-80, y:0}], bonds: [[0,1],[0,2]], multiBond: true }
-      }
-    ]
-  },
-  STEEL: {
-    name: "Steel",
-    formula: "Fe–C",
-    sourceDatabase: "Materials Project / AFLOW Database",
-    representations: [
-      {
-        name: "Bravais Crystal Lattice Matrix",
-        type: "Inorganic Crystal Structure Database (ICSD)",
-        bonding: "Metallic Lattice Solution",
-        geometry: "Body-Centered Cubic (BCC) $\alpha$-Ferrite",
-        angles: "α = β = γ = 90.0°",
-        hybridization: "Metallic Conduction Band",
-        coordination: "Coordination Number 8",
-        notes: "Crystallographic lattice vectors extracted from Materials Project parameters and rendered natively as a Hylogos crystal grid.",
-        latticeType: "BCC", latticeParam: "a = 2.866 Å"
-      },
-      {
-        name: "Interstitial Unit Cell",
-        type: "Crystallographic Unit Cell Geometry",
-        bonding: "Interstitial Carbon in Iron Matrix",
-        geometry: "Cubic Unit Cell Volume",
-        angles: "90.0° Isometric Cell",
-        hybridization: "d-orbital metal overlap",
-        coordination: "Nearest Neighbor Octahedral Sites",
-        notes: "Unit cell dimensions verified via AFLOW repository data, styled with Hylogos dark futuristic vector grids.",
-        latticeType: "UnitCell", latticeParam: "Space Group: Im-3m"
-      }
-    ]
-  }
-};
-/* =========================================================================
-   CERTIFIED SCIENTIFIC & CRYSTALLOGRAPHIC REPOSITORY (Local Data Source)
-========================================================================= */
-const CERTIFIED_SCI_DB = {
-  H2O: {
-    source: "NIST / PubChem Verified Database",
-    representations: [
-      {
-        name: "VSEPR Molecular Topology",
-        type: "Experimental Spatial Coordinates",
-        bonding: "Polar Covalent (σ-bonds)",
-        geometry: "Bent / Angular (AX₂E₂)",
-        angles: "104.5° (Experimental VSEPR)",
-        hybridization: "sp³ Oxygen Center",
-        coordination: "2 Ligands bound to central Oxygen",
-        notes: "Coordinates derived from NIST microwave spectroscopy. Rendered natively via Hylogos neon vector graphics.",
-        atoms: [{el:'O', x:0, y:-10}, {el:'H', x:-60, y:45}, {el:'H', x:60, y:45}],
-        bonds: [[0,1], [0,2]]
-      },
-      {
-        name: "Valence Shell Electron-Pair Map",
-        type: "Lewis Octet Compliance Matrix",
-        bonding: "Shared Electron Pairs & Lone Pairs",
-        geometry: "Tetrahedral Domain Distribution",
-        angles: "109.5° Electron Domain Spacing",
-        hybridization: "Localized Atomic Orbitals",
-        coordination: "8 Valence Electrons Around Oxygen",
-        notes: "Exact electronic distribution configuration mapped from authoritative chemical datasets.",
-        atoms: [{el:'O', x:0, y:0}, {el:'H', x:-80, y:0}, {el:'H', x:80, y:0}],
-        bonds: [[0,1], [0,2]],
-        lonePairs: [0]
-      }
-    ]
-  },
-  CO2: {
-    source: "Crystallography Open Database (COD)",
-    representations: [
-      {
-        name: "Linear Covalent Framework",
-        type: "X-ray Diffraction Molecular Coordinates",
-        bonding: "Double Covalent (σ + 2π Systems)",
-        geometry: "Linear (AX₂ VSEPR)",
-        angles: "180.0° Perfect Symmetry",
-        hybridization: "sp Carbon, sp² Oxygens",
-        coordination: "2 Terminal Oxygens",
-        notes: "X-ray diffraction structural parameters from the Crystallography Open Database, styled with Hylogos neon lines.",
-        atoms: [{el:'O', x:-90, y:0}, {el:'C', x:0, y:0}, {el:'O', x:90, y:0}],
-        bonds: [[0,1], [1,2]],
-        doubleBonds: [[0,1], [1,2]]
-      }
-    ]
-  },
-  STEEL: {
-    name: "Steel", formula: "Fe–C", type: "Alloy",
-    source: "Materials Project / AFLOW Database",
-    representations: [
-      {
-        name: "Bravais Crystal Lattice Matrix",
-        type: "Inorganic Crystal Structure Database (ICSD)",
-        bonding: "Metallic Lattice Solution",
-        geometry: "Body-Centered Cubic (BCC) $\alpha$-Ferrite",
-        angles: "α = β = γ = 90.0°",
-        hybridization: "Metallic Conduction Band",
-        coordination: "Coordination Number 8",
-        notes: "Crystallographic lattice vectors extracted from Materials Project parameters and rendered natively as a Hylogos crystal grid.",
-        isLattice: true, latticeType: "BCC", latticeParam: "a = 2.866 Å"
-      },
-      {
-        name: "Interstitial Unit Cell",
-        type: "Crystallographic Unit Cell Geometry",
-        bonding: "Interstitial Carbon in Iron Matrix",
-        geometry: "Cubic Unit Cell Volume",
-        angles: "90.0° Isometric Cell",
-        hybridization: "d-orbital metal overlap",
-        coordination: "Nearest Neighbor Octahedral Sites",
-        notes: "Unit cell dimensions verified via AFLOW repository data, styled with Hylogos dark futuristic vector grids.",
-        isLattice: true, latticeType: "UnitCell", latticeParam: "Space Group: Im-3m"
-      }
-    ]
-  }
-};
+        coordination: "8 Val
