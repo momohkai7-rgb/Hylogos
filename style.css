@@ -379,6 +379,23 @@ main {
   border-top: 1px solid var(--line);
 }
 
+.compound-specs {
+  margin: 0 1.1rem 1.1rem;
+  background: var(--void-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.compound-specs.hidden { display: none; }
+.compound-specs-head {
+  padding: 0.7rem 1.1rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text-main);
+  border-bottom: 1px solid var(--line);
+}
+
 /* ===== Periodic table toggle ===== */
 .ptable-toggle {
   margin-top: 1rem;
