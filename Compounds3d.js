@@ -30,6 +30,31 @@ function compound3dRow(label, value) {
   return `<div style="display:flex;justify-content:space-between;gap:8px;color:var(--text-dim)"><span>${label}</span><b style="color:var(--text-main);font-weight:500">${value}</b></div>`;
 }
 
+/* ---- the under-model specs card: molecule/alloy-level info (composition,
+   properties, blurb) lives here now instead of the floating in-viewer
+   panel, which was overflowing trying to hold both this AND per-atom
+   details at once. This card is independent of selection state — it's
+   set once when the model is drawn and doesn't change when something
+   gets clicked. ---- */
+function compound3dShowSpecsCard(title, factStatsHtml, blurb) {
+  const card = document.getElementById('compoundSpecsCard');
+  const titleEl = document.getElementById('compoundSpecsTitle');
+  const gridEl = document.getElementById('compoundSpecsGrid');
+  const blurbEl = document.getElementById('compoundSpecsBlurb');
+  if (!card) return;
+  if (titleEl) titleEl.textContent = title;
+  if (gridEl) gridEl.innerHTML = factStatsHtml;
+  if (blurbEl) blurbEl.textContent = blurb || '';
+  card.classList.remove('hidden');
+}
+function compound3dHideSpecsCard() {
+  const card = document.getElementById('compoundSpecsCard');
+  if (card) card.classList.add('hidden');
+}
+function compound3dFactStat(label, value) {
+  return `<div class="fact-stat"><div class="label">${label}</div><div class="value">${value}</div></div>`;
+}
+
 /* ---- allocate which element each lattice sphere represents. Pure
    proportional weighting would make trace elements (e.g. steel's 1.5%
    carbon) statistically invisible among 46 spheres — nothing to click,
@@ -237,18 +262,18 @@ window.drawMolecule3D = function (key, mol) {
   controls.target.set(0, 0, 0);
 
   const infoPanel = compound3dMakeInfoPanel(host, 'mol');
-  function showOverview() {
-    const blurb = (typeof MOLECULE_BLURBS !== 'undefined' && MOLECULE_BLURBS[key]) || '';
-    infoPanel.innerHTML = `
-      <div style="font-family:var(--font-display);font-weight:600;font-size:13px;margin-bottom:2px">${mol.name}</div>
-      <div style="color:var(--text-dim);font-size:10px;margin-bottom:6px">tap an atom or bond to inspect it</div>
-      ${compound3dRow('Formula', mol.formula)}
-      ${compound3dRow('Atoms', mol.atoms.length)}
-      ${compound3dRow('Bonds', mol.bonds.length)}
-      ${blurb ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--line);color:var(--text-dim)">${blurb}</div>` : ''}`;
-    infoPanel.style.display = 'block';
-  }
-  showOverview();
+  infoPanel.style.display = 'none'; // floating panel now only ever shows a selected atom/bond - nothing to show yet
+
+  const blurb = (typeof MOLECULE_BLURBS !== 'undefined' && MOLECULE_BLURBS[key]) || '';
+  compound3dShowSpecsCard(
+    `${mol.name} (${mol.formula})`,
+    [
+      compound3dFactStat('Formula', mol.formula),
+      compound3dFactStat('Atoms', mol.atoms.length),
+      compound3dFactStat('Bonds', mol.bonds.length),
+    ].join(''),
+    blurb
+  );
 
   let selected = null;
   function clearSelection() {
@@ -265,7 +290,7 @@ window.drawMolecule3D = function (key, mol) {
       if (selected.material) selected.material.emissiveIntensity = d.baseEmissive;
     }
     selected = null;
-    showOverview();
+    infoPanel.style.display = 'none';
   }
   function selectMesh(m) {
     selected = m;
@@ -426,23 +451,16 @@ window.drawAlloy3D = function (key, alloy) {
   controls.target.set(0, 0, 0);
 
   const infoPanel = compound3dMakeInfoPanel(host, 'alloy');
-  function showOverview() {
-    const propRows = alloy.properties
-      ? Object.entries(alloy.properties).map(([k, v]) => compound3dRow(k, v)).join('')
-      : '';
-    const compRows = Object.entries(alloy.elements)
-      .sort((a, b) => b[1] - a[1])
-      .map(([sym, pct]) => compound3dRow((ELEMENTS[sym] ? ELEMENTS[sym].name : sym), pct + '%'))
-      .join('');
-    infoPanel.innerHTML = `
-      <div style="font-family:var(--font-display);font-weight:600;font-size:13px;margin-bottom:2px">${alloy.name}</div>
-      <div style="color:var(--text-dim);font-size:10px;margin-bottom:6px">tap a sphere to inspect it</div>
-      ${compRows}
-      ${propRows ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--line)">${propRows}</div>` : ''}
-      ${alloy.blurb ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--line);color:var(--text-dim)">${alloy.blurb}</div>` : ''}`;
-    infoPanel.style.display = 'block';
-  }
-  showOverview();
+  infoPanel.style.display = 'none'; // floating panel now only ever shows a selected sphere - nothing to show yet
+
+  const propStats = alloy.properties
+    ? Object.entries(alloy.properties).map(([k, v]) => compound3dFactStat(k, v)).join('')
+    : '';
+  const compStats = Object.entries(alloy.elements)
+    .sort((a, b) => b[1] - a[1])
+    .map(([sym, pct]) => compound3dFactStat((ELEMENTS[sym] ? ELEMENTS[sym].name : sym), pct + '%'))
+    .join('');
+  compound3dShowSpecsCard(`${alloy.name} (${alloy.formula})`, compStats + propStats, alloy.blurb);
 
   let selected = null;
   function clearSelection() {
@@ -455,7 +473,7 @@ window.drawAlloy3D = function (key, alloy) {
       selected.material.emissiveIntensity = d.baseEmissive;
     }
     selected = null;
-    showOverview();
+    infoPanel.style.display = 'none';
   }
   function selectMesh(m) {
     selected = m;
