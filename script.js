@@ -541,6 +541,7 @@ function showSubject(hit) {
     if (typeof structuresHide === "function") structuresHide();
     if (typeof discovererShow === "function") discovererShow(hit.key);
     if (typeof window.pulseElementMote === "function") window.pulseElementMote(hit.key);
+    if (typeof compound3dHideSpecsCard === "function") compound3dHideSpecsCard();
   } 
   else if (hit.type === "molecule") {
     els.subjectName.textContent = `${hit.data.name} (${hit.data.formula})`;
