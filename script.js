@@ -563,133 +563,7 @@ function showSubject(hit) {
   showFacts(hit);
 }
 
-function showFacts(hit) {
-  els.factsSection.classList.remove("hidden");
-  if (hit.type === "element") {
-    const e = hit.data;
-    const meta = (typeof CATEGORY_META !== 'undefined' && CATEGORY_META[e.category]) || { label: e.category, color: "var(--text-dim)" };
-    els.factsTitle.textContent = `${e.name} — facts`;
-    els.factsCategory.textContent = meta.label;
-    els.factsCategory.style.borderColor = meta.color;
-    els.factsGrid.innerHTML = [
-      factStat("Atomic mass", `${e.mass} u`),
-      factStat("Melting point", e.melt === null ? "not measured" : `${e.melt} °C`),
-      factStat("Boiling point", e.boil === null ? "not measured" : `${e.boil} °C`),
-      factStat("Density", e.density === null ? "not measured" : `${e.density} ${e.densityUnit}`),
-      factStat("Phase", e.phase)
-    ].join("");
-    els.factsBlurb.textContent = e.blurb;
-  } else if (hit.type === "molecule") {
-    els.factsTitle.textContent = `${hit.data.name} — facts`;
-    els.factsCategory.textContent = "Molecule";
-    els.factsGrid.innerHTML = [
-        factStat("Atoms", hit.data.atoms.length), 
-        factStat("Bonds", hit.data.bonds.length)
-    ].join("");
-    els.factsBlurb.textContent = (typeof MOLECULE_BLURBS !== 'undefined') ? MOLECULE_BLURBS[hit.key] : "";
-  } else if (hit.type === "alloy") {
-    els.factsTitle.textContent = `${hit.data.name} — facts`;
-    els.factsCategory.textContent = "Metallic Alloy";
-    els.factsGrid.innerHTML = [
-        factStat("State", "Solid"), 
-        factStat("Bonding", "Metallic")
-    ].join("");
-    els.factsBlurb.textContent = "A complex metallic lattice optimized for engineering properties.";
-  }
-}
-
-function factStat(l, v) { return `<div class="fact-stat"><div class="label">${l}</div><div class="value">${v}</div></div>`; }
-
-function stopBohr() { 
-  if (bohrAnimId) cancelAnimationFrame(bohrAnimId); 
-  bohrAnimId = null; 
-}
-
-/* Updated Scene Management */
-function clearThree() {
-  const sceneToClear = window.threeScene || threeScene;
-  
-  if (sceneToClear && sceneToClear.renderer) {
-    if (sceneToClear.animId) cancelAnimationFrame(sceneToClear.animId);
-    sceneToClear.renderer.dispose();
-    if (sceneToClear.renderer.domElement && sceneToClear.renderer.domElement.parentElement) {
-      sceneToClear.renderer.domElement.parentElement.removeChild(sceneToClear.renderer.domElement);
-    }
-  }
-  
-  els.threeHost.innerHTML = ""; 
-  threeScene = null;
-  window.threeScene = null;
-}
-
-/* ===================== Chat logic ===================== */
-if (els.chatForm) {
-  const handleChatSubmit = async (e) => {
-    if (e) e.preventDefault();
-    
-    const msg = els.chatInput.value.trim(); 
-    if (!msg) return;
-    
-    els.chatInput.value = ""; 
-    appendChat("user", msg);
-    els.chatInput.blur(); 
-
-    const pending = appendChat("ai", "Processing...", true);
-    try {
-      const subjectLabel = currentSubject
-        ? (currentSubject.type === "element"
-            ? `${currentSubject.data.name} (element, Z=${currentSubject.data.z})`
-            : `${currentSubject.data.name} (${currentSubject.data.formula})`)
-        : "no subject selected yet";
-
-      const res = await fetch("/api/chat", { 
-        method: "POST", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify({ message: msg, subject: subjectLabel }) 
-      });
-      const data = await res.json();
-      pending.textContent = data.reply || "Error."; 
-      pending.classList.remove("pending");
-    } catch (err) { 
-      pending.textContent = "Offline or API missing."; 
-      pending.classList.remove("pending"); 
-    }
-  };
-
-  els.chatForm.addEventListener("submit", handleChatSubmit);
-
-  els.chatInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleChatSubmit(e);
-    }
-  });
-}
-
-function appendChat(role, text, pending = false) {
-  const div = document.createElement("div");
-  div.className = `chat-msg ${role}` + (pending ? " pending" : "");
-  div.textContent = text; 
-  els.chatLog.appendChild(div);
-  els.chatLog.scrollTop = els.chatLog.scrollHeight; 
-  return div;
-              }
-/* =========================================================================
-   APPENDED BLOCK — isotopes + extra element specs.
-   Paste this at the very bottom of script.js. Self-contained: wraps the
-   existing showFacts() rather than editing it, and creates its own DOM
-   container dynamically (inserted right after #factsSection), so no HTML
-   changes are needed either. Element-only — does nothing for molecules
-   or alloys.
-
-   Isotope half-lives for the superheavy synthetic elements (Z104+) are
-   genuinely a moving target in the actual research literature — new
-   measurements refine them regularly — so those are presented as "most
-   stable known" rather than fixed facts.
-========================================================================= */
-(function () {
-  // mass number (a) + either natural abundance (ab) or half-life (hl) + optional note
-  const ISOTOPES = {
+const ISOTOPES = {
     H:[{a:1,ab:"99.98%"},{a:2,ab:"0.02%",note:"deuterium"},{a:3,hl:"12.3 y",note:"tritium, radioactive"}],
     He:[{a:4,ab:"~100%"},{a:3,ab:"0.0001%"}],
     Li:[{a:7,ab:"92.4%"},{a:6,ab:"7.6%"}],
@@ -810,91 +684,128 @@ function appendChat(role, text, pending = false) {
     Og:[{a:294,hl:"~0.0007 s",note:"most stable known isotope"}],
   };
 
-  function extraFactStat(label, value) {
-    const d = document.createElement('div');
-    d.className = 'fact-stat';
-    d.innerHTML = `<div class="label">${label}</div><div class="value">${value}</div>`;
-    return d;
+// compact one-line isotope summary for a fact-stat value, e.g.
+// "56 (91.8%), 54 (5.8%), 57 (2.1%)" or "223 (t½ 22 min)"
+function isotopeSummary(sym) {
+  const list = ISOTOPES[sym];
+  if (!list || !list.length) return null;
+  return list.map(iso => {
+    const detail = iso.ab ? iso.ab : (iso.hl ? `t½ ${iso.hl}` : '');
+    return `${iso.a} (${detail})`;
+  }).join(', ');
+}
+
+function showFacts(hit) {
+  els.factsSection.classList.remove("hidden");
+  if (hit.type === "element") {
+    const e = hit.data;
+    const meta = (typeof CATEGORY_META !== 'undefined' && CATEGORY_META[e.category]) || { label: e.category, color: "var(--text-dim)" };
+    els.factsTitle.textContent = `${e.name} — facts`;
+    els.factsCategory.textContent = meta.label;
+    els.factsCategory.style.borderColor = meta.color;
+    els.factsGrid.innerHTML = [
+      factStat("Atomic mass", `${e.mass} u`),
+      factStat("Melting point", e.melt === null ? "not measured" : `${e.melt} °C`),
+      factStat("Boiling point", e.boil === null ? "not measured" : `${e.boil} °C`),
+      factStat("Density", e.density === null ? "not measured" : `${e.density} ${e.densityUnit}`),
+      factStat("Phase", e.phase),
+      factStat("Electronegativity", e.en == null ? "not measured" : e.en),
+      factStat("Atomic radius", e.radius == null ? "not measured" : `${e.radius} pm`),
+      isotopeSummary(hit.key) ? factStat("Notable isotopes", isotopeSummary(hit.key)) : ""
+    ].join("");
+    els.factsBlurb.textContent = e.blurb;
+  } else if (hit.type === "molecule") {
+    els.factsTitle.textContent = `${hit.data.name} — facts`;
+    els.factsCategory.textContent = "Molecule";
+    els.factsGrid.innerHTML = [
+        factStat("Atoms", hit.data.atoms.length), 
+        factStat("Bonds", hit.data.bonds.length)
+    ].join("");
+    els.factsBlurb.textContent = (typeof MOLECULE_BLURBS !== 'undefined') ? MOLECULE_BLURBS[hit.key] : "";
+  } else if (hit.type === "alloy") {
+    els.factsTitle.textContent = `${hit.data.name} — facts`;
+    els.factsCategory.textContent = "Metallic Alloy";
+    els.factsGrid.innerHTML = [
+        factStat("State", "Solid"), 
+        factStat("Bonding", "Metallic")
+    ].join("");
+    els.factsBlurb.textContent = "A complex metallic lattice optimized for engineering properties.";
   }
+}
 
-  function getContainer() {
-    let el = document.getElementById('extraElementSpecs');
-    if (el) return el;
-    const factsSection = document.getElementById('factsSection');
-    if (!factsSection || !factsSection.parentNode) return null;
-    el = document.createElement('div');
-    el.id = 'extraElementSpecs';
-    el.className = 'panel';
-    el.style.cssText = 'margin-top:1.25rem;';
-    el.innerHTML = `
-      <div class="panel-head"><span>Isotopes &amp; Additional Data</span></div>
-      <div id="extraSpecsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);"></div>
-      <div id="isotopeList" style="padding:1rem 1.1rem;"></div>
-    `;
-    factsSection.parentNode.insertBefore(el, factsSection.nextSibling);
-    return el;
-  }
+function factStat(l, v) { return `<div class="fact-stat"><div class="label">${l}</div><div class="value">${v}</div></div>`; }
 
-  function renderExtraElementSpecs(sym, el) {
-    const container = getContainer();
-    if (!container) return;
-    container.style.display = '';
+function stopBohr() { 
+  if (bohrAnimId) cancelAnimationFrame(bohrAnimId); 
+  bohrAnimId = null; 
+}
 
-    const grid = container.querySelector('#extraSpecsGrid');
-    grid.innerHTML = '';
-    const fmt = (v, unit) => v == null ? null : v + (unit || '');
-    const rows = [
-      ['Melting point', fmt(el.melt, ' °C')],
-      ['Boiling point', fmt(el.boil, ' °C')],
-      ['Density', el.density != null ? el.density + ' ' + (el.densityUnit || '') : null],
-      ['Electronegativity', el.en != null ? el.en : null],
-      ['Atomic radius', el.radius != null ? el.radius + ' pm' : null],
-      ['State at room temp', el.phase || null],
-    ];
-    rows.forEach(([label, value]) => {
-      if (value == null) return;
-      grid.appendChild(extraFactStat(label, value));
-    });
-
-    const isoWrap = container.querySelector('#isotopeList');
-    const isotopes = ISOTOPES[sym];
-    if (!isotopes || !isotopes.length) {
-      isoWrap.innerHTML = `<p style="color:var(--text-dim);font-size:0.85rem;margin:0;">No isotope data available.</p>`;
-      return;
+/* Updated Scene Management */
+function clearThree() {
+  const sceneToClear = window.threeScene || threeScene;
+  
+  if (sceneToClear && sceneToClear.renderer) {
+    if (sceneToClear.animId) cancelAnimationFrame(sceneToClear.animId);
+    sceneToClear.renderer.dispose();
+    if (sceneToClear.renderer.domElement && sceneToClear.renderer.domElement.parentElement) {
+      sceneToClear.renderer.domElement.parentElement.removeChild(sceneToClear.renderer.domElement);
     }
-    isoWrap.innerHTML = `
-      <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.6rem;">Notable isotopes</div>
-      <div style="display:flex;flex-direction:column;gap:0.5rem;">
-        ${isotopes.map(iso => `
-          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.8rem;flex-wrap:wrap;padding:0.5rem 0.7rem;background:rgba(255,255,255,0.02);border:1px solid var(--line);border-radius:8px;">
-            <span style="font-family:var(--font-display);font-weight:500;">${sym}-${iso.a}</span>
-            <span style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-main);">${iso.ab ? iso.ab + ' natural abundance' : ''}${iso.ab && iso.hl ? ' · ' : ''}${iso.hl ? 'half-life ' + iso.hl : ''}</span>
-            ${iso.note ? `<span style="width:100%;color:var(--text-dim);font-size:0.78rem;">${iso.note}</span>` : ''}
-          </div>
-        `).join('')}
-      </div>`;
   }
+  
+  els.threeHost.innerHTML = ""; 
+  threeScene = null;
+  window.threeScene = null;
+}
 
-  function hideExtraElementSpecs() {
-    const container = document.getElementById('extraElementSpecs');
-    if (container) container.style.display = 'none';
-  }
+/* ===================== Chat logic ===================== */
+if (els.chatForm) {
+  const handleChatSubmit = async (e) => {
+    if (e) e.preventDefault();
+    
+    const msg = els.chatInput.value.trim(); 
+    if (!msg) return;
+    
+    els.chatInput.value = ""; 
+    appendChat("user", msg);
+    els.chatInput.blur(); 
 
-  if (typeof showFacts === 'function') {
+    const pending = appendChat("ai", "Processing...", true);
     try {
-      const _originalShowFacts = showFacts;
-      showFacts = function (hit) {
-        _originalShowFacts(hit);
-        if (hit && hit.type === 'element' && typeof ELEMENTS !== 'undefined' && ELEMENTS[hit.key]) {
-          renderExtraElementSpecs(hit.key, ELEMENTS[hit.key]);
-        } else {
-          hideExtraElementSpecs();
-        }
-      };
-    } catch (err) {
-      console.warn('extra-element-specs: could not wrap showFacts (it may be declared as const/let) - isotope block not active.', err);
+      const subjectLabel = currentSubject
+        ? (currentSubject.type === "element"
+            ? `${currentSubject.data.name} (element, Z=${currentSubject.data.z})`
+            : `${currentSubject.data.name} (${currentSubject.data.formula})`)
+        : "no subject selected yet";
+
+      const res = await fetch("/api/chat", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ message: msg, subject: subjectLabel }) 
+      });
+      const data = await res.json();
+      pending.textContent = data.reply || "Error."; 
+      pending.classList.remove("pending");
+    } catch (err) { 
+      pending.textContent = "Offline or API missing."; 
+      pending.classList.remove("pending"); 
     }
-  } else {
-    console.warn('extra-element-specs: showFacts not found - paste this block after script.js has loaded, or check the function name matches.');
-  }
-})();
+  };
+
+  els.chatForm.addEventListener("submit", handleChatSubmit);
+
+  els.chatInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleChatSubmit(e);
+    }
+  });
+}
+
+function appendChat(role, text, pending = false) {
+  const div = document.createElement("div");
+  div.className = `chat-msg ${role}` + (pending ? " pending" : "");
+  div.textContent = text; 
+  els.chatLog.appendChild(div);
+  els.chatLog.scrollTop = els.chatLog.scrollHeight; 
+  return div;
+              }
