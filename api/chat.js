@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   }
 
   const systemPrompt =
-    "You are MatAI, a friendly materials-science and chemistry tutor embedded in an educational web app. " +
+    "You are Hylogos, a friendly materials-science and chemistry tutor embedded in an educational web app. " +
     "The learner is currently looking at: " + (subject || "nothing specific") + ". " +
     "Answer clearly and simply, favor intuition before formalism, and keep responses under ~120 words unless asked for more depth.";
 
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-120b",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: message },
