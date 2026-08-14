@@ -674,3 +674,227 @@ function appendChat(role, text, pending = false) {
   els.chatLog.scrollTop = els.chatLog.scrollHeight; 
   return div;
               }
+/* =========================================================================
+   APPENDED BLOCK — isotopes + extra element specs.
+   Paste this at the very bottom of script.js. Self-contained: wraps the
+   existing showFacts() rather than editing it, and creates its own DOM
+   container dynamically (inserted right after #factsSection), so no HTML
+   changes are needed either. Element-only — does nothing for molecules
+   or alloys.
+
+   Isotope half-lives for the superheavy synthetic elements (Z104+) are
+   genuinely a moving target in the actual research literature — new
+   measurements refine them regularly — so those are presented as "most
+   stable known" rather than fixed facts.
+========================================================================= */
+(function () {
+  // mass number (a) + either natural abundance (ab) or half-life (hl) + optional note
+  const ISOTOPES = {
+    H:[{a:1,ab:"99.98%"},{a:2,ab:"0.02%",note:"deuterium"},{a:3,hl:"12.3 y",note:"tritium, radioactive"}],
+    He:[{a:4,ab:"~100%"},{a:3,ab:"0.0001%"}],
+    Li:[{a:7,ab:"92.4%"},{a:6,ab:"7.6%"}],
+    Be:[{a:9,ab:"100%"}],
+    B:[{a:11,ab:"80.1%"},{a:10,ab:"19.9%"}],
+    C:[{a:12,ab:"98.9%"},{a:13,ab:"1.1%"},{a:14,hl:"5,730 y",note:"radiocarbon dating"}],
+    N:[{a:14,ab:"99.6%"},{a:15,ab:"0.4%"}],
+    O:[{a:16,ab:"99.76%"},{a:18,ab:"0.20%"},{a:17,ab:"0.04%"}],
+    F:[{a:19,ab:"100%"}],
+    Ne:[{a:20,ab:"90.5%"},{a:22,ab:"9.2%"},{a:21,ab:"0.3%"}],
+    Na:[{a:23,ab:"100%"}],
+    Mg:[{a:24,ab:"79%"},{a:26,ab:"11%"},{a:25,ab:"10%"}],
+    Al:[{a:27,ab:"100%"}],
+    Si:[{a:28,ab:"92.2%"},{a:29,ab:"4.7%"},{a:30,ab:"3.1%"}],
+    P:[{a:31,ab:"100%"}],
+    S:[{a:32,ab:"95%"},{a:34,ab:"4.2%"},{a:33,ab:"0.75%"}],
+    Cl:[{a:35,ab:"75.8%"},{a:37,ab:"24.2%"}],
+    Ar:[{a:40,ab:"99.6%"},{a:36,ab:"0.34%"},{a:38,ab:"0.06%"}],
+    K:[{a:39,ab:"93.3%"},{a:41,ab:"6.7%"},{a:40,ab:"0.012%",hl:"1.25 billion y",note:"radioactive, K-Ar dating"}],
+    Ca:[{a:40,ab:"96.9%"},{a:44,ab:"2.1%"},{a:42,ab:"0.6%"}],
+    Sc:[{a:45,ab:"100%"}],
+    Ti:[{a:48,ab:"73.7%"},{a:46,ab:"8.3%"},{a:47,ab:"7.4%"}],
+    V:[{a:51,ab:"99.75%"},{a:50,ab:"0.25%",note:"radioactive, extremely long-lived"}],
+    Cr:[{a:52,ab:"83.8%"},{a:53,ab:"9.5%"},{a:50,ab:"4.3%"}],
+    Mn:[{a:55,ab:"100%"}],
+    Fe:[{a:56,ab:"91.8%"},{a:54,ab:"5.8%"},{a:57,ab:"2.1%"}],
+    Co:[{a:59,ab:"100%"}],
+    Ni:[{a:58,ab:"68.1%"},{a:60,ab:"26.2%"},{a:62,ab:"3.6%"}],
+    Cu:[{a:63,ab:"69.2%"},{a:65,ab:"30.8%"}],
+    Zn:[{a:64,ab:"49.2%"},{a:66,ab:"27.7%"},{a:68,ab:"18.5%"}],
+    Ga:[{a:69,ab:"60.1%"},{a:71,ab:"39.9%"}],
+    Ge:[{a:74,ab:"36.7%"},{a:72,ab:"27.5%"},{a:70,ab:"20.5%"}],
+    As:[{a:75,ab:"100%"}],
+    Se:[{a:80,ab:"49.6%"},{a:78,ab:"23.8%"},{a:76,ab:"9.4%"}],
+    Br:[{a:79,ab:"50.7%"},{a:81,ab:"49.3%"}],
+    Kr:[{a:84,ab:"57%"},{a:86,ab:"17.3%"},{a:82,ab:"11.6%"}],
+    Rb:[{a:85,ab:"72.2%"},{a:87,ab:"27.8%",note:"radioactive, ~49 billion y half-life"}],
+    Sr:[{a:88,ab:"82.6%"},{a:86,ab:"9.9%"},{a:87,ab:"7.0%"}],
+    Y:[{a:89,ab:"100%"}],
+    Zr:[{a:90,ab:"51.5%"},{a:94,ab:"17.4%"},{a:92,ab:"17.1%"}],
+    Nb:[{a:93,ab:"100%"}],
+    Mo:[{a:98,ab:"24.1%"},{a:96,ab:"16.7%"},{a:95,ab:"15.9%"}],
+    Tc:[{a:98,hl:"4.2 million y",note:"no stable isotopes"},{a:99,hl:"211,000 y",note:"used in nuclear medicine"}],
+    Ru:[{a:102,ab:"31.6%"},{a:104,ab:"18.6%"},{a:101,ab:"17.1%"}],
+    Rh:[{a:103,ab:"100%"}],
+    Pd:[{a:106,ab:"27.3%"},{a:108,ab:"26.5%"},{a:105,ab:"22.3%"}],
+    Ag:[{a:107,ab:"51.8%"},{a:109,ab:"48.2%"}],
+    Cd:[{a:114,ab:"28.7%"},{a:112,ab:"24.1%"},{a:111,ab:"12.8%"}],
+    In:[{a:115,ab:"95.7%",note:"technically radioactive, half-life exceeds the age of the universe"},{a:113,ab:"4.3%"}],
+    Sn:[{a:120,ab:"32.6%"},{a:118,ab:"24.2%"},{a:116,ab:"14.5%",note:"tin has more stable isotopes than any other element"}],
+    Sb:[{a:121,ab:"57.2%"},{a:123,ab:"42.8%"}],
+    Te:[{a:130,ab:"34.1%"},{a:128,ab:"31.7%"},{a:126,ab:"18.8%"}],
+    I:[{a:127,ab:"100%"}],
+    Xe:[{a:132,ab:"26.9%"},{a:129,ab:"26.4%"},{a:131,ab:"21.2%"}],
+    Cs:[{a:133,ab:"100%"}],
+    Ba:[{a:138,ab:"71.7%"},{a:137,ab:"11.2%"},{a:136,ab:"7.9%"}],
+    La:[{a:139,ab:"99.9%"},{a:138,ab:"0.09%",note:"radioactive, extremely long-lived"}],
+    Ce:[{a:140,ab:"88.4%"},{a:142,ab:"11.1%"}],
+    Pr:[{a:141,ab:"100%"}],
+    Nd:[{a:142,ab:"27.2%"},{a:144,ab:"23.8%",note:"slightly radioactive"},{a:146,ab:"17.2%"}],
+    Pm:[{a:145,hl:"17.7 y",note:"no stable isotopes"},{a:147,hl:"2.6 y"}],
+    Sm:[{a:152,ab:"26.8%"},{a:154,ab:"22.8%"},{a:147,ab:"15.0%",note:"radioactive, very long-lived"}],
+    Eu:[{a:153,ab:"52.2%"},{a:151,ab:"47.8%"}],
+    Gd:[{a:158,ab:"24.8%"},{a:160,ab:"21.9%"},{a:156,ab:"20.5%"}],
+    Tb:[{a:159,ab:"100%"}],
+    Dy:[{a:164,ab:"28.3%"},{a:162,ab:"25.5%"},{a:163,ab:"24.9%"}],
+    Ho:[{a:165,ab:"100%"}],
+    Er:[{a:166,ab:"33.6%"},{a:168,ab:"26.8%"},{a:167,ab:"22.9%"}],
+    Tm:[{a:169,ab:"100%"}],
+    Yb:[{a:174,ab:"31.8%"},{a:172,ab:"21.8%"},{a:173,ab:"16.1%"}],
+    Lu:[{a:175,ab:"97.4%"},{a:176,ab:"2.6%",note:"radioactive, used in dating"}],
+    Hf:[{a:180,ab:"35.1%"},{a:178,ab:"27.3%"},{a:177,ab:"18.6%"}],
+    Ta:[{a:181,ab:"99.99%"},{a:180,ab:"0.01%",note:"rare isomer, one of the rarest stable isotopes known"}],
+    W:[{a:184,ab:"30.6%"},{a:186,ab:"28.4%"},{a:182,ab:"26.5%"}],
+    Re:[{a:187,ab:"62.6%",note:"radioactive, ~41 billion y half-life"},{a:185,ab:"37.4%"}],
+    Os:[{a:192,ab:"41.0%"},{a:190,ab:"26.4%"},{a:189,ab:"16.2%"}],
+    Ir:[{a:193,ab:"62.7%"},{a:191,ab:"37.3%"}],
+    Pt:[{a:195,ab:"33.8%"},{a:194,ab:"32.9%"},{a:196,ab:"25.2%"}],
+    Au:[{a:197,ab:"100%"}],
+    Hg:[{a:202,ab:"29.7%"},{a:200,ab:"23.1%"},{a:199,ab:"16.9%"}],
+    Tl:[{a:205,ab:"70.5%"},{a:203,ab:"29.5%"}],
+    Pb:[{a:208,ab:"52.4%"},{a:206,ab:"24.1%"},{a:207,ab:"22.1%",note:"all stable - endpoints of decay chains"}],
+    Bi:[{a:209,ab:"100%",note:"technically radioactive, half-life far longer than the age of the universe"}],
+    Po:[{a:209,hl:"124 y",note:"no stable isotopes"},{a:210,hl:"138 d"}],
+    At:[{a:210,hl:"8.1 h",note:"no stable isotopes - one of the rarest natural elements"},{a:211,hl:"7.2 h"}],
+    Rn:[{a:222,hl:"3.8 d",note:"no stable isotopes"}],
+    Fr:[{a:223,hl:"22 min",note:"most stable known isotope; no stable isotopes exist"}],
+    Ra:[{a:226,hl:"1,600 y"},{a:228,hl:"5.75 y"}],
+    Ac:[{a:227,hl:"21.8 y"}],
+    Th:[{a:232,ab:"~100%",note:"radioactive, ~14 billion y half-life - essentially primordial"}],
+    Pa:[{a:231,hl:"32,760 y"}],
+    U:[{a:238,ab:"99.3%",hl:"4.5 billion y"},{a:235,ab:"0.72%",hl:"700 million y",note:"fissile"}],
+    Np:[{a:237,hl:"2.1 million y",note:"most stable known isotope"}],
+    Pu:[{a:239,hl:"24,100 y",note:"fissile"},{a:244,hl:"80 million y",note:"most stable known isotope"}],
+    Am:[{a:243,hl:"7,370 y",note:"most stable known isotope"}],
+    Cm:[{a:247,hl:"15.6 million y",note:"most stable known isotope"}],
+    Bk:[{a:247,hl:"1,380 y",note:"most stable known isotope"}],
+    Cf:[{a:251,hl:"898 y",note:"most stable known isotope"}],
+    Es:[{a:252,hl:"472 d",note:"most stable known isotope"}],
+    Fm:[{a:257,hl:"100.5 d",note:"most stable known isotope"}],
+    Md:[{a:258,hl:"51 d",note:"most stable known isotope"}],
+    No:[{a:259,hl:"~58 min",note:"most stable known isotope"}],
+    Lr:[{a:266,hl:"~11 h",note:"most stable known isotope"}],
+    Rf:[{a:267,hl:"~1.3 h",note:"most stable known isotope"}],
+    Db:[{a:268,hl:"~29 h",note:"most stable known isotope"}],
+    Sg:[{a:269,hl:"~14 min",note:"most stable known isotope"}],
+    Bh:[{a:270,hl:"~1 min",note:"most stable known isotope"}],
+    Hs:[{a:269,hl:"~16 s",note:"most stable known isotope"}],
+    Mt:[{a:278,hl:"~4.5 s",note:"most stable known isotope"}],
+    Ds:[{a:281,hl:"~12.7 s",note:"most stable known isotope"}],
+    Rg:[{a:282,hl:"~130 s",note:"most stable known isotope"}],
+    Cn:[{a:285,hl:"~29 s",note:"most stable known isotope"}],
+    Nh:[{a:286,hl:"~10 s",note:"most stable known isotope"}],
+    Fl:[{a:289,hl:"~1.9 s",note:"most stable known isotope"}],
+    Mc:[{a:290,hl:"~0.65 s",note:"most stable known isotope"}],
+    Lv:[{a:293,hl:"~0.06 s",note:"most stable known isotope"}],
+    Ts:[{a:294,hl:"~0.08 s",note:"most stable known isotope"}],
+    Og:[{a:294,hl:"~0.0007 s",note:"most stable known isotope"}],
+  };
+
+  function extraFactStat(label, value) {
+    const d = document.createElement('div');
+    d.className = 'fact-stat';
+    d.innerHTML = `<div class="label">${label}</div><div class="value">${value}</div>`;
+    return d;
+  }
+
+  function getContainer() {
+    let el = document.getElementById('extraElementSpecs');
+    if (el) return el;
+    const factsSection = document.getElementById('factsSection');
+    if (!factsSection || !factsSection.parentNode) return null;
+    el = document.createElement('div');
+    el.id = 'extraElementSpecs';
+    el.className = 'panel';
+    el.style.cssText = 'margin-top:1.25rem;';
+    el.innerHTML = `
+      <div class="panel-head"><span>Isotopes &amp; Additional Data</span></div>
+      <div id="extraSpecsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);"></div>
+      <div id="isotopeList" style="padding:1rem 1.1rem;"></div>
+    `;
+    factsSection.parentNode.insertBefore(el, factsSection.nextSibling);
+    return el;
+  }
+
+  function renderExtraElementSpecs(sym, el) {
+    const container = getContainer();
+    if (!container) return;
+    container.style.display = '';
+
+    const grid = container.querySelector('#extraSpecsGrid');
+    grid.innerHTML = '';
+    const fmt = (v, unit) => v == null ? null : v + (unit || '');
+    const rows = [
+      ['Melting point', fmt(el.melt, ' °C')],
+      ['Boiling point', fmt(el.boil, ' °C')],
+      ['Density', el.density != null ? el.density + ' ' + (el.densityUnit || '') : null],
+      ['Electronegativity', el.en != null ? el.en : null],
+      ['Atomic radius', el.radius != null ? el.radius + ' pm' : null],
+      ['State at room temp', el.phase || null],
+    ];
+    rows.forEach(([label, value]) => {
+      if (value == null) return;
+      grid.appendChild(extraFactStat(label, value));
+    });
+
+    const isoWrap = container.querySelector('#isotopeList');
+    const isotopes = ISOTOPES[sym];
+    if (!isotopes || !isotopes.length) {
+      isoWrap.innerHTML = `<p style="color:var(--text-dim);font-size:0.85rem;margin:0;">No isotope data available.</p>`;
+      return;
+    }
+    isoWrap.innerHTML = `
+      <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.6rem;">Notable isotopes</div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+        ${isotopes.map(iso => `
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.8rem;flex-wrap:wrap;padding:0.5rem 0.7rem;background:rgba(255,255,255,0.02);border:1px solid var(--line);border-radius:8px;">
+            <span style="font-family:var(--font-display);font-weight:500;">${sym}-${iso.a}</span>
+            <span style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-main);">${iso.ab ? iso.ab + ' natural abundance' : ''}${iso.ab && iso.hl ? ' · ' : ''}${iso.hl ? 'half-life ' + iso.hl : ''}</span>
+            ${iso.note ? `<span style="width:100%;color:var(--text-dim);font-size:0.78rem;">${iso.note}</span>` : ''}
+          </div>
+        `).join('')}
+      </div>`;
+  }
+
+  function hideExtraElementSpecs() {
+    const container = document.getElementById('extraElementSpecs');
+    if (container) container.style.display = 'none';
+  }
+
+  if (typeof showFacts === 'function') {
+    try {
+      const _originalShowFacts = showFacts;
+      showFacts = function (hit) {
+        _originalShowFacts(hit);
+        if (hit && hit.type === 'element' && typeof ELEMENTS !== 'undefined' && ELEMENTS[hit.key]) {
+          renderExtraElementSpecs(hit.key, ELEMENTS[hit.key]);
+        } else {
+          hideExtraElementSpecs();
+        }
+      };
+    } catch (err) {
+      console.warn('extra-element-specs: could not wrap showFacts (it may be declared as const/let) - isotope block not active.', err);
+    }
+  } else {
+    console.warn('extra-element-specs: showFacts not found - paste this block after script.js has loaded, or check the function name matches.');
+  }
+})();
