@@ -809,3 +809,61 @@ function appendChat(role, text, pending = false) {
   els.chatLog.scrollTop = els.chatLog.scrollHeight; 
   return div;
               }
+// ── data expansion batch 4: 18 molecules + 18 alloys ──
+
+MOLECULE_BLURBS.N2O4 = "Exists in equilibrium with reddish-brown NO2 gas — the balance between them shifts visibly with temperature, a classic chemistry demonstration.";
+MOLECULE_BLURBS.BCL3 = "A reactive gas that fumes in moist air; used as a catalyst and to make ultra-pure boron for semiconductors.";
+MOLECULE_BLURBS.BBR3 = "A fuming, corrosive liquid used in organic chemistry to cleave certain ether bonds.";
+MOLECULE_BLURBS.SBCL3 = "A fuming solid used as a catalyst and as a starting material for other antimony compounds.";
+MOLECULE_BLURBS.KRF2 = "One of the very few known krypton compounds — krypton is even less reactive than xenon, so this is a genuine chemical rarity.";
+MOLECULE_BLURBS.HBRO = "A weak, unstable acid formed when bromine dissolves in water; used as a mild disinfectant and bleaching agent.";
+MOLECULE_BLURBS.SNCL2 = "A common reducing agent in chemistry labs, and historically used to make the deep red pigment 'Purple of Cassius.'";
+MOLECULE_BLURBS.HIO3 = "A strong acid and oxidizer used in the classic 'iodine clock' chemistry demonstration.";
+MOLECULE_BLURBS.CACL2 = "Highly effective at melting ice in extreme cold; also used as a drying agent and to firm up canned vegetables.";
+MOLECULE_BLURBS.NAF = "Added to some public water supplies and most toothpaste to help prevent tooth decay.";
+MOLECULE_BLURBS.NABR = "Once prescribed as a sedative, much like potassium bromide, before modern medications replaced it.";
+MOLECULE_BLURBS.NAI = "Added to table salt in some countries to prevent iodine deficiency; also used in imaging-grade scintillation crystals.";
+MOLECULE_BLURBS.MGBR2 = "Used in some pharmaceutical synthesis and as a catalyst in certain organic reactions.";
+MOLECULE_BLURBS.ZNCL2 = "A key ingredient in soldering flux, helping molten solder wet and bond cleanly to metal surfaces.";
+MOLECULE_BLURBS.PBCL2 = "A dense white solid once used as a pigment before its toxicity led to it being phased out.";
+MOLECULE_BLURBS.CDO = "A semiconductor material used in some thin-film solar cells and specialized optical coatings.";
+MOLECULE_BLURBS.C3H7OH = "A common solvent and rubbing-alcohol alternative, also used as a chemical feedstock for other propanol-based products.";
+MOLECULE_BLURBS.C3H6 = "The building block of polypropylene, one of the most widely produced plastics in the world.";
+
+MOLECULES.N2O4 = { name: "Dinitrogen tetroxide", formula: "N₂O₄", atoms: [{el:"N",pos:[0.875,0,0]},{el:"N",pos:[-0.875,0,0]},{el:"O",pos:[1.47,1.03,0]},{el:"O",pos:[1.47,-1.03,0]},{el:"O",pos:[-1.47,1.03,0]},{el:"O",pos:[-1.47,-1.03,0]}], bonds: [[0,1],[0,2],[0,3],[1,4],[1,5]] };
+MOLECULES.BCL3 = { name: "Boron trichloride", formula: "BCl₃", atoms: [{el:"B",pos:[0,0,0]},{el:"Cl",pos:[0,1.75,0]},{el:"Cl",pos:[-1.516,-0.875,0]},{el:"Cl",pos:[1.516,-0.875,0]}], bonds: [[0,1],[0,2],[0,3]] };
+MOLECULES.BBR3 = { name: "Boron tribromide", formula: "BBr₃", atoms: [{el:"B",pos:[0,0,0]},{el:"Br",pos:[0,1.89,0]},{el:"Br",pos:[-1.637,-0.945,0]},{el:"Br",pos:[1.637,-0.945,0]}], bonds: [[0,1],[0,2],[0,3]] };
+MOLECULES.SBCL3 = { name: "Antimony trichloride", formula: "SbCl₃", atoms: [{el:"Sb",pos:[0,0,0]},{el:"Cl",pos:[2.152,0,-0.615]},{el:"Cl",pos:[-1.076,1.863,-0.615]},{el:"Cl",pos:[-1.076,-1.863,-0.615]}], bonds: [[0,1],[0,2],[0,3]] };
+MOLECULES.KRF2 = { name: "Krypton difluoride", formula: "KrF₂", atoms: [{el:"Kr",pos:[0,0,0]},{el:"F",pos:[1.89,0,0]},{el:"F",pos:[-1.89,0,0]}], bonds: [[0,1],[0,2]] };
+MOLECULES.HBRO = { name: "Hypobromous acid", formula: "HBrO", atoms: [{el:"O",pos:[0,0,0]},{el:"H",pos:[-0.833,-0.499,0]},{el:"Br",pos:[-1.83,0,0]}], bonds: [[0,1],[0,2]] };
+MOLECULES.SNCL2 = { name: "Tin(II) chloride", formula: "SnCl₂", atoms: [{el:"Sn",pos:[0,0,0]},{el:"Cl",pos:[0.965,2.174,0]},{el:"Cl",pos:[-0.965,2.174,0]}], bonds: [[0,1],[0,2]] };
+MOLECULES.HIO3 = { name: "Iodic acid", formula: "HIO₃", atoms: [{el:"I",pos:[0,0,0]},{el:"O",pos:[1.045,1.045,1.045]},{el:"O",pos:[1.045,-1.045,-1.045]},{el:"O",pos:[-1.097,1.097,-1.097]},{el:"H",pos:[-1.634,1.433,-1.433]}], bonds: [[0,1],[0,2],[0,3],[3,4]] };
+MOLECULES.CACL2 = { name: "Calcium chloride", formula: "CaCl₂", atoms: [{el:"Ca",pos:[1.255,0,0]},{el:"Cl",pos:[-1.255,0,0]}], bonds: [[0,1]] };
+MOLECULES.NAF = { name: "Sodium fluoride", formula: "NaF", atoms: [{el:"Na",pos:[1.155,0,0]},{el:"F",pos:[-1.155,0,0]}], bonds: [[0,1]] };
+MOLECULES.NABR = { name: "Sodium bromide", formula: "NaBr", atoms: [{el:"Na",pos:[1.25,0,0]},{el:"Br",pos:[-1.25,0,0]}], bonds: [[0,1]] };
+MOLECULES.NAI = { name: "Sodium iodide", formula: "NaI", atoms: [{el:"Na",pos:[1.355,0,0]},{el:"I",pos:[-1.355,0,0]}], bonds: [[0,1]] };
+MOLECULES.MGBR2 = { name: "Magnesium bromide", formula: "MgBr₂", atoms: [{el:"Mg",pos:[1.31,0,0]},{el:"Br",pos:[-1.31,0,0]}], bonds: [[0,1]] };
+MOLECULES.ZNCL2 = { name: "Zinc chloride", formula: "ZnCl₂", atoms: [{el:"Zn",pos:[1.15,0,0]},{el:"Cl",pos:[-1.15,0,0]}], bonds: [[0,1]] };
+MOLECULES.PBCL2 = { name: "Lead(II) chloride", formula: "PbCl₂", atoms: [{el:"Pb",pos:[1.265,0,0]},{el:"Cl",pos:[-1.265,0,0]}], bonds: [[0,1]] };
+MOLECULES.CDO = { name: "Cadmium oxide", formula: "CdO", atoms: [{el:"Cd",pos:[1.175,0,0]},{el:"O",pos:[-1.175,0,0]}], bonds: [[0,1]] };
+MOLECULES.C3H7OH = { name: "1-Propanol", formula: "C₃H₇OH", atoms: [{el:"C",pos:[0,0,0]},{el:"C",pos:[0.889,0.889,0.889]},{el:"C",pos:[0.514,1.916,1.942]},{el:"O",pos:[1.541,1.842,2.968]},{el:"H",pos:[-0.63,0.63,-0.63]},{el:"H",pos:[-0.63,-0.63,0.63]},{el:"H",pos:[0.63,-0.63,-0.63]},{el:"H",pos:[0.259,0.259,1.629]},{el:"H",pos:[1.629,0.259,0.259]},{el:"H",pos:[-0.407,2.545,1.503]},{el:"H",pos:[1.253,2.309,2.433]},{el:"H",pos:[1.964,2.686,3.05]}], bonds: [[0,1],[1,2],[2,3],[0,4],[0,5],[0,6],[1,7],[1,8],[2,9],[2,10],[3,11]] };
+MOLECULES.C3H6 = { name: "Propene", formula: "C₃H₆", atoms: [{el:"C",pos:[0,0,0]},{el:"C",pos:[1.34,0,0]},{el:"C",pos:[1.884,0.889,0.889]},{el:"H",pos:[-0.6,0.94,0]},{el:"H",pos:[-0.6,-0.94,0]},{el:"H",pos:[1.74,-1,0.3]},{el:"H",pos:[1.254,0.259,1.629]},{el:"H",pos:[2.513,0.259,0.259]},{el:"H",pos:[2.373,1.579,0.201]}], bonds: [[0,1],[1,2],[0,3],[0,4],[1,5],[2,6],[2,7],[2,8]] };
+
+ALLOYS.PERMALLOY = { name:"Permalloy", formula:"Ni–Fe", blurb:"A highly magnetically permeable alloy used in transformer cores and magnetic shielding for sensitive electronics.", elements:{Ni:80,Fe:20}, properties:{density:"8.7 g/cm³", meltingPoint:"1450–1500 °C"} };
+ALLOYS.SUPERMALLOY = { name:"Supermalloy", formula:"Ni–Fe–Mo", blurb:"An even more magnetically permeable cousin of permalloy, developed for the most sensitive magnetic shielding applications.", elements:{Ni:79,Fe:16,Mo:5}, properties:{density:"8.8 g/cm³", meltingPoint:"1400–1450 °C"} };
+ALLOYS.SAMARIUM_COBALT = { name:"Samarium-cobalt magnet", formula:"Sm–Co", blurb:"Retains its magnetism at much higher temperatures than neodymium magnets, so it's used in jet engines and motors that run hot.", elements:{Co:66,Sm:34}, properties:{density:"8.2–8.4 g/cm³", meltingPoint:"1100 °C"} };
+ALLOYS.FERRONICKEL = { name:"Ferronickel", formula:"Fe–Ni", blurb:"A bulk feedstock alloy smelted straight from nickel ore, added to molten steel as the main source of nickel for stainless steel.", elements:{Fe:80,Ni:20}, properties:{density:"8.1 g/cm³", meltingPoint:"1430–1450 °C"} };
+ALLOYS.COPPER_TUNGSTEN = { name:"Copper-tungsten", formula:"Cu–W", blurb:"Combines copper's conductivity with tungsten's heat resistance — used in electrical contacts that must survive repeated arcing.", elements:{W:80,Cu:20}, properties:{density:"15.2–15.7 g/cm³", meltingPoint:">1084 °C (Cu melts; W remains solid)"} };
+ALLOYS.SILVER_TUNGSTEN = { name:"Silver-tungsten", formula:"Ag–W", blurb:"Used in high-current switching contacts, where tungsten resists arc erosion and silver keeps electrical resistance low.", elements:{W:75,Ag:25}, properties:{density:"13.5–14.5 g/cm³", meltingPoint:">961 °C (Ag melts; W remains solid)"} };
+ALLOYS.PLATINUM_RHODIUM = { name:"Platinum-rhodium", formula:"Pt–Rh", blurb:"The alloy pair behind Type R and Type S thermocouples, prized for stable, accurate readings at very high temperatures.", elements:{Pt:87,Rh:13}, properties:{density:"19.6–20.7 g/cm³", meltingPoint:"1850–1900 °C"} };
+ALLOYS.WOOTZ_STEEL = { name:"Wootz steel", formula:"Fe–C", blurb:"An ancient high-carbon steel from India, exported for centuries and worked into the legendary patterns of Damascus blades.", elements:{Fe:98.3,C:1.7}, properties:{density:"7.7–7.8 g/cm³", tensileStrength:"~700–800 MPa"} };
+ALLOYS.GALFAN = { name:"Galfan", formula:"Zn–Al", blurb:"A zinc-aluminum coating that outlasts traditional galvanizing, giving steel sheet extra corrosion resistance in harsh environments.", elements:{Zn:95,Al:5}, properties:{density:"6.6–6.7 g/cm³", meltingPoint:"380–400 °C"} };
+ALLOYS.WHITE_BRONZE = { name:"White bronze", formula:"Cu–Sn–Zn", blurb:"A pale, silvery-toned bronze variant historically used for decorative castings and mirror-bright fittings.", elements:{Cu:60,Sn:30,Zn:10}, properties:{density:"8.6–8.8 g/cm³", meltingPoint:"850–950 °C"} };
+ALLOYS.RED_BRASS = { name:"Red brass", formula:"Cu–Zn–Sn", blurb:"A high-copper brass with a warm reddish hue, valued for corrosion resistance in plumbing fittings and marine hardware.", elements:{Cu:85,Zn:10,Sn:5}, properties:{density:"8.7–8.8 g/cm³", tensileStrength:"260–340 MPa"} };
+ALLOYS.MANGANESE_BRONZE = { name:"Manganese bronze", formula:"Cu–Zn–Mn", blurb:"Despite the name it's really a high-strength brass; used for ship propellers and heavy-duty gear blanks.", elements:{Cu:58,Zn:39,Mn:2,Fe:1}, properties:{density:"8.3–8.5 g/cm³", tensileStrength:"440–615 MPa"} };
+ALLOYS.ALUMINUM_BRASS = { name:"Aluminum brass", formula:"Cu–Zn–Al", blurb:"A small addition of aluminum dramatically improves this brass's resistance to corrosion in seawater condenser tubing.", elements:{Cu:76,Zn:22,Al:2}, properties:{density:"8.33 g/cm³", tensileStrength:"400–600 MPa"} };
+ALLOYS.TOMBAC = { name:"Tombac", formula:"Cu–Zn", blurb:"A high-copper brass with a gold-like color, historically used for cheap jewelry and, notably, for the 1943 Belgian franc coin.", elements:{Cu:85,Zn:15}, properties:{density:"8.7–8.8 g/cm³", meltingPoint:"1000–1030 °C"} };
+ALLOYS.ARGENTIUM_SILVER = { name:"Argentium silver", formula:"Ag–Cu–Ge", blurb:"A modern sterling-silver alternative with added germanium, formulated to resist the tarnishing that plagues ordinary sterling.", elements:{Ag:93.5,Cu:5.5,Ge:1}, properties:{density:"10.4 g/cm³", meltingPoint:"890–900 °C"} };
+ALLOYS.PALLADIUM_SILVER = { name:"Palladium-silver", formula:"Pd–Ag", blurb:"A biocompatible alloy used in dental crowns and bridges, chosen for its stability and resistance to tarnish in the mouth.", elements:{Ag:70,Pd:30}, properties:{density:"10.9–11.3 g/cm³", meltingPoint:"1150–1250 °C"} };
+ALLOYS.NIOBIUM_TITANIUM = { name:"Niobium-titanium", formula:"Nb–Ti", blurb:"The standard superconducting wire alloy, wound into the powerful magnet coils inside MRI machines and particle accelerators.", elements:{Nb:47,Ti:53}, properties:{density:"6.5–6.7 g/cm³", meltingPoint:"~1950–2130 °C"} };
+ALLOYS.BABBITT_LEAD = { name:"Lead-based babbitt", formula:"Pb–Sb–Sn", blurb:"A cheaper, softer bearing alloy than tin-based babbitt, historically common in heavy industrial and railway machinery.", elements:{Pb:80,Sb:15,Sn:5}, properties:{density:"9.7–10.1 g/cm³", meltingPoint:"240–260 °C"} };
