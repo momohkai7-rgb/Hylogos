@@ -27,6 +27,7 @@
     </div>
     <div id="suggestions" class="suggestions"></div>
     <button id="ptableToggle" class="ptable-toggle" type="button">⊞ Browse the periodic table</button>
+ <button id="quizToggle" class="ptable-toggle quiz-toggle" type="button">🎯 Quiz me</button>
   </section>
 
   <section id="results" class="results hidden">
@@ -125,7 +126,45 @@
     <div id="ptableLegend" class="ptable-legend"></div>
   </div>
 </div>
+<div id="quizOverlay" class="ptable-overlay hidden" aria-hidden="true">
+  <div class="ptable-panel quiz-panel">
+    <div class="ptable-head">
+      <span class="ptable-title">Quiz <span class="mono" id="quizStreakBadge"></span></span>
+      <button id="quizClose" class="ptable-close" type="button" aria-label="Close">×</button>
+    </div>
 
+    <div class="quiz-body">
+
+      <div id="quizCategoryScreen" class="quiz-categories">
+        <p class="quiz-prompt">Pick a category to be quizzed on:</p>
+        <button class="quiz-cat-btn" data-cat="elements" type="button">
+          <span class="quiz-cat-name">Elements</span>
+          <span class="quiz-cat-desc">Symbols, categories, properties</span>
+        </button>
+        <button class="quiz-cat-btn" data-cat="compounds" type="button">
+          <span class="quiz-cat-name">Compounds</span>
+          <span class="quiz-cat-desc">Formulas, names, structure</span>
+        </button>
+        <button class="quiz-cat-btn" data-cat="alloys" type="button">
+          <span class="quiz-cat-name">Alloys</span>
+          <span class="quiz-cat-desc">Composition and uses</span>
+        </button>
+      </div>
+
+      <div id="quizQuestionScreen" class="quiz-question-screen hidden">
+        <div class="quiz-stats">
+          <span id="quizScore" class="mono"></span>
+          <button id="quizChangeCat" class="quiz-change-cat" type="button">Change category</button>
+        </div>
+        <p id="quizQuestionText" class="quiz-question-text"></p>
+        <div id="quizAnswers" class="quiz-answers"></div>
+        <div id="quizFeedback" class="quiz-feedback hidden"></div>
+        <button id="quizNext" class="quiz-next hidden" type="button">Next question →</button>
+      </div>
+
+    </div>
+  </div>
+</div>
 <footer>
   <span>Hylogos — a free, open materials science explorer</span>
 </footer>
@@ -140,6 +179,7 @@
 <script src="structures.js"></script>
 <script src="discoverer.js"></script>
 <script src="ptable.js"></script>
-<script src="script.js"></script>
+<script src="quiz.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
