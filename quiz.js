@@ -16,7 +16,6 @@
     nextBtn: document.getElementById("quizNext"),
   };
 
-  // Bail safely if the markup isn't present, rather than throwing.
   if (!els.toggle || !els.overlay) return;
 
   const STORAGE_KEY = "hylogos_quiz_best_streak";
@@ -38,10 +37,8 @@
   }
 
   function saveBestStreak(v) {
-    try { localStorage.setItem(STORAGE_KEY, String(v)); } catch (e) { /* storage unavailable, ignore */ }
+    try { localStorage.setItem(STORAGE_KEY, String(v)); } catch (e) {}
   }
-
-  /* ---------- generic helpers ---------- */
 
   function randInt(n) { return Math.floor(Math.random() * n); }
   function pick(arr) { return arr[randInt(arr.length)]; }
@@ -55,9 +52,6 @@
     return a;
   }
 
-  // Picks n distractor VALUES (via valueFn over keys) that are distinct from
-  // correctValue and from each other. Returns null if it can't find enough —
-  // callers treat null as "skip this question, try another".
   function distractorValues(keys, valueFn, correctValue, n, excludeKeys) {
     const exclude = excludeKeys || [];
     const seen = new Set([correctValue]);
@@ -82,8 +76,6 @@
     return div.innerHTML;
   }
 
-  /* ---------- data pools ---------- */
-
   const ELEMENT_SYMS = (typeof ELEMENTS !== "undefined") ? Object.keys(ELEMENTS) : [];
   const MOLECULE_KEYS = (typeof MOLECULES !== "undefined") ? Object.keys(MOLECULES) : [];
   const ALLOY_KEYS = (typeof ALLOYS !== "undefined") ? Object.keys(ALLOYS) : [];
@@ -95,17 +87,110 @@
   const alloyName = key => ALLOYS[key].name;
   const alloyFormula = key => ALLOYS[key].formula;
 
-  // Alloys with a formula shared by more than one entry (e.g. two different
-  // alloys both simplify to "Cu–Ni") make "which alloy has formula X"
-  // ambiguous, so those get excluded from that specific question type.
   const alloyFormulaGroups = {};
   ALLOY_KEYS.forEach(k => {
     const f = alloyFormula(k);
     (alloyFormulaGroups[f] = alloyFormulaGroups[f] || []).push(k);
   });
 
-  /* ---------- ELEMENT question generators ---------- */
+  /* ---------- NEW: DYNAMIC TRUE/FALSE GENERATOR ---------- */
+  function q_trueFalse() {
+    const types = ['phase', 'metal_check', 'halogen_check', 'atomic_check'];
+    const type = pick(types);
+    
+    let text = "";
+    let answer = true;
+    let explain = "";
 
+    if (type === 'phase') {
+      const sym = pick(ELEMENT_SYMS);
+      const el = ELEMENTS[sym];
+      if (!el.phase) return q_trueFalse();
+      const actualPhase = el.phase;
+      const fakePhases = ["Solid", "Liquid", "Gas"].filter(p => p !== actualPhase);
+      const statedPhase = Math.random() < 0.5 ? actualPhase : pick(fakePhases);
+      answer = (statedPhase === actualPhase);
+      text = `True or False: At room temperature, ${el.name} (${sym}) exists as a ${statedPhase.toLowerCase()}.`;
+      explain = `${el.name} is actually a ${actualPhase.toLowerCase()} at room temperature.`;
+    } else if (type === 'metal_check') {
+      const sym = pick(ELEMENT_SYMS);
+      const el = ELEMENTS[sym];
+      const testCategory = Math.random() < 0.5 ? "transition" : pick(CATEGORY_KEYS);
+      answer = (el.category === testCategory);
+      const catLabel = CATEGORY_META[testCategory] ? CATEGORY_META[testCategory].label : testCategory;
+      text = `True or False: ${el.name} (${sym}) is classified as a ${catLabel.toLowerCase()}.`;
+      explain = `${el.name} belongs to the "${CATEGORY_META[el.category]?.label || el.category}" category.`;
+    } else if (type === 'halogen_check') {
+      const sym = pick(ELEMENT_SYMS);
+      const el = ELEMENTS[sym];
+      const isHalogen = el.category === "halogen";
+      answer = isHalogen;
+      text = `True or False: ${el.name} (${sym}) is a halogen element.`;
+      explain = isHalogen ? `${el.name} is a halogen (Group 17).` : `${el.name} is a ${CATEGORY_META[el.category]?.label || el.category}.`;
+    } else {
+      const sym = pick(ELEMENT_SYMS);
+      const el = ELEMENTS[sym];
+      text = `True or False: The atomic number (Z) of ${el.name} is ${el.z}.`;
+      answer = true;
+      explain = `Yes, ${el.name} has an atomic number of ${el.z}.`;
+    }
+
+    const choices = ["True", "False"];
+    const correctIndex = answer ? 0 : 1;
+    return { text, choices, correctIndex, explain };
+  }
+
+  /* ---------- NEW: MATH CALCULATION GENERATOR ---------- */
+  function q_mathMass() {
+    const targetMolecules = ["H2O", "CO2", "CH4", "NaCl"];
+    const key = pick(targetMolecules);
+    if (!MOLECULES[key]) return q_symbolToName();
+    let mass = 18;
+    if (key === "H2O") mass = 18;
+    else if (key === "CO2") mass = 44;
+    else if (key === "CH4") mass = 16;
+    else if (key === "NaCl") mass = 58;
+    
+    const correct = `${key === "NaCl" ? "58.5" : mass} u`;
+    const distractors = [`${mass + 4} u`, `${Math.max(5, mass - 6)} u`, `${mass + 12} u`];
+    const { choices, correctIndex } = buildChoices(correct, distractors);
+    return { 
+      text: `What is the approximate molecular/molar mass of ${MOLECULES[key].name} (${MOLECULES[key].formula})?`, 
+      choices, 
+      correctIndex, 
+      explain: `Calculated using standard atomic weights.` 
+    };
+  }
+
+  /* ---------- NEW: FILL-IN-THE-BLANK GENERATOR ---------- */
+  function q_fillBlank() {
+    const items = [
+      { text: "The chemical symbol for Gold is _______.", ans: "Au", pool: ["Ag", "Cu", "Pt", "Fe"] },
+      { text: "The chemical formula for ordinary table salt is _______.", ans: "NaCl", pool: ["H2O", "CO2", "KCl", "NaOH"] },
+      { text: "The gas that makes up about 78% of Earth's atmosphere is _______.", ans: "Nitrogen", pool: ["Oxygen", "Argon", "Carbon dioxide", "Hydrogen"] },
+      { text: "The metal at the center of a chlorophyll molecule is _______.", ans: "Magnesium", pool: ["Iron", "Calcium", "Zinc", "Copper"] }
+    ];
+    const item = pick(items);
+    const { choices, correctIndex } = buildChoices(item.ans, item.pool);
+    return { text: item.text, choices, correctIndex, explain: `The correct answer is ${item.ans}.` };
+  }
+
+  /* ---------- NEW: SORTING / ORDERING GENERATOR ---------- */
+  function q_sorting() {
+    return {
+      text: "Which option lists these elements in correct order of increasing Atomic Number (Z)?",
+      choices: [
+        "Lithium (3) → Carbon (6) → Neon (10)",
+        "Carbon (6) → Lithium (3) → Neon (10)",
+        "Neon (10) → Carbon (6) → Lithium (3)",
+        "Lithium (3) → Neon (10) → Carbon (6)"
+      ],
+      correctIndex: 0,
+      explain: "Atomic numbers increase sequentially: Li (3), C (6), Ne (10)."
+    };
+  }
+
+  /* ---------- ELEMENT question generators ---------- */
   function q_symbolToName() {
     const sym = pick(ELEMENT_SYMS);
     const correct = elementName(sym);
@@ -211,13 +296,7 @@
     return { text: `Which element is this? "${ELEMENTS[sym].blurb}"`, choices, correctIndex, explain: `${correct} (${sym})` };
   }
 
-  const ELEMENT_GENERATORS = [
-    q_symbolToName, q_nameToSymbol, q_category, q_phase,
-    q_meltCompare, q_densityCompare, q_atomicNumber, q_elementBlurb,
-  ];
-
   /* ---------- COMPOUND question generators ---------- */
-
   function q_formulaToName() {
     const key = pick(MOLECULE_KEYS);
     const m = MOLECULES[key];
@@ -274,16 +353,11 @@
     return { text: `Which elements make up ${m.name} (${m.formula})?`, choices, correctIndex, explain: MOLECULE_BLURBS[key] || "" };
   }
 
-  const COMPOUND_GENERATORS = [
-    q_formulaToName, q_nameToFormula, q_atomCount, q_compoundBlurb, q_compoundElements,
-  ];
-
   /* ---------- ALLOY question generators ---------- */
-
   function q_alloyFormulaToName() {
     const key = pick(ALLOY_KEYS);
     const a = ALLOYS[key];
-    if (alloyFormulaGroups[a.formula].length > 1) return null; // ambiguous formula, skip
+    if (alloyFormulaGroups[a.formula].length > 1) return null;
     const distractors = distractorValues(ALLOY_KEYS, alloyName, a.name, 3, [key]);
     if (!distractors) return null;
     const { choices, correctIndex } = buildChoices(a.name, distractors);
@@ -326,8 +400,21 @@
     return { text: `Which alloy is this? "${a.blurb}"`, choices, correctIndex, explain: `${a.name} (${a.formula})` };
   }
 
+  /* ---------- GENERATOR POOLS (Blended with new types) ---------- */
+  const ELEMENT_GENERATORS = [
+    q_symbolToName, q_nameToSymbol, q_category, q_phase,
+    q_meltCompare, q_densityCompare, q_atomicNumber, q_elementBlurb,
+    q_trueFalse, q_mathMass, q_fillBlank, q_sorting
+  ];
+
+  const COMPOUND_GENERATORS = [
+    q_formulaToName, q_nameToFormula, q_atomCount, q_compoundBlurb, q_compoundElements,
+    q_trueFalse, q_mathMass, q_fillBlank
+  ];
+
   const ALLOY_GENERATORS = [
     q_alloyFormulaToName, q_alloyNameToFormula, q_alloyPrimaryElement, q_alloyBlurb,
+    q_trueFalse
   ];
 
   const GENERATORS = {
@@ -337,7 +424,6 @@
   };
 
   /* ---------- question flow ---------- */
-
   function nextQuestion() {
     const pool = GENERATORS[state.category];
     let q = null, guard = 0;
@@ -410,8 +496,6 @@
     updateScoreLine();
   }
 
-  /* ---------- screen switching ---------- */
-
   function showCategoryScreen() {
     state.category = null;
     els.catScreen.classList.remove("hidden");
@@ -439,8 +523,6 @@
     els.overlay.classList.add("hidden");
     els.overlay.setAttribute("aria-hidden", "true");
   }
-
-  /* ---------- wiring ---------- */
 
   els.toggle.addEventListener("click", openQuiz);
   els.close.addEventListener("click", closeQuiz);
