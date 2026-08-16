@@ -1054,3 +1054,60 @@ body {
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
 }
+/* ===== Search Auto-Suggestions Dropdown ===== */
+.horizon {
+  position: relative; /* Ensures absolute dropdown aligns to the search input container */
+}
+
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: rgba(16, 12, 28, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(66, 255, 176, 0.35);
+  border-radius: 14px;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(66, 255, 176, 0.1);
+  display: none; /* Hidden by default */
+}
+
+.search-dropdown.visible {
+  display: block;
+}
+
+.search-dropdown-item {
+  padding: 0.75rem 1.1rem;
+  font-size: 0.9rem;
+  color: var(--text-main);
+  cursor: pointer;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.search-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.search-dropdown-item:hover, .search-dropdown-item.highlighted {
+  background: rgba(66, 255, 176, 0.12);
+  color: var(--struct-green);
+}
+
+.search-dropdown-item .item-type {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  }
