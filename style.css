@@ -10,11 +10,10 @@
   --struct-green: #42ffb0;
   --text-main: #e8e4f0;
   --text-dim: #8b84a3;
-  --font-display: "Space Grotesk", sans-serif;
-  --font-body: "IBM Plex Sans", sans-serif;
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
 }
-
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 
@@ -1044,4 +1043,14 @@ footer {
   padding: 3rem 1rem;
   font-size: 0.95rem;
   font-family: var(--font-mono);
+}
+/* ===== Scientific Typography Enhancements ===== */
+h1, h2, h3, h4, .panel-head, .ptable-title, .structure-card-head, .disc-name, .quiz-cat-name, .quiz-question-text {
+  font-weight: 800 !important;
+  letter-spacing: -0.025em;
+}
+body {
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
 }
