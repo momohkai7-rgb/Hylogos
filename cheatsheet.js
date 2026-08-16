@@ -197,6 +197,10 @@
         { name: "BET Surface Area Equation", formula: "1/[V(P₀/P - 1)] = 1/(V_mC) + [(C-1)/(V_mC)]·(P/P₀)", desc: "Determines specific surface area of a powder or porous solid from gas-adsorption isotherm data." },
         { name: "Zeta Potential (Smoluchowski Equation)", formula: "μ_e = ε · ζ / η", desc: "Relates a nanoparticle's electrophoretic mobility to its surface zeta potential and the medium's viscosity." },
         { name: "Corrosion Rate (Weight-Loss Method)", formula: "CR (mpy) = (534 · W) / (D · A · T)", desc: "ASTM G1 standard formula: W = weight loss (mg), D = density (g/cm³), A = area (in²), T = exposure time (h)." },
+        { name: "Stokes-Einstein Equation", formula: "D = k_B T / (6πηr)", desc: "Relates a nanoparticle's diffusion coefficient to its hydrodynamic radius; underlies dynamic light scattering (DLS) particle sizing." },
+        { name: "Young's Equation (Contact Angle / Wetting)", formula: "γ_SV = γ_SL + γ_LV · cos(θ)", desc: "Balances interfacial tensions at a solid-liquid-vapor contact line to predict wetting angle θ." },
+        { name: "Kelvin Equation (Curvature Effect)", formula: "ln(P/P₀) = 2γV_m / (rRT)", desc: "Vapor pressure or solubility increases for small particles of radius r due to surface curvature." },
+        { name: "Gibbs-Thomson Effect (Melting Point Depression)", formula: "T_m(r) = T_m(∞) · [1 - 2γ_sl / (ΔH_f · ρ_s · r)]", desc: "Nanoscale particles melt at a lower temperature than the bulk material as radius r decreases." },
       ]
     },
     {
@@ -210,6 +214,8 @@
         { name: "Schrödinger Equation (Time-Independent, 1D)", formula: "-ℏ²/(2m) · d²ψ/dx² + V(x)ψ = Eψ", desc: "Governs the stationary-state wavefunctions and allowed energies of a quantum system." },
         { name: "Rydberg Formula (Spectral Lines)", formula: "1/λ = R_H · (1/n₁² - 1/n₂²)", desc: "Predicts the wavelengths of spectral lines emitted or absorbed by hydrogen." },
         { name: "Pauli Exclusion Principle", formula: "No two fermions share an identical set of quantum numbers", desc: "Governs electron configuration and underlies the structure of the periodic table." },
+        { name: "Compton Scattering", formula: "Δλ = (h / m_e c) · (1 - cos θ)", desc: "Wavelength shift of a photon scattered by a free electron, demonstrating light's particle nature." },
+        { name: "Zeeman Effect", formula: "ΔE = m_l · g · μ_B · B", desc: "Splitting of atomic energy levels in an external magnetic field, used to probe electronic structure." },
       ]
     },
     {
@@ -220,6 +226,7 @@
         { name: "Faraday's Laws of Electrolysis", formula: "m = (Q · M) / (nF) = (I · t · M) / (nF)", desc: "Mass of substance deposited or dissolved at an electrode is proportional to charge passed." },
         { name: "Tafel Equation", formula: "η = β · log(i / i₀)", desc: "Relates overpotential η to current density on a single electrode reaction near equilibrium." },
         { name: "Butler-Volmer Equation", formula: "i = i₀ · [exp(αnFη/RT) - exp(-(1-α)nFη/RT)]", desc: "General kinetic model for net electrode current as a function of overpotential in both directions." },
+        { name: "Stern-Geary Equation (Linear Polarization Resistance)", formula: "i_corr = B / R_p, where B = (β_a·β_c) / [2.303(β_a+β_c)]", desc: "Estimates corrosion current density from polarization resistance without destructive weight-loss testing." },
       ]
     },
     {
@@ -234,6 +241,94 @@
         { name: "Relative Standard Deviation (Precision)", formula: "RSD % = (SD / mean) × 100", desc: "Standard QC/method-validation metric expressing measurement precision as a percentage." },
         { name: "Percent Recovery (Method Validation)", formula: "%Recovery = (measured value / expected value) × 100", desc: "Assesses analytical accuracy by comparing a spiked or certified sample's measured result to its known value." },
         { name: "NMR Chemical Shift", formula: "δ (ppm) = [(ν_sample - ν_reference) / ν_reference] × 10⁶", desc: "Standardized, field-independent way of reporting nuclear resonance frequencies relative to a reference compound." },
+      ]
+    },
+    {
+      category: "13. Statistical Process Control & Metrology",
+      items: [
+        { name: "Process Capability Index (Cp)", formula: "Cp = (USL - LSL) / (6σ)", desc: "Compares the width of a process's natural spread to the width of its specification tolerance." },
+        { name: "Process Capability Index (Cpk)", formula: "Cpk = min[(USL - μ)/(3σ), (μ - LSL)/(3σ)]", desc: "Like Cp, but also accounts for how centered the process mean μ is within the tolerance band." },
+        { name: "Control Chart Limits (X-bar / R Chart)", formula: "UCL, LCL = X̿ ± A₂ · R̄", desc: "Upper/lower control limits for subgroup means, built from the grand average and mean range using constant A₂." },
+        { name: "Standard Error of the Mean", formula: "SEM = σ / √n", desc: "Expected spread of sample means around the true population mean for a sample size n." },
+        { name: "Combined Measurement Uncertainty", formula: "u_c = √(Σ uᵢ²)", desc: "Root-sum-of-squares combination of independent uncertainty sources, per GUM metrology guidelines." },
+        { name: "Z-Score (Standard Score)", formula: "Z = (x - μ) / σ", desc: "Number of standard deviations a measurement lies from the process or population mean." },
+        { name: "Defects Per Million Opportunities (DPMO)", formula: "DPMO = (defects / (units × opportunities)) × 10⁶", desc: "Normalizes defect counts for Six Sigma-style quality benchmarking across different processes." },
+      ]
+    },
+    {
+      category: "14. Fluid Mechanics & Rheology",
+      items: [
+        { name: "Newton's Law of Viscosity", formula: "τ = η · (dv/dy)", desc: "Shear stress in a Newtonian fluid is proportional to the local velocity gradient (shear rate)." },
+        { name: "Reynolds Number", formula: "Re = ρ · v · D / η", desc: "Ratio of inertial to viscous forces; predicts laminar vs. turbulent flow regime." },
+        { name: "Power-Law (Ostwald-de Waele) Fluid Model", formula: "τ = K · (dv/dy)ⁿ", desc: "Describes shear-thinning or shear-thickening non-Newtonian fluids via consistency index K and flow index n." },
+        { name: "Bingham Plastic Model", formula: "τ = τ₀ + η_pl · (dv/dy), for τ > τ₀", desc: "Fluid that behaves as a rigid body below a yield stress τ₀ and flows like a viscous fluid above it." },
+        { name: "Casson Model (Chocolate/Suspension Rheology)", formula: "√τ = √τ₀ + √(η_ca · γ̇)", desc: "The ICA-standard model for characterizing molten chocolate viscosity and yield stress during QC testing." },
+        { name: "Stokes' Law (Particle Settling Velocity)", formula: "v = 2r²(ρ_p - ρ_f)g / (9η)", desc: "Terminal settling velocity of a small sphere falling through a viscous fluid under gravity." },
+      ]
+    },
+    {
+      category: "15. Casting, Solidification & Welding Metallurgy",
+      items: [
+        { name: "Chvorinov's Rule", formula: "t_s = B · (V / A)ⁿ  (n ≈ 2)", desc: "Solidification time scales with the square of the volume-to-surface-area ratio of the casting." },
+        { name: "Secondary Dendrite Arm Spacing", formula: "λ₂ = a · (CR)^(-n)", desc: "Finer dendritic microstructure forms at higher cooling rates (CR); a and n are alloy-specific constants." },
+        { name: "Constitutional Supercooling Criterion", formula: "G / R < ΔT₀ / D", desc: "Simplified onset condition for unstable (dendritic/cellular) rather than planar solidification fronts." },
+        { name: "Welding Heat Input", formula: "HI = (V · I) / S", desc: "Energy delivered per unit length of weld from arc voltage V, current I, and travel speed S." },
+      ]
+    },
+    {
+      category: "16. Optics & Photonic Materials",
+      items: [
+        { name: "Snell's Law of Refraction", formula: "n₁ · sin(θ₁) = n₂ · sin(θ₂)", desc: "Governs how light bends when crossing an interface between two media of different refractive index." },
+        { name: "Refractive Index", formula: "n = c / v", desc: "Ratio of light's speed in vacuum to its speed within a material; sets how strongly the material bends light." },
+        { name: "Brewster's Angle", formula: "tan(θ_B) = n₂ / n₁", desc: "Angle of incidence at which reflected light becomes fully polarized." },
+        { name: "Malus's Law", formula: "I = I₀ · cos²(θ)", desc: "Intensity of polarized light transmitted through a polarizer at angle θ to the light's polarization axis." },
+        { name: "Diffraction Grating Equation", formula: "d · sin(θ) = m · λ", desc: "Predicts the angles at which constructive interference produces diffraction orders m from a grating of spacing d." },
+        { name: "Tauc Relation (Optical Bandgap)", formula: "(αhν)ⁿ = A(hν - E_g)", desc: "Extracts a semiconductor or thin film's optical bandgap E_g from absorption coefficient data (n=2 direct, n=1/2 indirect transitions)." },
+      ]
+    },
+    {
+      category: "17. Superconductivity",
+      items: [
+        { name: "BCS Energy Gap-Tc Relation", formula: "Δ(0) = 1.764 · k_B · T_c", desc: "Weak-coupling BCS theory result linking the zero-temperature superconducting energy gap to the critical temperature." },
+        { name: "London Penetration Depth", formula: "λ_L = √(m / (μ₀ · n_s · e²))", desc: "Depth to which an external magnetic field penetrates a superconductor before being screened out (Meissner effect)." },
+        { name: "Critical Magnetic Field (Type I)", formula: "H_c(T) = H_c(0) · [1 - (T/T_c)²]", desc: "Empirical parabolic law for the field above which superconductivity is destroyed at a given temperature." },
+        { name: "Upper Critical Field (Type II)", formula: "H_c2 = Φ₀ / (2π · ξ²)", desc: "Field at which a type-II superconductor fully transitions to the normal state; ξ = coherence length, Φ₀ = flux quantum." },
+      ]
+    },
+    {
+      category: "18. General & Physical Chemistry",
+      items: [
+        { name: "Molarity", formula: "M = mol solute / L solution", desc: "Most common concentration unit, defined as moles of solute per liter of total solution." },
+        { name: "Molality", formula: "m = mol solute / kg solvent", desc: "Temperature-independent concentration unit based on solvent mass rather than solution volume." },
+        { name: "Dilution Equation", formula: "M₁V₁ = M₂V₂", desc: "Conserves moles of solute when a solution is diluted from concentration/volume 1 to 2." },
+        { name: "Ideal Gas Law", formula: "PV = nRT", desc: "Relates pressure, volume, moles, and temperature for an ideal gas." },
+        { name: "Combined Gas Law", formula: "P₁V₁/T₁ = P₂V₂/T₂", desc: "Tracks a fixed amount of gas through simultaneous changes in pressure, volume, and temperature." },
+        { name: "Dalton's Law of Partial Pressures", formula: "P_total = ΣPᵢ", desc: "Total pressure of a gas mixture equals the sum of each component's partial pressure." },
+        { name: "Graham's Law of Effusion", formula: "rate₁/rate₂ = √(M₂/M₁)", desc: "Lighter gas molecules effuse through a small opening faster than heavier ones." },
+        { name: "Percent Yield", formula: "%Yield = (actual / theoretical) × 100", desc: "Compares the experimentally obtained product amount to the maximum stoichiometrically possible." },
+        { name: "Empirical-to-Molecular Formula Relation", formula: "Molecular formula = (empirical formula)ₙ, n = M_molecular / M_empirical", desc: "Scales up a compound's simplest whole-number ratio formula to its true molecular formula." },
+      ]
+    },
+    {
+      category: "19. Acid-Base & Aqueous Equilibrium",
+      items: [
+        { name: "pH Definition", formula: "pH = -log[H⁺]", desc: "Logarithmic measure of hydrogen ion concentration; lower pH means more acidic." },
+        { name: "pOH Definition", formula: "pOH = -log[OH⁻]", desc: "Logarithmic measure of hydroxide ion concentration, complementary to pH." },
+        { name: "Water Autoionization Constant", formula: "K_w = [H⁺][OH⁻] = 1.0 × 10⁻¹⁴ (25 °C); pH + pOH = 14", desc: "Fixed product of hydrogen and hydroxide ion concentrations in pure water at room temperature." },
+        { name: "Henderson-Hasselbalch Equation", formula: "pH = pKₐ + log([A⁻]/[HA])", desc: "Calculates buffer solution pH from the ratio of conjugate base to weak acid concentrations." },
+        { name: "Acid Dissociation Constant", formula: "Kₐ = [H⁺][A⁻] / [HA]", desc: "Equilibrium constant quantifying how completely a weak acid ionizes in water." },
+        { name: "Solubility Product Constant", formula: "K_sp = [Aⁿ⁺]ᵃ[Bᵐ⁻]ᵇ", desc: "Equilibrium constant governing the maximum ion concentrations in a saturated sparingly-soluble salt solution." },
+        { name: "General Equilibrium Constant", formula: "K = [C]ᶜ[D]ᵈ / ([A]ᵃ[B]ᵇ)  for aA + bB ⇌ cC + dD", desc: "Ratio of product to reactant concentrations (raised to stoichiometric coefficients) at equilibrium." },
+      ]
+    },
+    {
+      category: "20. Colligative Properties & Coordination Chemistry",
+      items: [
+        { name: "Freezing Point Depression", formula: "ΔT_f = i · K_f · m", desc: "Solute particles lower a solvent's freezing point proportionally to molality and van 't Hoff factor i." },
+        { name: "Boiling Point Elevation", formula: "ΔT_b = i · K_b · m", desc: "Solute particles raise a solvent's boiling point proportionally to molality and van 't Hoff factor i." },
+        { name: "Osmotic Pressure", formula: "Π = i · M · R · T", desc: "Pressure required to stop osmotic solvent flow across a semipermeable membrane." },
+        { name: "Crystal Field Splitting Energy", formula: "Δ_o = E(eg) - E(t2g)", desc: "Energy gap between d-orbital sets in an octahedral transition-metal complex, set by ligand field strength." },
+        { name: "Spin-Only Magnetic Moment", formula: "μ_S = √[n(n + 2)] μ_B", desc: "Predicts a transition-metal complex's magnetic moment from its number of unpaired d-electrons n." },
       ]
     }
   ];
