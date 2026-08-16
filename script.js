@@ -621,13 +621,11 @@ if (els.search) {
     const hit = (typeof resolveQuery === "function") ? resolveQuery(val) : null;
     els.suggestions.textContent = hit ? `showing ${hit.data.name}…` : "scanning...";
     
-    if (hit) {
-      searchDebounce = setTimeout(() => {
-        showSubject(hit);
-        hideDropdown();
-      }, 300);
-    }
-  });
+    // Removed the automatic timer trigger so the dropdown stays open 
+    // until you explicitly click a suggestion or press Enter.
+      
+    
+                                                   
 
   els.search.addEventListener("blur", (e) => {
     if (!dropdownEl.contains(e.relatedTarget)) {
