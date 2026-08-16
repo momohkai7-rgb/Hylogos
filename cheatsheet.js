@@ -1,6 +1,6 @@
 /* =========================================================================
    HYLOGOS ULTIMATE MASTER MATERIALS SCIENCE & CHEMISTRY CHEAT SHEET
-   Exhaustive Academic Reference Architecture
+   Exhaustive Academic Reference Architecture + Live Search
    ========================================================================= */
 (function masterCheatSheetModule() {
   const els = {
@@ -294,54 +294,33 @@
         { name: "Critical Magnetic Field (Type I)", formula: "H_c(T) = H_c(0) · [1 - (T/T_c)²]", desc: "Empirical parabolic law for the field above which superconductivity is destroyed at a given temperature." },
         { name: "Upper Critical Field (Type II)", formula: "H_c2 = Φ₀ / (2π · ξ²)", desc: "Field at which a type-II superconductor fully transitions to the normal state; ξ = coherence length, Φ₀ = flux quantum." },
       ]
-    },
-    {
-      category: "18. General & Physical Chemistry",
-      items: [
-        { name: "Molarity", formula: "M = mol solute / L solution", desc: "Most common concentration unit, defined as moles of solute per liter of total solution." },
-        { name: "Molality", formula: "m = mol solute / kg solvent", desc: "Temperature-independent concentration unit based on solvent mass rather than solution volume." },
-        { name: "Dilution Equation", formula: "M₁V₁ = M₂V₂", desc: "Conserves moles of solute when a solution is diluted from concentration/volume 1 to 2." },
-        { name: "Ideal Gas Law", formula: "PV = nRT", desc: "Relates pressure, volume, moles, and temperature for an ideal gas." },
-        { name: "Combined Gas Law", formula: "P₁V₁/T₁ = P₂V₂/T₂", desc: "Tracks a fixed amount of gas through simultaneous changes in pressure, volume, and temperature." },
-        { name: "Dalton's Law of Partial Pressures", formula: "P_total = ΣPᵢ", desc: "Total pressure of a gas mixture equals the sum of each component's partial pressure." },
-        { name: "Graham's Law of Effusion", formula: "rate₁/rate₂ = √(M₂/M₁)", desc: "Lighter gas molecules effuse through a small opening faster than heavier ones." },
-        { name: "Percent Yield", formula: "%Yield = (actual / theoretical) × 100", desc: "Compares the experimentally obtained product amount to the maximum stoichiometrically possible." },
-        { name: "Empirical-to-Molecular Formula Relation", formula: "Molecular formula = (empirical formula)ₙ, n = M_molecular / M_empirical", desc: "Scales up a compound's simplest whole-number ratio formula to its true molecular formula." },
-      ]
-    },
-    {
-      category: "19. Acid-Base & Aqueous Equilibrium",
-      items: [
-        { name: "pH Definition", formula: "pH = -log[H⁺]", desc: "Logarithmic measure of hydrogen ion concentration; lower pH means more acidic." },
-        { name: "pOH Definition", formula: "pOH = -log[OH⁻]", desc: "Logarithmic measure of hydroxide ion concentration, complementary to pH." },
-        { name: "Water Autoionization Constant", formula: "K_w = [H⁺][OH⁻] = 1.0 × 10⁻¹⁴ (25 °C); pH + pOH = 14", desc: "Fixed product of hydrogen and hydroxide ion concentrations in pure water at room temperature." },
-        { name: "Henderson-Hasselbalch Equation", formula: "pH = pKₐ + log([A⁻]/[HA])", desc: "Calculates buffer solution pH from the ratio of conjugate base to weak acid concentrations." },
-        { name: "Acid Dissociation Constant", formula: "Kₐ = [H⁺][A⁻] / [HA]", desc: "Equilibrium constant quantifying how completely a weak acid ionizes in water." },
-        { name: "Solubility Product Constant", formula: "K_sp = [Aⁿ⁺]ᵃ[Bᵐ⁻]ᵇ", desc: "Equilibrium constant governing the maximum ion concentrations in a saturated sparingly-soluble salt solution." },
-        { name: "General Equilibrium Constant", formula: "K = [C]ᶜ[D]ᵈ / ([A]ᵃ[B]ᵇ)  for aA + bB ⇌ cC + dD", desc: "Ratio of product to reactant concentrations (raised to stoichiometric coefficients) at equilibrium." },
-      ]
-    },
-    {
-      category: "20. Colligative Properties & Coordination Chemistry",
-      items: [
-        { name: "Freezing Point Depression", formula: "ΔT_f = i · K_f · m", desc: "Solute particles lower a solvent's freezing point proportionally to molality and van 't Hoff factor i." },
-        { name: "Boiling Point Elevation", formula: "ΔT_b = i · K_b · m", desc: "Solute particles raise a solvent's boiling point proportionally to molality and van 't Hoff factor i." },
-        { name: "Osmotic Pressure", formula: "Π = i · M · R · T", desc: "Pressure required to stop osmotic solvent flow across a semipermeable membrane." },
-        { name: "Crystal Field Splitting Energy", formula: "Δ_o = E(eg) - E(t2g)", desc: "Energy gap between d-orbital sets in an octahedral transition-metal complex, set by ligand field strength." },
-        { name: "Spin-Only Magnetic Moment", formula: "μ_S = √[n(n + 2)] μ_B", desc: "Predicts a transition-metal complex's magnetic moment from its number of unpaired d-electrons n." },
-      ]
     }
   ];
 
-  function renderCheatSheet() {
+  function renderCheatSheet(filterText = "") {
     let html = "";
+    const query = filterText.toLowerCase().trim();
+    let totalMatches = 0;
+
     EXHAUSTIVE_CHEAT_SHEET.forEach(section => {
+      const filteredItems = section.items.filter(item => {
+        if (!query) return true;
+        return (
+          item.name.toLowerCase().includes(query) ||
+          item.formula.toLowerCase().includes(query) ||
+          item.desc.toLowerCase().includes(query)
+        );
+      });
+
+      if (filteredItems.length === 0) return;
+      totalMatches += filteredItems.length;
+
       html += `
         <div class="cs-category-block">
           <h3 class="cs-category-title">${escapeHtml(section.category)}</h3>
           <div class="cs-cards-grid">
       `;
-      section.items.forEach(item => {
+      filteredItems.forEach(item => {
         html += `
           <div class="cs-card">
             <div class="cs-card-name">${escapeHtml(item.name)}</div>
@@ -352,7 +331,12 @@
       });
       html += `</div></div>`;
     });
-    els.contentHost.innerHTML = html;
+
+    if (totalMatches === 0) {
+      els.contentHost.innerHTML = `<p class="cs-empty">No formulas or constants found matching "${escapeHtml(filterText)}".</p>`;
+    } else {
+      els.contentHost.innerHTML = html;
+    }
   }
 
   function escapeHtml(str) {
@@ -364,7 +348,11 @@
   function openCheatSheet() {
     els.overlay.classList.remove("hidden");
     els.overlay.setAttribute("aria-hidden", "false");
-    renderCheatSheet();
+    const searchInput = document.getElementById("csSearchInput");
+    if (searchInput) {
+      searchInput.value = "";
+    }
+    renderCheatSheet("");
   }
 
   function closeCheatSheet() {
@@ -372,7 +360,29 @@
     els.overlay.setAttribute("aria-hidden", "true");
   }
 
-  els.toggle.addEventListener("click", openCheatSheet);
+  // Build the search bar dynamically into the modal header area upon load
+  function injectSearchBar() {
+    const headEl = els.overlay.querySelector(".ptable-head");
+    if (!headEl || document.getElementById("csSearchInput")) return;
+
+    const searchWrap = document.createElement("div");
+    searchWrap.className = "cs-search-wrap";
+    searchWrap.innerHTML = `
+      <input id="csSearchInput" type="search" placeholder="Search laws, constants, formulas..." autocomplete="off" spellcheck="false" />
+    `;
+    // Insert search bar right below the modal header row
+    els.overlay.querySelector(".ptable-panel").insertBefore(searchWrap, els.overlay.querySelector(".cs-body"));
+
+    const input = document.getElementById("csSearchInput");
+    input.addEventListener("input", (e) => {
+      renderCheatSheet(e.target.value);
+    });
+  }
+
+  els.toggle.addEventListener("click", () => {
+    openCheatSheet();
+    injectSearchBar();
+  });
   els.close.addEventListener("click", closeCheatSheet);
   els.overlay.addEventListener("click", e => { if (e.target === els.overlay) closeCheatSheet(); });
 })();
