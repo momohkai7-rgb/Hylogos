@@ -1,4 +1,4 @@
-/* ===================== Quiz mode ===================== */
+/* ===================== Quiz mode (Progressive Difficulty) ===================== */
 (function quizModule() {
   const els = {
     toggle: document.getElementById("quizToggle"),
@@ -93,7 +93,7 @@
     (alloyFormulaGroups[f] = alloyFormulaGroups[f] || []).push(k);
   });
 
-  /* ---------- NEW: DYNAMIC TRUE/FALSE GENERATOR ---------- */
+  /* ---------- DYNAMIC TRUE/FALSE GENERATOR ---------- */
   function q_trueFalse() {
     const types = ['phase', 'metal_check', 'halogen_check', 'atomic_check'];
     const type = pick(types);
@@ -140,7 +140,7 @@
     return { text, choices, correctIndex, explain };
   }
 
-  /* ---------- NEW: MATH CALCULATION GENERATOR ---------- */
+  /* ---------- MATH CALCULATION GENERATOR ---------- */
   function q_mathMass() {
     const targetMolecules = ["H2O", "CO2", "CH4", "NaCl"];
     const key = pick(targetMolecules);
@@ -162,7 +162,7 @@
     };
   }
 
-  /* ---------- NEW: FILL-IN-THE-BLANK GENERATOR ---------- */
+  /* ---------- FILL-IN-THE-BLANK GENERATOR ---------- */
   function q_fillBlank() {
     const items = [
       { text: "The chemical symbol for Gold is _______.", ans: "Au", pool: ["Ag", "Cu", "Pt", "Fe"] },
@@ -175,7 +175,7 @@
     return { text: item.text, choices, correctIndex, explain: `The correct answer is ${item.ans}.` };
   }
 
-  /* ---------- NEW: SORTING / ORDERING GENERATOR ---------- */
+  /* ---------- SORTING / ORDERING GENERATOR ---------- */
   function q_sorting() {
     return {
       text: "Which option lists these elements in correct order of increasing Atomic Number (Z)?",
@@ -400,32 +400,39 @@
     return { text: `Which alloy is this? "${a.blurb}"`, choices, correctIndex, explain: `${a.name} (${a.formula})` };
   }
 
-  /* ---------- GENERATOR POOLS (Blended with new types) ---------- */
-  const ELEMENT_GENERATORS = [
-    q_symbolToName, q_nameToSymbol, q_category, q_phase,
-    q_meltCompare, q_densityCompare, q_atomicNumber, q_elementBlurb,
-    q_trueFalse, q_mathMass, q_fillBlank, q_sorting
-  ];
-
-  const COMPOUND_GENERATORS = [
-    q_formulaToName, q_nameToFormula, q_atomCount, q_compoundBlurb, q_compoundElements,
-    q_trueFalse, q_mathMass, q_fillBlank
-  ];
-
-  const ALLOY_GENERATORS = [
-    q_alloyFormulaToName, q_alloyNameToFormula, q_alloyPrimaryElement, q_alloyBlurb,
-    q_trueFalse
-  ];
-
-  const GENERATORS = {
-    elements: ELEMENT_GENERATORS,
-    compounds: COMPOUND_GENERATORS,
-    alloys: ALLOY_GENERATORS,
+  /* ---------- DIFFICULTY TIERS (Progressive Challenge) ---------- */
+  const DIFFICULTY_TIERS = {
+    elements: {
+      easy: [q_symbolToName, q_nameToSymbol, q_trueFalse, q_fillBlank],
+      medium: [q_category, q_phase, q_atomicNumber, q_mathMass],
+      hard: [q_meltCompare, q_densityCompare, q_sorting, q_elementBlurb]
+    },
+    compounds: {
+      easy: [q_formulaToName, q_nameToFormula, q_trueFalse, q_fillBlank],
+      medium: [q_atomCount, q_compoundElements, q_mathMass],
+      hard: [q_compoundBlurb, q_sorting]
+    },
+    alloys: {
+      easy: [q_alloyFormulaToName, q_trueFalse, q_fillBlank],
+      medium: [q_alloyNameToFormula, q_mathMass],
+      hard: [q_alloyPrimaryElement, q_alloyBlurb, q_sorting]
+    }
   };
 
-  /* ---------- question flow ---------- */
+  /* ---------- question flow with progressive difficulty ---------- */
   function nextQuestion() {
-    const pool = GENERATORS[state.category];
+    const catTiers = DIFFICULTY_TIERS[state.category];
+    
+    // Determine difficulty tier based on current streak
+    let pool = [];
+    if (state.streak >= 8) {
+      pool = [...catTiers.easy, ...catTiers.medium, ...catTiers.hard]; // Mix everything with heavy hard bias
+    } else if (state.streak >= 4) {
+      pool = [...catTiers.easy, ...catTiers.medium]; // Medium tier unlocked
+    } else {
+      pool = catTiers.easy; // Warm-up tier
+    }
+
     let q = null, guard = 0;
     while (!q && guard++ < 25) q = pick(pool)();
     if (!q) return;
@@ -451,7 +458,8 @@
   }
 
   function updateScoreLine() {
-    els.scoreEl.textContent = `${state.correct}/${state.answered} correct · streak ${state.streak} · best ${state.bestStreak}`;
+    const tierName = state.streak >= 8 ? "🔥 Expert" : (state.streak >= 4 ? "⚡ Medium" : "🌱 Warm-up");
+    els.scoreEl.textContent = `${state.correct}/${state.answered} correct · ${tierName} · streak ${state.streak} · best ${state.bestStreak}`;
     els.streakBadge.textContent = `🔥 ${state.streak}`;
   }
 
@@ -469,7 +477,12 @@
       state.streak++;
       els.feedback.classList.remove("is-wrong");
       els.feedback.classList.add("is-correct");
-      els.feedback.innerHTML = `Correct! ${q.explain ? escapeHtml(q.explain) : ""}`;
+      
+      let rewardText = `Correct!`;
+      if (state.streak === 4) rewardText += ` ⚡ <strong>Medium Tier Unlocked!</strong>`;
+      if (state.streak === 8) rewardText += ` 🔥 <strong>Expert Tier Unlocked!</strong>`;
+      
+      els.feedback.innerHTML = `${rewardText} ${q.explain ? escapeHtml(q.explain) : ""}`;
     } else {
       btnEl.classList.add("wrong");
       allBtns[q.correctIndex].classList.add("correct");
@@ -482,7 +495,7 @@
         saveBestStreak(state.bestStreak);
         msg += `<span class="quiz-record">🏆 New record — ${state.streak} in a row!</span>`;
       } else if (state.streak > 0) {
-        msg += ` Streak ended at ${state.streak} (best: ${state.bestStreak}).`;
+        msg += ` Streak reset. Back to Warm-up tier.`;
       }
 
       state.streak = 0;
