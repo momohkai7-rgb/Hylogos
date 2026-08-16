@@ -527,8 +527,10 @@ if (els.search) {
     dropdownEl.classList.add("visible");
   }
 
+  let searchDebounce = null;
   els.search.addEventListener("input", () => {
     const val = els.search.value;
+    clearTimeout(searchDebounce);
     if (!val.trim()) {
       hideDropdown();
       els.suggestions.textContent = "";
@@ -540,6 +542,7 @@ if (els.search) {
 
     const hit = (typeof resolveQuery === "function") ? resolveQuery(val) : null;
     els.suggestions.textContent = hit ? `showing ${hit.data.name}…` : "scanning...";
+    if (hit) searchDebounce = setTimeout(() => showSubject(hit), 300);
   });
 
   els.search.addEventListener("keydown", (e) => {
@@ -910,4 +913,4 @@ ALLOYS.TOMBAC = { name:"Tombac", formula:"Cu–Zn", blurb:"A high-copper brass w
 ALLOYS.ARGENTIUM_SILVER = { name:"Argentium silver", formula:"Ag–Cu–Ge", blurb:"A modern sterling-silver alternative with added germanium, formulated to resist the tarnishing that plagues ordinary sterling.", elements:{Ag:93.5,Cu:5.5,Ge:1}, properties:{density:"10.4 g/cm³", meltingPoint:"890–900 °C"} };
 ALLOYS.PALLADIUM_SILVER = { name:"Palladium-silver", formula:"Pd–Ag", blurb:"A biocompatible alloy used in dental crowns and bridges, chosen for its stability and resistance to tarnish in the mouth.", elements:{Ag:70,Pd:30}, properties:{density:"10.9–11.3 g/cm³", meltingPoint:"1150–1250 °C"} };
 ALLOYS.NIOBIUM_TITANIUM = { name:"Niobium-titanium", formula:"Nb–Ti", blurb:"The standard superconducting wire alloy, wound into the powerful magnet coils inside MRI machines and particle accelerators.", elements:{Nb:47,Ti:53}, properties:{density:"6.5–6.7 g/cm³", meltingPoint:"~1950–2130 °C"} };
-ALLOYS.BABBITT_LEAD = { name:// ... [continued from your file]
+ALLOYS.BABBITT_LEAD = { name:"Babbitt metal (lead-based)", formula:"Pb–Sb–Sn", blurb:"A softer, lower-cost cousin of tin-based babbitt, used as a plain-bearing lining where loads are lighter and price matters more than maximum seizure resistance.", elements:{Pb:83,Sb:10,Sn:6,Cu:1}, properties:{density:"9.4–9.7 g/cm³", meltingPoint:"240–260 °C"} };
