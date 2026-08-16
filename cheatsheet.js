@@ -1,203 +1,144 @@
-/* ===================== Hylogos Advanced Cheat Sheet Module ===================== */
+/* ===================== Hylogos Comprehensive Master Cheat Sheet ===================== */
 (function cheatSheetModule() {
   const els = {
     toggle: document.getElementById("cheatSheetToggle"),
     overlay: document.getElementById("cheatSheetOverlay"),
     close: document.getElementById("cheatSheetClose"),
-    courseSelect: document.getElementById("csCourseSelect"),
     contentHost: document.getElementById("csContentHost"),
   };
 
   if (!els.toggle || !els.overlay) return;
 
-  // Comprehensive course data matching your precise outline
-  const COURSES = {
-    "materials-fundamentals": {
-      title: "Materials Science Fundamentals",
+  // Massive master database covering all requested subjects exhaustively
+  const CHEAT_SHEET_DATA = [
+    {
+      category: "🔥 1. Foundations, Constants & Basic Chemistry",
       items: [
-        { name: "Atomic Packing Factor (APF)", formula: "APF = (Volume of atoms in unit cell) / (Total unit cell volume)", desc: "Fraction of space filled by atoms. Simple Cubic = 0.52, BCC = 0.68, FCC = 0.74." },
-        { name: "Density of Crystal Unit Cell", formula: "ρ = (Z · M) / (N_A · V_c)", desc: "Z = atoms/cell, M = molar mass, N_A = Avogadro's number, V_c = unit cell volume." },
-        { name: "Pilling-Bedworth Ratio (Oxidation Volume)", formula: "PBR = V_oxide / V_metal", desc: "Predicts protective oxide scale formation. PBR > 1 indicates compressive stress." }
+        { name: "Avogadro's Number", formula: "N_A = 6.02214076 × 10²³ mol⁻¹", desc: "Number of constituent particles (atoms, molecules, ions) in one mole." },
+        { name: "Ideal Gas Constant", formula: "R = 8.31446 J/(mol·K) = 0.08206 (L·atm)/(mol·K)", desc: "Relates pressure, volume, temperature, and substance amount in ideal gases." },
+        { name: "Boltzmann Constant", formula: "k_B = 1.380649 × 10⁻²³ J/K", desc: "Relates average relative kinetic energy of particles in a gas with thermodynamic temperature." },
+        { name: "Planck's Constant", formula: "h = 6.62607015 × 10⁻³⁴ J·s", desc: "Relates photon energy to its frequency (E = hν)." },
+        { name: "Speed of Light in Vacuum", formula: "c = 2.99792458 × 10⁸ m/s", desc: "Universal physical constant important in spectroscopy and relativistic energy equations." },
+        { name: "Faraday Constant", formula: "F = 96,485 C/mol", desc: "Magnitude of electric charge per mole of electrons." },
+        { name: "Electron Mass", formula: "m_e = 9.1093837 × 10⁻³¹ kg", desc: "Rest mass of a single electron." },
+        { name: "Proton Mass", formula: "m_p = 1.6726219 × 10⁻²⁷ kg", desc: "Rest mass of a single proton." },
+        { name: "Molar Mass Definition", formula: "M = m / n", desc: "Mass (m) of a sample divided by the amount of substance in moles (n)." },
+        { name: "Number of Moles (Particles)", formula: "n = N / N_A", desc: "Number of particles (N) divided by Avogadro's number." },
+        { name: "Number of Moles (Gas at STP)", formula: "n = V / V_m", desc: "Volume (V) divided by molar volume of a gas at STP (V_m = 22.414 L/mol)." },
+        { name: "Molarity (Concentration)", formula: "C = n / V_solution", desc: "Moles of solute per liter of solution (mol/L)." },
+        { name: "Molality", formula: "b = n_solute / m_solvent (kg)", desc: "Moles of solute per kilogram of pure solvent (mol/kg)." },
+        { name: "Mass Percentage", formula: "Mass % = (m_element / m_total) × 100%", desc: "Proportion of a component's mass relative to total compound mass." },
+        { name: "Mole Fraction", formula: "χ_i = n_i / Σ(n_total)", desc: "Moles of a specific component divided by total moles of all components." },
+        { name: "Dilution Law", formula: "C₁V₁ = C₂V₂", desc: "Conservation of moles when diluting a concentrated stock solution." },
+        { name: "Empirical to Molecular Formula", formula: "Molecular Formula = n × (Empirical Formula)", desc: "Where n = (Molar Mass of Compound) / (Mass of Empirical Formula)." }
       ]
     },
-    "crystallography": {
-      title: "Crystallography & Crystal Structures",
+    {
+      category: "🧪 2. General Chemistry & Stoichiometry",
       items: [
-        { name: "Bragg's Law of Diffraction", formula: "nλ = 2d_{hkl}sin(θ)", desc: "Condition for constructive interference of X-rays scattered from crystal planes." },
-        { name: "Interplanar Spacing (Cubic)", formula: "d_{hkl} = a / √(h² + k² + l²)", desc: "Calculates distance between parallel lattice planes defined by Miller indices (hkl)." },
-        { name: "Weiss Zone Law", formula: "hu + kv + lw = 0", desc: "Condition for a lattice direction [uvw] to lie within a crystal plane (hkl)." }
+        { name: "Ideal Gas Law", formula: "P · V = n · R · T", desc: "Pressure (P), Volume (V), Moles (n), Gas Constant (R), Temperature (T in Kelvin)." },
+        { name: "Boyle's Law", formula: "P₁V₁ = P₂V₂", desc: "Pressure and volume are inversely proportional at constant temperature." },
+        { name: "Charles's Law", formula: "V₁ / T₁ = V₂ / T₂", desc: "Volume and temperature are directly proportional at constant pressure." },
+        { name: "Gay-Lussac's Law", formula: "P₁ / T₁ = P₂ / T₂", desc: "Pressure and temperature are directly proportional at constant volume." },
+        { name: "Dalton's Law of Partial Pressures", formula: "P_total = P₁ + P₂ + P₃ + ... = Σ(χ_i · P_total)", desc: "Total pressure exerted by a gas mixture equals the sum of partial pressures." },
+        { name: "Graham's Law of Effusion", formula: "Rate₁ / Rate₂ = √(M₂ / M₁)", desc: "Rate of gas effusion is inversely proportional to the square root of its molar mass." },
+        { name: "Combined Gas Law", formula: "(P₁V₁) / T₁ = (P₂V₂) / T₂", desc: "Relates pressure, volume, and temperature changes for a fixed gas mass." },
+        { name: "Van der Waals Real Gas Equation", formula: "(P + a(n/V)²)(V - nb) = nRT", desc: "Adjusts ideal gas law for molecular volume (b) and intermolecular attractions (a)." }
       ]
     },
-    "phase-diagrams": {
-      title: "Phase Diagrams",
+    {
+      category: "💧 3. Analytical Chemistry & Solutions",
       items: [
-        { name: "Gibbs Phase Rule", formula: "F = C - P + 2", desc: "F = degrees of freedom, C = components, P = phases in thermodynamic equilibrium." },
-        { name: "The Lever Rule", formula: "fraction of α = (W_c - W_β) / (W_α - W_β)", desc: "Calculates weight fractions of co-existing phases in a two-phase alloy region." }
+        { name: "pH and pOH Definitions", formula: "pH = -log[H⁺], pOH = -log[OH⁻]", desc: "Logarithmic scale for acidity and basicity in aqueous solutions." },
+        { name: "Ion Product of Water", formula: "K_w = [H⁺][OH⁻] = 1.0 × 10⁻¹⁴ (at 25°C)", desc: "Equilibrium constant for the self-ionization of water." },
+        { name: "Acid Dissociation Constant (Ka)", formula: "K_a = ([H⁺][A⁻]) / [HA], pK_a = -log(K_a)", desc: "Strength of an acid in solution." },
+        { name: "Henderson-Hasselbalch Equation", formula: "pH = pK_a + log([A⁻] / [HA])", desc: "Calculates pH of buffer solutions composed of weak acids and conjugate bases." },
+        { name: "Beer-Lambert Law", formula: "A = ε · b · c", desc: "Absorbance (A) equals molar absorptivity (ε) × path length (b) × concentration (c)." },
+        { name: "Titration Equivalence Point", formula: "n_a · M_a · V_a = n_b · M_b · V_b", desc: "Stoichiometric neutralization relation between acid and base reactants." },
+        { name: "Solubility Product Constant (Ksp)", formula: "K_sp = [Mⁿ⁺]ᵐ[Xᵐ⁻]ⁿ", desc: "Equilibrium constant indicating the solubility of ionic compounds in water." }
       ]
     },
-    "thermodynamics": {
-      title: "Thermodynamics",
+    {
+      category: "⚡ 4. Electrochemistry & Thermodynamics",
       items: [
-        { name: "First Law of Thermodynamics", formula: "ΔU = q + w", desc: "Change in internal energy equals heat added to system plus work done on system." },
-        { name: "Gibbs Free Energy", formula: "ΔG = ΔH - TΔS", desc: "Criteria for spontaneity: ΔG < 0 is spontaneous at constant temperature and pressure." },
-        { name: "Clausius-Clapeyron Equation", formula: "dP/dT = ΔH_vap / (T · ΔV)", desc: "Describes phase boundaries on a pressure-temperature phase diagram." }
+        { name: "First Law of Thermodynamics", formula: "ΔU = q + w", desc: "Internal energy change equals heat added plus work done." },
+        { name: "Enthalpy Definition", formula: "H = U + P · V", desc: "Heat content of a system at constant pressure." },
+        { name: "Gibbs Free Energy Change", formula: "ΔG = ΔH - T · ΔS", desc: "Determines thermodynamic spontaneity (ΔG < 0 is spontaneous)." },
+        { name: "Standard Gibbs Free Energy & Equilibrium", formula: "ΔG° = -R · T · ln(K)", desc: "Links equilibrium constant K directly to standard free energy." },
+        { name: "Nernst Equation", formula: "E = E° - ((RT) / (nF)) · ln(Q)", desc: "Calculates cell potential under non-standard conditions." },
+        { name: "Gibbs Free Energy & Cell Potential", formula: "ΔG° = -n · F · E°", desc: "Relates thermodynamic driving force to electrochemical cell voltage." },
+        { name: "Arrhenius Reaction Rate Equation", formula: "k = A · exp(-E_a / (RT))", desc: "Temperature dependency of reaction rate constants." },
+        { name: "Clausius-Clapeyron Equation", formula: "ln(P₂ / P₁) = -(ΔH_vap / R) · (1/T₂ - 1/T₁)", desc: "Relates vapor pressure changes across temperatures." }
       ]
     },
-    "kinetics": {
-      title: "Kinetics",
+    {
+      category: "💎 5. Crystallography & Crystal Structures",
       items: [
-        { name: "Arrhenius Equation", formula: "k = k₀ · exp(-E_a / RT)", desc: "Temperature dependence of reaction rates and thermal activation processes." },
-        { name: "First-Order Rate Law", formula: "ln[A]_t = -kt + ln[A]₀", desc: "Concentration decay over time for radioactive decay or unimolecular reactions." }
+        { name: "Bragg's Law of X-ray Diffraction", formula: "n · λ = 2d_{hkl} · sin(θ)", desc: "Condition for constructive interference from lattice planes." },
+        { name: "Interplanar Spacing (Cubic System)", formula: "d_{hkl} = a / √(h² + k² + l²)", desc: "Calculates spacing between planes identified by Miller indices (hkl)." },
+        { name: "Interplanar Spacing (Tetragonal)", formula: "1/d² = (h² + k²) / a² + l² / c²", desc: "Plane spacing formula for tetragonal crystal systems." },
+        { name: "Interplanar Spacing (Hexagonal)", formula: "1/d² = (4/3)·((h² + hk + k²) / a²) + l² / c²", desc: "Plane spacing formula for hexagonal crystal systems." },
+        { name: "Unit Cell Density Formula", formula: "ρ = (Z · M) / (N_A · V_c)", desc: "Calculates macroscopic density from unit cell geometry." },
+        { name: "Atomic Packing Factor (APF)", formula: "APF = (Volume of Atoms in Cell) / (Total Unit Cell Volume)", desc: "SC = 0.52, BCC = 0.68, FCC / HCP = 0.74." },
+        { name: "Weiss Zone Law", formula: "h·u + k·v + l·w = 0", desc: "Condition for direction [uvw] to lie within crystal plane (hkl)." }
       ]
     },
-    "diffusion": {
-      title: "Diffusion",
+    {
+      category: "🔬 6. Solid State Physics & Electronic Materials",
       items: [
-        { name: "Fick's First Law (Steady State)", formula: "J = -D · (dC/dx)", desc: "Diffusion flux J is proportional to concentration gradient dC/dx. D is diffusion coefficient." },
-        { name: "Fick's Second Law (Non-Steady State)", formula: "∂C/∂t = D · (∂²C/∂x²)", desc: "Concentration changes over time within a diffusion volume." },
-        { name: "Temperature Dependence of Diffusion", formula: "D = D₀ · exp(-Q_d / RT)", desc: "Activation energy Q_d dictates how fast atoms jump across lattice vacancies." }
+        { name: "Fermi-Dirac Distribution Function", formula: "f(E) = 1 / (exp((E - E_F) / (k_B T)) + 1)", desc: "Probability that an electron energy state is occupied at temperature T." },
+        { name: "Density of States (3D Electron Gas)", formula: "g(E) = (V / 2π²) · (2m / ℏ²)^(3/2) · E^(1/2)", desc: "Number of electron states per unit energy interval per unit volume." },
+        { name: "Drude Electrical Conductivity", formula: "σ = (n · e² · τ) / m", desc: "Calculates conductivity from carrier density (n), charge (e), and relaxation time (τ)." },
+        { name: "Mass Action Law (Semiconductors)", formula: "n · p = n_i²", desc: "Product of electron (n) and hole (p) concentrations in thermal equilibrium." },
+        { name: "Built-in Potential (p-n Junction)", formula: "V_bi = (k_B T / q) · ln(N_A · N_D / n_i²)", desc: "Electrostatic potential barrier across an unbiased junction diode." },
+        { name: "Bandgap Energy Relation", formula: "E_g = h · c / λ_cutoff", desc: "Photon energy threshold required to excite electrons across the semiconductor bandgap." }
       ]
     },
-    "mechanical-properties": {
-      title: "Mechanical Properties",
+    {
+      category: "⚙️ 7. Materials Science, Metallurgy & Mechanical Properties",
       items: [
-        { name: "Hooke's Law (Elasticity)", formula: "σ = E · ε", desc: "Stress σ is proportional to strain ε. E is Young's Modulus." },
-        { name: "Hall-Petch Equation (Grain Size Strengthening)", formula: "σ_y = σ₀ + k_y / √d", desc: "Yield strength increases as grain size d decreases." },
-        { name: "Hollomon Strain Hardening", formula: "σ = K · εⁿ", desc: "Plastic deformation behavior past yield point. n is strain-hardening exponent." }
+        { name: "Hooke's Law (Elastic Stress-Strain)", formula: "σ = E · ε", desc: "Stress (σ) equals Young's Modulus (E) times elastic strain (ε)." },
+        { name: "Hall-Petch Grain Size Strengthening", formula: "σ_y = σ₀ + k_y / √d", desc: "Yield strength increases as grain diameter (d) decreases." },
+        { name: "Hollomon Strain Hardening Equation", formula: "σ = K · εⁿ", desc: "True stress-strain relationship during plastic deformation." },
+        { name: "Fick's First Law of Diffusion", formula: "J = -D · (dC / dx)", desc: "Steady-state mass flux driven by concentration gradient." },
+        { name: "Fick's Second Law of Diffusion", formula: "∂C / ∂t = D · (∂²C / ∂x²)", desc: "Non-steady state diffusion over time (t)." },
+        { name: "Diffusion Coefficient Temperature Dependence", formula: "D = D₀ · exp(-Q_d / (RT))", desc: "Arrhenius relation for vacancy-mediated atomic diffusion." },
+        { name: "Griffith's Brittle Fracture Criterion", formula: "σ_f = √(2 · E · γ_s / (π · a))", desc: "Critical stress to propagate a crack of length 2a in brittle solids." },
+        { name: "Pilling-Bedworth Ratio (Oxidation)", formula: "PBR = V_oxide / V_metal", desc: "Ratio of oxide volume to consumed metal volume; PBR > 1 forms protective scale." },
+        { name: "Rule of Mixtures (Composite Modulus)", formula: "E_c = V_f · E_f + V_m · E_m", desc: "Longitudinal elastic modulus for fiber-reinforced composites." }
       ]
     },
-    "thermal-properties": {
-      title: "Thermal Properties",
+    {
+      category: "🧪 8. Organic Chemistry & Kinetics",
       items: [
-        { name: "Thermal Expansion", formula: "ΔL / L₀ = α_L · ΔT", desc: "Linear expansion of materials with temperature change. α_L is expansion coefficient." },
-        { name: "Fourier's Law of Heat Conduction", formula: "q = -k_th · (dT/dx)", desc: "Heat flux q driven by thermal conductivity k_th and temperature gradient." }
-      ]
-    },
-    "electrical-properties": {
-      title: "Electrical Properties",
-      items: [
-        { name: "Ohm's Law (Microscopic Form)", formula: "J = σ · E", desc: "Current density J equals electrical conductivity σ times electric field E." },
-        { name: "Drude Conductivity Model", formula: "σ = (n · e² · τ) / m", desc: "n = electron density, e = charge, τ = relaxation time, m = electron mass." }
-      ]
-    },
-    "magnetic-properties": {
-      title: "Magnetic Properties",
-      items: [
-        { name: "Magnetic Induction", formula: "B = μ₀ · (H + M) = μ · H", desc: "B = magnetic flux density, H = magnetic field strength, M = magnetization, μ = permeability." },
-        { name: "Curie-Weiss Law", formula: "χ = C / (T - T_c)", desc: "Magnetic susceptibility χ above the Curie temperature T_c for ferromagnets." }
-      ]
-    },
-    "electronic-materials": {
-      title: "Electronic Materials",
-      items: [
-        { name: "Fermi-Dirac Distribution", formula: "f(E) = 1 / (exp((E - E_F) / k_B T) + 1)", desc: "Probability that an electronic energy state E is occupied at temperature T." },
-        { name: "Mass Action Law (Semiconductors)", formula: "n · p = n_i²", desc: "Product of electron concentration n and hole concentration p equals intrinsic carrier density squared." }
-      ]
-    },
-    "metallurgy": {
-      title: "Metallurgy & Alloy Systems",
-      items: [
-        { name: "Carbon Equivalency (Weldability)", formula: "CE = C + (Mn+Si)/6 + (Cr+Mo+V)/5 + (Ni+Cu)/15", desc: "Estimates hardenability and cold-cracking susceptibility of structural steels." },
-        { name: "Hume-Rothery Rules", formula: "Substitution Solid Solution Conditions", desc: "Must have similar atomic radius (<15%), crystal structure, electronegativity, and valence." }
-      ]
-    },
-    "polymers": {
-      title: "Polymers",
-      items: [
-        { name: "Number-Average Molecular Weight", formula: "M_n = Σ(N_i · M_i) / Σ(N_i)", desc: "Sum of chain weights divided by total number of polymer chains." },
-        { name: "Degree of Polymerization (DP)", formula: "DP = M_n / M_repeat", desc: "Average number of repeat mer units in a polymer chain." }
-      ]
-    },
-    "ceramics": {
-      title: "Ceramics",
-      items: [
-        { name: "Griffith Fracture Theory", formula: "σ_f = √(2 · E · γ_s / (π · a))", desc: "Fracture stress σ_f for brittle ceramics containing a microcrack of length 2a." },
-        { name: "Ionic Radii Ratio Rule", formula: "r_c / r_a", desc: "Predicts coordination number and crystal geometry based on cation/anion radius ratios." }
-      ]
-    },
-    "composites": {
-      title: "Composites",
-      items: [
-        { name: "Rule of Mixtures (Isostrain / Longitudinal)", formula: "E_c = V_f · E_f + V_m · E_m", desc: "Elastic modulus of a fiber composite loaded parallel to fibers. V = volume fraction." },
-        { name: "Inverse Rule of Mixtures (Transverse)", formula: "E_c = (E_f · E_m) / (V_m · E_f + V_f · E_m)", desc: "Elastic modulus when load is applied perpendicular to fibers." }
-      ]
-    },
-    "nanomaterials": {
-      title: "Nanomaterials",
-      items: [
-        { name: "Surface-to-Volume Ratio", formula: "SA : V ∝ 1 / r", desc: "As particle radius r shrinks to nanoscale, surface atom percentage increases dramatically." },
-        { name: "Quantum Confinement Energy Shift", formula: "ΔE ∝ ℏ² / (2m* · L²)", desc: "Bandgap expansion in quantum dots when particle size L approaches exciton Bohr radius." }
-      ]
-    },
-    "corrosion": {
-      title: "Corrosion",
-      items: [
-        { name: "Faraday's Law of Corrosion Rate", formula: "CR = (K · W) / (d · A · t)", desc: "Calculates corrosion penetration rate based on weight loss W, density d, and area A." },
-        { name: "Nernst Potential for Corrosion Cell", formula: "E_corr = E° - (RT/nF)ln(activity)", desc: "Electrode potential governing oxidation/reduction reaction rates at metal surfaces." }
-      ]
-    },
-    "surface-science": {
-      title: "Surface Science",
-      items: [
-        { name: "Langmuir Adsorption Isotherm", formula: "θ = (K · P) / (1 + K · P)", desc: "Fraction of surface coverage θ as a function of gas pressure P and adsorption constant K." },
-        { name: "Young's Contact Angle Equation", formula: "γ_sv = γ_sl + γ_lv · cos(θ_c)", desc: "Wetting equilibrium balancing solid-vapor, solid-liquid, and liquid-vapor surface tensions." }
-      ]
-    },
-    "characterization": {
-      title: "Materials Characterization (XRD, Spectroscopy)",
-      items: [
-        { name: "Scherrer Equation (Nanocrystal Size)", formula: "D = (K · λ) / (β · cos(θ))", desc: "Estimates crystal grain size D from XRD peak broadening β. K ≈ 0.9." },
-        { name: "Energy Dispersive X-ray (EDX/EDS)", formula: "E = hν = E_core - E_shell", desc: "Characteristic X-ray emission energies identifying specific atomic species." }
-      ]
-    },
-    "processing": {
-      title: "Materials Processing & Heat Treatment",
-      items: [
-        { name: "CCT & TTT Diagrams", formula: "Diffusion-controlled vs Diffusionless Transformation", desc: "Maps transformation products (pearlite, bainite, martensite) during cooling schedules." },
-        { name: "Carburizing Diffusion Depth", formula: "x(t) = 4 · √(D · t)", desc: "Approximate case-hardening diffusion depth over time t in steel processing." }
-      ]
-    },
-    "biomaterials": {
-      title: "Biomaterials",
-      items: [
-        { name: "Bioactivity Index", formula: "0.85 · t_0.5bb", desc: "Time required for hydroxyapatite bond formation on implant surfaces in simulated body fluid." }
-      ]
-    },
-    "semiconductors": {
-      title: "Semiconductors & Energy",
-      items: [
-        { name: "Built-in Potential (p-n Junction)", formula: "V_bi = (k_B T / q) · ln(N_A · N_D / n_i²)", desc: "Electrostatic potential barrier across an unbiased p-n junction diode." },
-        { name: "Shockley-Queisser Limit", formula: "Efficiency Limit ≈ 33.7%", desc: "Maximum theoretical solar cell conversion efficiency for a single p-n junction under blackbody sunlight." }
-      ]
-    },
-    "physics-math": {
-      title: "Physics, Mathematics & Constants",
-      items: [
-        { name: "Ideal Gas Law", formula: "P · V = n · R · T", desc: "R = 8.314 J/(mol·K) or 0.0821 L·atm/(mol·K)." },
-        { name: "Avogadro's Number", formula: "N_A = 6.022 × 10²³ mol⁻¹", desc: "Number of constituent particles in one mole of a substance." },
-        { name: "Planck's Energy Relation", formula: "E = h · ν = (h · c) / λ", desc: "h = 6.626 × 10⁻³⁴ J·s, c = speed of light." }
+        { name: "First-Order Integrated Rate Law", formula: "ln([A]_t / [A]₀) = -k · t", desc: "Relates reactant concentration drop over time for first-order reactions." },
+        { name: "Radioactive Half-Life", formula: "t_{1/2} = 0.693 / k", desc: "Time required for half of a radioactive or reactant quantity to decay." },
+        { name: "Second-Order Integrated Rate Law", formula: "1 / [A]_t = k · t + (1 / [A]₀)", desc: "Concentration relation for second-order kinetics." },
+        { name: "Index of Hydrogen Deficiency (IHD / Degree of Unsaturation)", formula: "IHD = C + 1 - (H / 2) + (N / 2)", desc: "Determines number of rings or double bonds from an organic molecular formula." },
+        { name: "Arrhenius Activation Energy", formula: "ln(k₂ / k₁) = -(E_a / R) · (1/T₂ - 1/T₁)", desc: "Calculates activation energy comparing reaction rates at two different temperatures." }
       ]
     }
-  };
+  ];
 
-  function renderCourse(courseKey) {
-    const course = COURSES[courseKey];
-    if (!course) {
-      els.contentHost.innerHTML = `<p class="cs-empty">Select a course from the menu above to view its laws and formulas.</p>`;
-      return;
-    }
-
-    let html = `<h3 class="cs-course-title">${course.title}</h3><div class="cs-cards-grid">`;
-    course.items.forEach(item => {
+  function renderCheatSheet() {
+    let html = "";
+    CHEAT_SHEET_DATA.forEach(section => {
       html += `
-        <div class="cs-card">
-          <div class="cs-card-name">${escapeHtml(item.name)}</div>
-          <div class="cs-card-formula mono">${escapeHtml(item.formula)}</div>
-          <div class="cs-card-desc">${escapeHtml(item.desc)}</div>
-        </div>
+        <div class="cs-category-block">
+          <h3 class="cs-category-title">${escapeHtml(section.category)}</h3>
+          <div class="cs-cards-grid">
       `;
+      section.items.forEach(item => {
+        html += `
+          <div class="cs-card">
+            <div class="cs-card-name">${escapeHtml(item.name)}</div>
+            <div class="cs-card-formula mono">${escapeHtml(item.formula)}</div>
+            <div class="cs-card-desc">${escapeHtml(item.desc)}</div>
+          </div>
+        `;
+      });
+      html += `</div></div>`;
     });
-    html += `</div>`;
     els.contentHost.innerHTML = html;
   }
 
@@ -207,21 +148,10 @@
     return div.innerHTML;
   }
 
-  // Populate course select dropdown
-  function initDropdown() {
-    let opts = `<option value="">-- Choose a Materials Science / Chemistry Course --</option>`;
-    for (const [key, val] of Object.entries(COURSES)) {
-      opts += `<option value="${key}">${val.title}</option>`;
-    }
-    els.courseSelect.innerHTML = opts;
-    els.courseSelect.addEventListener("change", (e) => {
-      renderCourse(e.target.value);
-    });
-  }
-
   function openCheatSheet() {
     els.overlay.classList.remove("hidden");
     els.overlay.setAttribute("aria-hidden", "false");
+    renderCheatSheet(); // render full sheet contents on open
   }
 
   function closeCheatSheet() {
@@ -232,7 +162,4 @@
   els.toggle.addEventListener("click", openCheatSheet);
   els.close.addEventListener("click", closeCheatSheet);
   els.overlay.addEventListener("click", e => { if (e.target === els.overlay) closeCheatSheet(); });
-
-  initDropdown();
-  renderCourse(""); // default empty state
 })();
