@@ -778,6 +778,7 @@ footer {
   font-size: 0.78rem;
   padding: 2rem 0 3rem;
 }
+
 /* ===== Quiz toggle (blue accent, mirrors .ptable-toggle) ===== */
 .quiz-toggle {
   margin-top: 0.65rem;
@@ -923,6 +924,7 @@ footer {
 }
 .quiz-next.hidden { display: none; }
 .quiz-next:hover, .quiz-next:active { background: rgba(127, 217, 255, 0.18); }
+
 /* ===== Cheat Sheet Button (Neon Yellow Theme) ===== */
 .cheatsheet-toggle {
   margin-top: 0.65rem;
@@ -938,210 +940,71 @@ footer {
   box-shadow: 0 0 22px rgba(255, 220, 66, 0.4), inset 0 0 14px rgba(255, 220, 66, 0.1);
 }
 
-/* ===== Cheat Sheet Panel Layout ===== */
+/* ===== Cheat Sheet Master Panel Layout (High Contrast & Clean) ===== */
 .cheatsheet-panel {
-  max-width: 840px;
-  max-height: 88vh;
-}
-.cs-body {
-  padding: 1.25rem;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-.cs-section-block {
-  background: rgba(232, 228, 240, 0.02);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 1rem;
-}
-.cs-section-heading {
-  font-family: var(--font-display);
-  font-size: 0.9rem;
-  color: #ffdc42;
-  margin: 0 0 0.75rem 0;
-}
-.cs-scroll-row {
-  display: flex;
-  gap: 0.75rem;
-  overflow-x: auto;
-  padding-bottom: 0.4rem;
-}
-.cs-mini-card {
-  flex: 0 0 auto;
-  background: var(--void-2);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 0.6rem 0.8rem;
-  min-width: 130px;
-}
-.cs-mini-card .name {
-  display: block;
-  font-size: 0.72rem;
-  color: var(--text-dim);
-  margin-bottom: 0.2rem;
-}
-.cs-mini-card .mono {
-  font-size: 0.82rem;
-  color: #ffdc42;
-}
-
-.cs-label {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  margin-bottom: 0.4rem;
-  letter-spacing: 0.05em;
-}
-.cs-select {
-  width: 100%;
-  background: var(--void-2);
-  border: 1px solid rgba(255, 220, 66, 0.3);
-  border-radius: 8px;
-  color: var(--text-main);
-  font-family: var(--font-body);
-  font-size: 0.88rem;
-  padding: 0.6rem 1rem;
-  cursor: pointer;
-  outline: none;
-  transition: border-color 0.15s;
-}
-.cs-select:hover, .cs-select:focus {
-  border-color: #ffdc42;
-}
-
-.cs-content-host {
-  min-height: 180px;
-}
-.cs-empty {
-  color: var(--text-dim);
-  font-size: 0.85rem;
-  text-align: center;
-  padding: 2rem 1rem;
-  margin: 0;
-}
-.cs-course-title {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  color: var(--text-main);
-  margin: 0 0 0.85rem 0;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--line);
-}
-.cs-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 0.75rem;
-}
-.cs-card {
-  background: var(--void-2);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 0.85rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-.cs-card-name {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: var(--struct-green);
-}
-.cs-card-formula {
-  font-size: 0.9rem;
-  color: #ffdc42;
-  background: rgba(0,0,0,0.3);
-  padding: 0.3rem 0.5rem;
-  border-radius: 6px;
-  border: 1px solid rgba(255,220,66,0.15);
-}
-.cs-card-desc {
-  font-size: 0.78rem;
-  color: var(--text-dim);
-  line-height: 1.4;
-  margin-top: 0.2rem;
-}
-/* ===== Cheat Sheet Button (Neon Yellow Theme) ===== */
-.cheatsheet-toggle {
-  margin-top: 0.65rem;
-  background: rgba(255, 220, 66, 0.08);
-  border-color: rgba(255, 220, 66, 0.5);
-  color: #ffdc42;
-  box-shadow: 0 0 14px rgba(255, 220, 66, 0.22), inset 0 0 10px rgba(255, 220, 66, 0.06);
-}
-.cheatsheet-toggle:hover, .cheatsheet-toggle:active {
-  color: var(--text-main);
-  background: rgba(255, 220, 66, 0.14);
-  border-color: rgba(255, 220, 66, 0.85);
-  box-shadow: 0 0 22px rgba(255, 220, 66, 0.4), inset 0 0 14px rgba(255, 220, 66, 0.1);
-}
-
-/* ===== Cheat Sheet Master Panel Layout ===== */
-.cheatsheet-panel {
-  width: 95%;
-  max-width: 1000px;
+  width: 96%;
+  max-width: 1100px;
   max-height: 90vh;
 }
 .cs-body {
-  padding: 1.5rem;
+  padding: 1.75rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 2.25rem;
 }
 .cs-category-block {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 1rem;
 }
 .cs-category-title {
   font-family: var(--font-display);
-  font-size: 1.1rem;
-  color: #ffdc42;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-main);
   margin: 0;
-  padding-bottom: 0.4rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--line);
+  letter-spacing: -0.01em;
 }
 .cs-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 0.9rem;
 }
 .cs-card {
-  background: var(--void-2);
+  background: rgba(13, 10, 24, 0.7);
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 0.9rem 1.1rem;
+  padding: 1rem 1.15rem;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  transition: border-color 0.15s;
+  gap: 0.4rem;
+  transition: border-color 0.15s, background 0.15s;
 }
 .cs-card:hover {
   border-color: rgba(255, 220, 66, 0.4);
+  background: rgba(13, 10, 24, 0.95);
 }
 .cs-card-name {
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 0.88rem;
-  color: var(--text-main);
+  color: var(--photon-blue);
 }
 .cs-card-formula {
-  font-size: 0.92rem;
+  font-size: 0.94rem;
   color: #ffdc42;
-  background: rgba(0,0,0,0.4);
-  padding: 0.35rem 0.6rem;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0.4rem 0.65rem;
   border-radius: 6px;
-  border: 1px solid rgba(255,220,66,0.15);
+  border: 1px solid rgba(255, 220, 66, 0.2);
   letter-spacing: 0.02em;
 }
 .cs-card-desc {
   font-size: 0.8rem;
   color: var(--text-dim);
-  line-height: 1.45;
-  margin-top: 0.15rem;
+  line-height: 1.5;
+  margin-top: 0.2rem;
 }
