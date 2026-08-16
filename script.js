@@ -6,8 +6,7 @@
   
   let stars = [];
   let motes = [];
-  let viewW = 0, viewH = 0; // logical (CSS-pixel) canvas size, kept separate from the
-                             // dpr-scaled backing store so crispness doesn't break bounds math
+  let viewW = 0, viewH = 0;
   const hole = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
 
   const rmQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -15,16 +14,10 @@
   rmQuery.addEventListener("change", e => { reducedMotion = e.matches; });
 
   const ELEMENT_SYMBOLS = (typeof ELEMENTS !== "undefined") ? Object.keys(ELEMENTS) : ["H", "O", "Fe", "Na", "C", "Au", "Ag", "Ti"];
-  // fallback only for the rare case CATEGORY_META hasn't loaded yet
   const FALLBACK_COLOR = "#39ff14";
-
-  // single neon-green scan line sweeping across the search bar — reuses
-  // the same emerald as the search text itself, so it reads as one theme
   const SCAN_RGB = "16,255,120";
-  const SCAN_PERIOD = 2600; // ms per left-to-right sweep
+  const SCAN_PERIOD = 2600;
 
-  // Real periodic-table category color, not a random pick — ties the ambient
-  // background to actual chemistry instead of arbitrary neon shades.
   function moteColor(sym) {
     if (typeof ELEMENTS === "undefined" || !ELEMENTS[sym]) return FALLBACK_COLOR;
     const meta = (typeof CATEGORY_META !== "undefined") && CATEGORY_META[ELEMENTS[sym].category];
@@ -81,12 +74,6 @@
     return [r * 255, g * 255, b * 255];
   }
 
-  // A category's color is a single fixed swatch, so every mote of that
-  // category would otherwise be visually identical — this nudges hue,
-  // saturation, and lightness a bit differently each time, so the same
-  // category still reads as a clear family of shades rather than one flat
-  // repeated color, giving more overall variety on screen without losing
-  // the tie to real chemistry.
   function jitterColor(hex) {
     const [r, g, b] = hexToRgb(hex);
     const [h, s, l] = rgbToHsl(r, g, b);
@@ -99,7 +86,7 @@
 
   function spawnMote() {
     const sym = ELEMENT_SYMBOLS[Math.floor(Math.random() * ELEMENT_SYMBOLS.length)];
-    const size = 20 + Math.random() * 28; // 20-48px — clearly distinct sizes without tiny/huge extremes
+    const size = 20 + Math.random() * 28;
     const speed = 0.7;
     return {
       x: Math.random() * (window.innerWidth - 60) + 30,
@@ -117,11 +104,6 @@
   }
 
   function resize() {
-    // Draw at the screen's real pixel density, not just CSS pixels — on any
-    // Retina-class display, a 1x-resolution canvas gets stretched by the
-    // browser to fill the physical screen, which is what was reading as
-    // "fuzzy" (small text/symbols show it worst). Capped at 2x so very
-    // high-density phone screens don't push an oversized backing store.
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     viewW = window.innerWidth;
     viewH = window.innerHeight;
@@ -129,7 +111,7 @@
     canvas.height = Math.round(viewH * dpr);
     canvas.style.width = viewW + "px";
     canvas.style.height = viewH + "px";
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // all draw calls below stay in CSS-pixel coordinates
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const starCount = Math.floor((viewW * viewH) / 9000);
     stars = Array.from({ length: starCount }, () => ({
@@ -155,8 +137,6 @@
     }
   }
 
-  // layered-alpha glow stroke/dot — NOT shadowBlur, which rendered
-  // inconsistently across devices earlier in this project
   function glowStroke(drawPath, rgb, coreWidth, glowWidth, alpha) {
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
@@ -189,8 +169,6 @@
     const progress = reducedMotion ? 0.5 : ((t % SCAN_PERIOD) / SCAN_PERIOD);
     const x = x0 + span * progress;
 
-    // fade the line out/in right at the loop point, so the reset from
-    // right edge back to left edge never reads as a hard, visible cut
     const edge = 0.07;
     let fade = 1;
     if (!reducedMotion) {
@@ -202,7 +180,6 @@
     roundRectPath(left, top, width, height, Math.min(width, height) / 2);
     ctx.clip();
 
-    // very slight fading trail behind the line, in the direction it came from
     const trailLen = Math.min(70, span * 0.4);
     const trail = ctx.createLinearGradient(x - trailLen, 0, x, 0);
     trail.addColorStop(0, `rgba(${SCAN_RGB},0)`);
@@ -210,7 +187,6 @@
     ctx.fillStyle = trail;
     ctx.fillRect(x - trailLen, top, trailLen, height);
 
-    // thin glowing scan line itself
     glowStroke(() => {
       ctx.beginPath();
       ctx.moveTo(x, top + 2);
@@ -232,9 +208,6 @@
 
   function moveMotes() {
     for (const m of motes) {
-      // sample trail history every 3rd frame — a trail built from every
-      // single frame at this drift speed is too short to read; sampling
-      // less often lets it span real distance without a huge history array
       m.trailCounter = (m.trailCounter || 0) + 1;
       if (m.trailCounter % 3 === 0) {
         m.trail.push({ x: m.x + m.box / 2, y: m.y + m.box / 2 });
@@ -245,22 +218,17 @@
       let hit = false;
       if (m.x <= 0 || m.x + m.box >= viewW) { m.vx *= -1; hit = true; }
       if (m.y <= 0 || m.y + m.box >= viewH) { m.vy *= -1; hit = true; }
-      if (hit) { m.pulseStart = performance.now(); m.pulseDuration = 350; } // quick flash, not a full search-pulse
+      if (hit) { m.pulseStart = performance.now(); m.pulseDuration = 350; }
     }
   }
 
-  // same bounce-and-recolor treatment as hitting the screen edge, but
-  // triggered by two motes' tiles overlapping instead. Whichever axis has
-  // the shallower overlap is the one they just crossed, so that's the
-  // axis that gets reflected; both tiles are also nudged apart along it
-  // so they don't stay overlapped and keep re-triggering next frame.
   function resolveMoteCollisions() {
     for (let i = 0; i < motes.length; i++) {
       const a = motes[i];
       for (let j = i + 1; j < motes.length; j++) {
         const b = motes[j];
         if (a.x >= b.x + b.box || a.x + a.box <= b.x ||
-            a.y >= b.y + b.box || a.y + a.box <= b.y) continue; // no overlap
+            a.y >= b.y + b.box || a.y + a.box <= b.y) continue;
 
         const overlapX = Math.min(a.x + a.box, b.x + b.box) - Math.max(a.x, b.x);
         const overlapY = Math.min(a.y + a.box, b.y + b.box) - Math.max(a.y, b.y);
@@ -286,10 +254,6 @@
     }
   }
 
-  // Fading trail behind each tile as it drifts — same layered-alpha
-  // technique as the scanner line, just walked along the tile's recent path
-  // instead of a fixed line, so it reads as smooth drift rather than
-  // teleporting frame to frame.
   function drawTrails() {
     for (const m of motes) {
       if (m.trail.length < 2) continue;
@@ -297,7 +261,7 @@
       const cx = m.x + m.box / 2, cy = m.y + m.box / 2;
       const pts = [...m.trail, { x: cx, y: cy }];
       for (let i = 0; i < pts.length - 1; i++) {
-        const segAlpha = 0.22 * (i / (pts.length - 1)); // oldest end near-zero, fades in toward the tile
+        const segAlpha = 0.22 * (i / (pts.length - 1));
         glowStroke(() => {
           ctx.beginPath();
           ctx.moveTo(pts[i].x, pts[i].y);
@@ -307,10 +271,6 @@
     }
   }
 
-  // Connecting line between two tiles drifting close together, like a bond
-  // forming — brightens as they approach, and cuts off cleanly the moment
-  // their tiles are close enough to actually touch, rather than lingering
-  // as a fading line after they've already collided.
   const BOND_DIST = 140;
   function drawBonds() {
     for (let i = 0; i < motes.length; i++) {
@@ -322,13 +282,9 @@
         const dist = Math.hypot(ax - bx, ay - by);
         if (dist >= BOND_DIST) continue;
 
-        // once they're close enough to actually touch, the bond is gone —
-        // not just faint
         const touchDist = (a.box + b.box) / 2 + 4;
         if (dist <= touchDist) continue;
 
-        // eased rather than linear, so the bond reads as visible well
-        // before the last few pixels of approach, not just right at contact
         const strength = (BOND_DIST - dist) / (BOND_DIST - touchDist);
         const eased = Math.pow(strength, 0.6);
 
@@ -341,9 +297,6 @@
         ctx.strokeStyle = grad;
         ctx.lineCap = "round";
 
-        // soft outer glow, then a crisp inner line — same two-layer idea
-        // as the tiles' own glow, kept to just two passes so it stays
-        // readable rather than turning into a bright blown-out beam
         ctx.globalAlpha = 0.26 * eased;
         ctx.lineWidth = 4.5;
         ctx.beginPath();
@@ -365,25 +318,13 @@
 
   function drawMotes() {
     for (const m of motes) {
-      // draw at rounded coordinates, not the raw float position — the
-      // physics (m.x/m.y) stay smooth sub-pixel floats, but rendering
-      // text and thin strokes at a constantly-shifting fractional pixel
-      // offset is what was making the letters look like they were
-      // twinkling. Snapping just the drawing position fixes that while
-      // motion itself stays perfectly smooth.
       const dx = Math.round(m.x), dy = Math.round(m.y);
-
-      // 1 right when a pulse starts, decaying to 0 over its duration —
-      // drives both the bounce-flash and the search tie-in below
       let pulseBoost = 0;
       if (m.pulseDuration > 0) {
         const elapsed = performance.now() - m.pulseStart;
         pulseBoost = Math.max(0, 1 - elapsed / m.pulseDuration);
       }
 
-      // soft ambient glow behind the tile — a gentle "radioactive" bloom,
-      // scaled back so it reads as a background detail, not a spotlight.
-      // Pulses brighter and wider briefly on impact or when searched.
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
       const hx = dx + m.box / 2, hy = dy + m.box / 2;
@@ -399,7 +340,6 @@
       ctx.fill();
       ctx.restore();
 
-      // dark tile behind everything
       ctx.save();
       ctx.globalAlpha = 0.55;
       roundRectPath(dx, dy, m.box, m.box, 4);
@@ -407,8 +347,6 @@
       ctx.fill();
       ctx.restore();
 
-      // neon glow around the border — thinner, tighter layers than before,
-      // so the edge reads as a fine glowing line, not a thick colored band
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
       for (let i = 3; i >= 1; i--) {
@@ -420,9 +358,6 @@
       }
       ctx.restore();
 
-      // crisp border line + crisp glyph — thin stroke, alpha explicitly
-      // pinned to 1 (belt-and-suspenders against any future alpha leak),
-      // no shadow/blur on either
       ctx.save();
       ctx.globalAlpha = 1;
       ctx.strokeStyle = m.color; ctx.lineWidth = 1;
@@ -437,10 +372,6 @@
     }
   }
 
-  // Called from the site logic below whenever an element is searched — ties
-  // the ambient background to what's actually happening on the site. If no
-  // current tile already represents that element, one is repurposed so the
-  // effect is always visible rather than a rare coincidence.
   window.pulseElementMote = function (sym) {
     if (!sym || motes.length === 0) return;
     let target = motes.find(m => m.sym === sym);
@@ -465,7 +396,6 @@
   function tick(t) {
     updateHolePosition();
     ctx.clearRect(0, 0, viewW, viewH);
-    // Draw background stars
     ctx.save();
     ctx.fillStyle = "#e8e4f0";
     for (const s of stars) {
@@ -473,7 +403,7 @@
       ctx.globalAlpha = 0.2 + 0.4 * twinkle;
       ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
     }
-    ctx.restore(); // undo the per-star alpha so it can't leak into what's drawn next
+    ctx.restore();
     updateMotes();
     drawScanner(t);
     requestAnimationFrame(tick);
@@ -510,12 +440,9 @@ const els = {
 };
 
 /* ===================== Search logic with Reliable Autocomplete Dropdown ===================== */
-let searchDebounce = null;
-
 if (els.search) {
   els.search.style.color = "#10FF78"; // Emerald Text
 
-  // Create dropdown list container dynamically inside .horizon
   const horizonEl = els.search.closest(".horizon");
   const existingDropdown = horizonEl.querySelector(".search-dropdown");
   if (existingDropdown) existingDropdown.remove();
@@ -531,7 +458,6 @@ if (els.search) {
     const matches = [];
     const maxResults = 6;
 
-    // 1. Search Elements
     if (typeof ELEMENTS !== "undefined") {
       for (const [sym, el] of Object.entries(ELEMENTS)) {
         if (sym.toLowerCase().includes(q) || el.name.toLowerCase().includes(q)) {
@@ -540,7 +466,6 @@ if (els.search) {
       }
     }
 
-    // 2. Search Molecules
     if (typeof MOLECULES !== "undefined") {
       for (const [key, mol] of Object.entries(MOLECULES)) {
         if (key.toLowerCase().includes(q) || mol.name.toLowerCase().includes(q) || mol.formula.toLowerCase().includes(q)) {
@@ -549,7 +474,6 @@ if (els.search) {
       }
     }
 
-    // 3. Search Alloys
     if (typeof ALLOYS !== "undefined") {
       for (const [key, alloy] of Object.entries(ALLOYS)) {
         if (key.toLowerCase().includes(q) || alloy.name.toLowerCase().includes(q) || alloy.formula.toLowerCase().includes(q)) {
@@ -558,7 +482,6 @@ if (els.search) {
       }
     }
 
-    // Deduplicate
     const unique = [];
     const seenLabels = new Set();
     for (const m of matches) {
@@ -586,7 +509,6 @@ if (els.search) {
       div.className = "search-dropdown-item";
       div.innerHTML = `<span>${item.label}</span><span class="item-type">${item.type}</span>`;
       
-      // Use mousedown to prevent blur from hiding it before click registers
       div.addEventListener("mousedown", (e) => {
         e.preventDefault();
         els.search.value = item.queryKey;
@@ -607,8 +529,6 @@ if (els.search) {
 
   els.search.addEventListener("input", () => {
     const val = els.search.value;
-    clearTimeout(searchDebounce);
-    
     if (!val.trim()) {
       hideDropdown();
       els.suggestions.textContent = "";
@@ -620,12 +540,19 @@ if (els.search) {
 
     const hit = (typeof resolveQuery === "function") ? resolveQuery(val) : null;
     els.suggestions.textContent = hit ? `showing ${hit.data.name}…` : "scanning...";
-    
-    // Removed the automatic timer trigger so the dropdown stays open 
-    // until you explicitly click a suggestion or press Enter.
-      
-    
-                                                   
+  });
+
+  els.search.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      hideDropdown();
+      const hit = resolveQuery(els.search.value);
+      if (hit) {
+        els.suggestions.textContent = `showing ${hit.data.name}…`;
+        showSubject(hit);
+      }
+    }
+  });
 
   els.search.addEventListener("blur", (e) => {
     if (!dropdownEl.contains(e.relatedTarget)) {
@@ -942,10 +869,10 @@ MOLECULE_BLURBS.NABR = "Once prescribed as a sedative, much like potassium bromi
 MOLECULE_BLURBS.NAI = "Added to table salt in some countries to prevent iodine deficiency; also used in imaging-grade scintillation crystals.";
 MOLECULE_BLURBS.MGBR2 = "Used in some pharmaceutical synthesis and as a catalyst in certain organic reactions.";
 MOLECULE_BLURBS.ZNCL2 = "A key ingredient in soldering flux, helping molten solder wet and bond cleanly to metal surfaces.";
-MOLECULE_BLURBS.PBCL2 = "A dense white solid once used as a pigment before its toxicity led to it being phased out.";
-MOLECULE_BLURBS.CDO = "A semiconductor material used in some thin-film solar cells and specialized optical coatings.";
-MOLECULE_BLURBS.C3H7OH = "A common solvent and rubbing-alcohol alternative, also used as a chemical feedstock for other propanol-based products.";
-MOLECULE_BLURBS.C3H6 = "The building block of polypropylene, one of the most widely produced plastics in the world.";
+MOLECULES.PBCL2 = "A dense white solid once used as a pigment before its toxicity led to it being phased out.";
+MOLECULES.CDO = "A semiconductor material used in some thin-film solar cells and specialized optical coatings.";
+MOLECULES.C3H7OH = "A common solvent and rubbing-alcohol alternative, also used as a chemical feedstock for other propanol-based products.";
+MOLECULES.C3H6 = "The building block of polypropylene, one of the most widely produced plastics in the world.";
 
 MOLECULES.N2O4 = { name: "Dinitrogen tetroxide", formula: "N₂O₄", atoms: [{el:"N",pos:[0.875,0,0]},{el:"N",pos:[-0.875,0,0]},{el:"O",pos:[1.47,1.03,0]},{el:"O",pos:[1.47,-1.03,0]},{el:"O",pos:[-1.47,1.03,0]},{el:"O",pos:[-1.47,-1.03,0]}], bonds: [[0,1],[0,2],[0,3],[1,4],[1,5]] };
 MOLECULES.BCL3 = { name: "Boron trichloride", formula: "BCl₃", atoms: [{el:"B",pos:[0,0,0]},{el:"Cl",pos:[0,1.75,0]},{el:"Cl",pos:[-1.516,-0.875,0]},{el:"Cl",pos:[1.516,-0.875,0]}], bonds: [[0,1],[0,2],[0,3]] };
@@ -983,4 +910,4 @@ ALLOYS.TOMBAC = { name:"Tombac", formula:"Cu–Zn", blurb:"A high-copper brass w
 ALLOYS.ARGENTIUM_SILVER = { name:"Argentium silver", formula:"Ag–Cu–Ge", blurb:"A modern sterling-silver alternative with added germanium, formulated to resist the tarnishing that plagues ordinary sterling.", elements:{Ag:93.5,Cu:5.5,Ge:1}, properties:{density:"10.4 g/cm³", meltingPoint:"890–900 °C"} };
 ALLOYS.PALLADIUM_SILVER = { name:"Palladium-silver", formula:"Pd–Ag", blurb:"A biocompatible alloy used in dental crowns and bridges, chosen for its stability and resistance to tarnish in the mouth.", elements:{Ag:70,Pd:30}, properties:{density:"10.9–11.3 g/cm³", meltingPoint:"1150–1250 °C"} };
 ALLOYS.NIOBIUM_TITANIUM = { name:"Niobium-titanium", formula:"Nb–Ti", blurb:"The standard superconducting wire alloy, wound into the powerful magnet coils inside MRI machines and particle accelerators.", elements:{Nb:47,Ti:53}, properties:{density:"6.5–6.7 g/cm³", meltingPoint:"~1950–2130 °C"} };
-ALLOYS.BABBITT_LEAD = { name:"Lead-based babbitt", formula:"Pb–Sb–Sn", blurb:"A cheaper, softer bearing alloy than tin-based babbitt, historically common in heavy industrial and railway machinery.", elements:{Pb:80,Sb:15,Sn:5}, properties:{density:"9.7–10.1 g/cm³", meltingPoint:"240–260 °C"} };
+ALLOYS.BABBITT_LEAD = { name:// ... [continued from your file]
