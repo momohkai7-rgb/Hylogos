@@ -509,7 +509,7 @@ const els = {
   factsBlurb: document.getElementById("factsBlurb"),
 };
 
-/* ===================== Search logic with Autocomplete Dropdown ===================== */
+/* ===================== Search logic with Reliable Autocomplete Dropdown ===================== */
 let searchDebounce = null;
 
 if (els.search) {
@@ -517,11 +517,13 @@ if (els.search) {
 
   // Create dropdown list container dynamically inside .horizon
   const horizonEl = els.search.closest(".horizon");
+  const existingDropdown = horizonEl.querySelector(".search-dropdown");
+  if (existingDropdown) existingDropdown.remove();
+
   const dropdownEl = document.createElement("div");
   dropdownEl.className = "search-dropdown";
   horizonEl.appendChild(dropdownEl);
 
-  // Helper to compile a master list of searchable terms from elements, molecules, and alloys
   function getMatchingSuggestions(query) {
     const q = query.trim().toLowerCase();
     if (!q) return [];
@@ -533,8 +535,7 @@ if (els.search) {
     if (typeof ELEMENTS !== "undefined") {
       for (const [sym, el] of Object.entries(ELEMENTS)) {
         if (sym.toLowerCase().includes(q) || el.name.toLowerCase().includes(q)) {
-          matches.unshift({ label: `${el.name} (${sym})`, type: 'element', queryKey: sym }); // exact/start matches pushed up
-          if (matches.length >= 20) break;
+          matches.push({ label: `${el.name} (${sym})`, type: 'element', queryKey: sym });
         }
       }
     }
@@ -557,7 +558,7 @@ if (els.search) {
       }
     }
 
-    // Deduplicate and slice top results
+    // Deduplicate
     const unique = [];
     const seenLabels = new Set();
     for (const m of matches) {
@@ -571,7 +572,6 @@ if (els.search) {
 
   function hideDropdown() {
     dropdownEl.classList.remove("visible");
-    dropdownEl.innerHTML = "";
   }
 
   function renderDropdown(items) {
@@ -586,12 +586,17 @@ if (els.search) {
       div.className = "search-dropdown-item";
       div.innerHTML = `<span>${item.label}</span><span class="item-type">${item.type}</span>`;
       
+      // Use mousedown to prevent blur from hiding it before click registers
       div.addEventListener("mousedown", (e) => {
-        e.preventDefault(); // Prevent blur so click registers
+        e.preventDefault();
         els.search.value = item.queryKey;
         hideDropdown();
+        
         const hit = resolveQuery(item.queryKey);
-        if (hit) showSubject(hit);
+        if (hit) {
+          els.suggestions.textContent = `showing ${hit.data.name}…`;
+          showSubject(hit);
+        }
       });
 
       dropdownEl.appendChild(div);
@@ -610,11 +615,9 @@ if (els.search) {
       return;
     }
 
-    // Populate and show the autocomplete dropdown box
     const suggestions = getMatchingSuggestions(val);
     renderDropdown(suggestions);
 
-    // Existing single-hit resolution loop
     const hit = (typeof resolveQuery === "function") ? resolveQuery(val) : null;
     els.suggestions.textContent = hit ? `showing ${hit.data.name}…` : "scanning...";
     
@@ -626,19 +629,20 @@ if (els.search) {
     }
   });
 
-  // Hide dropdown when search bar loses focus
-  els.search.addEventListener("blur", () => {
-    setTimeout(hideDropdown, 200); // Small delay to allow click events to register first
+  els.search.addEventListener("blur", (e) => {
+    if (!dropdownEl.contains(e.relatedTarget)) {
+      hideDropdown();
+    }
   });
 
-  // Re-open dropdown if focused and has text
   els.search.addEventListener("focus", () => {
     if (els.search.value.trim()) {
       const suggestions = getMatchingSuggestions(els.search.value);
       renderDropdown(suggestions);
     }
   });
-  }
+}
+
 function showSubject(hit) {
   currentSubject = hit;
   els.empty.style.display = "none";
