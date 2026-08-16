@@ -923,3 +923,145 @@ footer {
 }
 .quiz-next.hidden { display: none; }
 .quiz-next:hover, .quiz-next:active { background: rgba(127, 217, 255, 0.18); }
+/* ===== Cheat Sheet Button (Neon Yellow Theme) ===== */
+.cheatsheet-toggle {
+  margin-top: 0.65rem;
+  background: rgba(255, 220, 66, 0.08);
+  border-color: rgba(255, 220, 66, 0.5);
+  color: #ffdc42;
+  box-shadow: 0 0 14px rgba(255, 220, 66, 0.22), inset 0 0 10px rgba(255, 220, 66, 0.06);
+}
+.cheatsheet-toggle:hover, .cheatsheet-toggle:active {
+  color: var(--text-main);
+  background: rgba(255, 220, 66, 0.14);
+  border-color: rgba(255, 220, 66, 0.85);
+  box-shadow: 0 0 22px rgba(255, 220, 66, 0.4), inset 0 0 14px rgba(255, 220, 66, 0.1);
+}
+
+/* ===== Cheat Sheet Panel Layout ===== */
+.cheatsheet-panel {
+  max-width: 840px;
+  max-height: 88vh;
+}
+.cs-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.cs-section-block {
+  background: rgba(232, 228, 240, 0.02);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1rem;
+}
+.cs-section-heading {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: #ffdc42;
+  margin: 0 0 0.75rem 0;
+}
+.cs-scroll-row {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.4rem;
+}
+.cs-mini-card {
+  flex: 0 0 auto;
+  background: var(--void-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  min-width: 130px;
+}
+.cs-mini-card .name {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-bottom: 0.2rem;
+}
+.cs-mini-card .mono {
+  font-size: 0.82rem;
+  color: #ffdc42;
+}
+
+.cs-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.05em;
+}
+.cs-select {
+  width: 100%;
+  background: var(--void-2);
+  border: 1px solid rgba(255, 220, 66, 0.3);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.cs-select:hover, .cs-select:focus {
+  border-color: #ffdc42;
+}
+
+.cs-content-host {
+  min-height: 180px;
+}
+.cs-empty {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 2rem 1rem;
+  margin: 0;
+}
+.cs-course-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--text-main);
+  margin: 0 0 0.85rem 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line);
+}
+.cs-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+.cs-card {
+  background: var(--void-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.cs-card-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--struct-green);
+}
+.cs-card-formula {
+  font-size: 0.9rem;
+  color: #ffdc42;
+  background: rgba(0,0,0,0.3);
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255,220,66,0.15);
+}
+.cs-card-desc {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+  margin-top: 0.2rem;
+}
