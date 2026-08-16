@@ -1,6 +1,6 @@
 /* =========================================================================
    HYLOGOS ULTIMATE MASTER MATERIALS SCIENCE & CHEMISTRY CHEAT SHEET
-   Exhaustive Academic Reference Architecture + Live Search
+   Exhaustive Academic Reference Architecture
    ========================================================================= */
 (function masterCheatSheetModule() {
   const els = {
@@ -16,33 +16,33 @@
     {
       category: "1. Mathematics, Physics & Units Foundations",
       items: [
-        { name: "Avogadro's Number", formula: "N_A = 6.02214076 × 10²³ mol⁻¹", desc: "Number of elementary entities in one mole of a substance." },
-        { name: "Ideal Gas Constant", formula: "R = 8.314462618 J/(mol·K)", desc: "Universal gas constant linking energy, temperature, and moles." },
-        { name: "Boltzmann Constant", formula: "k_B = 1.380649 × 10⁻²³ J/K", desc: "Relates thermodynamic temperature to microscopic kinetic energy." },
-        { name: "Planck's Constant", formula: "h = 6.62607015 × 10⁻³⁴ J·s", desc: "Quantizes energy packets (photons) in quantum mechanics." },
-        { name: "Speed of Light in Vacuum", formula: "c = 2.99792458 × 10⁸ m/s", desc: "Fundamental physical invariant constraint." },
-        { name: "Faraday Constant", formula: "F = 96,485.33212 C/mol", desc: "Total electric charge carried by one mole of electrons." },
-        { name: "Elementary Charge", formula: "e = 1.602176634 × 10⁻¹⁹ C", desc: "Charge of a single proton or negative charge of an electron." },
-        { name: "Electron Rest Mass", formula: "m_e = 9.1093837 × 10⁻³¹ kg", desc: "Mass invariant of an electron at rest." },
-        { name: "Proton Rest Mass", formula: "m_p = 1.6726219 × 10⁻²⁷ kg", desc: "Mass invariant of a proton at rest." },
-        { name: "Neutron Rest Mass", formula: "m_n = 1.6749275 × 10⁻²⁷ kg", desc: "Mass invariant of a neutron at rest." },
-        { name: "Permittivity of Free Space", formula: "ε₀ = 8.854187817 × 10⁻¹² F/m", desc: "Electric field constant in a classical vacuum." },
-        { name: "Permeability of Free Space", formula: "μ₀ = 4π × 10⁻⁷ H/m", desc: "Magnetic field constant in a classical vacuum." },
+        { name: "Avogadro's Number", formula: "N_A = 6.02214076 × 10²³ mol⁻¹ (exact, SI-defined)", desc: "Number of elementary entities in one mole of a substance." },
+        { name: "Ideal Gas Constant", formula: "R = N_A·k_B = 8.31446261815324 J/(mol·K) (exact)", desc: "Universal gas constant linking energy, temperature, and moles; exact since both N_A and k_B are SI-defined." },
+        { name: "Boltzmann Constant", formula: "k_B = 1.380649 × 10⁻²³ J/K (exact, SI-defined)", desc: "Relates thermodynamic temperature to microscopic kinetic energy." },
+        { name: "Planck's Constant", formula: "h = 6.62607015 × 10⁻³⁴ J·s (exact, SI-defined)", desc: "Quantizes energy packets (photons) in quantum mechanics." },
+        { name: "Speed of Light in Vacuum", formula: "c = 299 792 458 m/s (exact, SI-defined)", desc: "Fundamental physical invariant constraint." },
+        { name: "Faraday Constant", formula: "F = N_A·e = 96 485.33212 C/mol (exact)", desc: "Total electric charge carried by one mole of electrons." },
+        { name: "Elementary Charge", formula: "e = 1.602176634 × 10⁻¹⁹ C (exact, SI-defined)", desc: "Charge of a single proton or negative charge of an electron." },
+        { name: "Electron Rest Mass", formula: "m_e = 9.1093837139(28) × 10⁻³¹ kg", desc: "Mass invariant of an electron at rest. CODATA 2022 recommended value." },
+        { name: "Proton Rest Mass", formula: "m_p = 1.67262192595(52) × 10⁻²⁷ kg", desc: "Mass invariant of a proton at rest. CODATA 2022 recommended value." },
+        { name: "Neutron Rest Mass", formula: "m_n = 1.67492749804(95) × 10⁻²⁷ kg", desc: "Mass invariant of a neutron at rest. CODATA 2022 recommended value." },
+        { name: "Vacuum Electric Permittivity", formula: "ε₀ = 8.8541878188(14) × 10⁻¹² F/m", desc: "No longer an exact defining constant since the 2019 SI redefinition — now a measured quantity derived from α, h, e, c." },
+        { name: "Vacuum Magnetic Permeability", formula: "μ₀ = 1.25663706127(20) × 10⁻⁶ N/A²", desc: "Was exactly 4π×10⁻⁷ H/m before 2019; now measured, and differs from that value starting at the 10th significant figure." },
         { name: "Taylor Series Expansion (General)", formula: "f(x) = Σ [fⁿ(a)/n!] · (x - a)ⁿ", desc: "Approximating smooth functions as infinite polynomial sums." },
         { name: "Gaussian Integral Identity", formula: "∫ exp(-ax²) dx = √(π / a)", desc: "Fundamental integral solving distributions in statistical mechanics." },
         { name: "Stokes' Theorem (Vector Calculus)", formula: "∮_C F · dr = ∬_S (∇ × F) · dA", desc: "Relates surface curl flux to a closed line contour integral." },
         { name: "Divergence Theorem (Gauss's Law)", formula: "∭_V (∇ · F) dV = ∮_S F · n dA", desc: "Relates volume divergence to net outward flux through a boundary surface." },
-        { name: "Newtonian Gravitational Constant", formula: "G = 6.67430 × 10⁻¹¹ N·m²/kg²", desc: "Coupling constant in Newton's law of universal gravitation." },
-        { name: "Standard Gravity", formula: "g = 9.80665 m/s²", desc: "Defined standard acceleration due to gravity at Earth's surface." },
-        { name: "Atomic Mass Unit", formula: "1 u = 1.66053907 × 10⁻²⁷ kg", desc: "Reference mass unit, 1/12 the mass of a carbon-12 atom." },
-        { name: "Stefan-Boltzmann Constant", formula: "σ = 5.670374 × 10⁻⁸ W/(m²·K⁴)", desc: "Links total radiated power per area of a black body to T⁴." },
-        { name: "Wien's Displacement Law", formula: "λ_max · T = b = 2.897772 × 10⁻³ m·K", desc: "Peak black-body emission wavelength scales inversely with temperature." },
-        { name: "Rydberg Constant", formula: "R_∞ = 1.0973731568 × 10⁷ m⁻¹", desc: "Sets the scale of atomic transition energies and spectral line positions." },
-        { name: "Bohr Radius", formula: "a₀ = 5.29177211 × 10⁻¹¹ m", desc: "Most probable electron-nucleus distance in the ground-state hydrogen atom." },
-        { name: "Reduced Planck's Constant", formula: "ℏ = h / 2π = 1.054571817 × 10⁻³⁴ J·s", desc: "Angular-frequency form of Planck's constant, used throughout quantum mechanics." },
-        { name: "Coulomb's Constant", formula: "k_e = 1/(4πε₀) = 8.9875518 × 10⁹ N·m²/C²", desc: "Proportionality constant in Coulomb's law of electrostatic force." },
-        { name: "Fine-Structure Constant", formula: "α ≈ 7.2973525693 × 10⁻³ ≈ 1/137.036", desc: "Dimensionless constant characterizing the strength of electromagnetic interaction." },
-        { name: "Molar Volume of Ideal Gas (STP)", formula: "V_m = 22.414 L/mol (0 °C, 1 atm)", desc: "Volume occupied by one mole of ideal gas at standard temperature and pressure." },
+        { name: "Newtonian Gravitational Constant", formula: "G = 6.67430(15) × 10⁻¹¹ m³ kg⁻¹ s⁻²", desc: "Coupling constant in Newton's law of universal gravitation; the least precisely known fundamental constant (~2×10⁻⁵ relative uncertainty)." },
+        { name: "Standard Gravity", formula: "g = 9.80665 m/s² (exact, conventional value)", desc: "Internationally defined standard acceleration due to gravity, not a measured physical constant." },
+        { name: "Atomic Mass Unit", formula: "1 u = 1.66053906892(52) × 10⁻²⁷ kg", desc: "Reference mass unit, 1/12 the mass of a carbon-12 atom. CODATA 2022 recommended value." },
+        { name: "Stefan-Boltzmann Constant", formula: "σ = π²k_B⁴/(60ℏ³c²) = 5.670374419... × 10⁻⁸ W/(m²·K⁴) (exact)", desc: "Links total radiated power per area of a black body to T⁴; exact since derived entirely from exact constants." },
+        { name: "Wien's Displacement Law", formula: "λ_max · T = b = 2.897771955... × 10⁻³ m·K (exact)", desc: "Peak black-body emission wavelength scales inversely with temperature." },
+        { name: "Rydberg Constant", formula: "R_∞ = 10 973 731.568157(12) m⁻¹", desc: "Sets the scale of atomic transition energies and spectral line positions. CODATA 2022 recommended value." },
+        { name: "Bohr Radius", formula: "a₀ = 5.29177210544(82) × 10⁻¹¹ m", desc: "Most probable electron-nucleus distance in the ground-state hydrogen atom. CODATA 2022 recommended value." },
+        { name: "Reduced Planck's Constant", formula: "ℏ = h / 2π = 1.054571817... × 10⁻³⁴ J·s (exact)", desc: "Angular-frequency form of Planck's constant, used throughout quantum mechanics." },
+        { name: "Coulomb's Constant", formula: "k_e = 1/(4πε₀) ≈ 8.9875517862 × 10⁹ N·m²/C²", desc: "Proportionality constant in Coulomb's law; now technically a measured (not exact) quantity since ε₀ is measured." },
+        { name: "Fine-Structure Constant", formula: "α = 7.2973525643(11) × 10⁻³; α⁻¹ = 137.035999177(21)", desc: "Dimensionless electromagnetic coupling strength. CODATA 2022 value — shifted from the 2018 value (α⁻¹ = 137.035999084) after new atom-interferometry measurements." },
+        { name: "Molar Volume of Ideal Gas (STP)", formula: "V_m = 22.413969... L/mol (T = 273.15 K, p = 101.325 kPa)", desc: "Volume occupied by one mole of ideal gas at standard temperature and pressure; exact since derived from R." },
       ]
     },
     {
@@ -294,33 +294,54 @@
         { name: "Critical Magnetic Field (Type I)", formula: "H_c(T) = H_c(0) · [1 - (T/T_c)²]", desc: "Empirical parabolic law for the field above which superconductivity is destroyed at a given temperature." },
         { name: "Upper Critical Field (Type II)", formula: "H_c2 = Φ₀ / (2π · ξ²)", desc: "Field at which a type-II superconductor fully transitions to the normal state; ξ = coherence length, Φ₀ = flux quantum." },
       ]
+    },
+    {
+      category: "18. General & Physical Chemistry",
+      items: [
+        { name: "Molarity", formula: "M = mol solute / L solution", desc: "Most common concentration unit, defined as moles of solute per liter of total solution." },
+        { name: "Molality", formula: "m = mol solute / kg solvent", desc: "Temperature-independent concentration unit based on solvent mass rather than solution volume." },
+        { name: "Dilution Equation", formula: "M₁V₁ = M₂V₂", desc: "Conserves moles of solute when a solution is diluted from concentration/volume 1 to 2." },
+        { name: "Ideal Gas Law", formula: "PV = nRT", desc: "Relates pressure, volume, moles, and temperature for an ideal gas." },
+        { name: "Combined Gas Law", formula: "P₁V₁/T₁ = P₂V₂/T₂", desc: "Tracks a fixed amount of gas through simultaneous changes in pressure, volume, and temperature." },
+        { name: "Dalton's Law of Partial Pressures", formula: "P_total = ΣPᵢ", desc: "Total pressure of a gas mixture equals the sum of each component's partial pressure." },
+        { name: "Graham's Law of Effusion", formula: "rate₁/rate₂ = √(M₂/M₁)", desc: "Lighter gas molecules effuse through a small opening faster than heavier ones." },
+        { name: "Percent Yield", formula: "%Yield = (actual / theoretical) × 100", desc: "Compares the experimentally obtained product amount to the maximum stoichiometrically possible." },
+        { name: "Empirical-to-Molecular Formula Relation", formula: "Molecular formula = (empirical formula)ₙ, n = M_molecular / M_empirical", desc: "Scales up a compound's simplest whole-number ratio formula to its true molecular formula." },
+      ]
+    },
+    {
+      category: "19. Acid-Base & Aqueous Equilibrium",
+      items: [
+        { name: "pH Definition", formula: "pH = -log[H⁺]", desc: "Logarithmic measure of hydrogen ion concentration; lower pH means more acidic." },
+        { name: "pOH Definition", formula: "pOH = -log[OH⁻]", desc: "Logarithmic measure of hydroxide ion concentration, complementary to pH." },
+        { name: "Water Autoionization Constant", formula: "K_w = [H⁺][OH⁻] = 1.0 × 10⁻¹⁴ (25 °C); pH + pOH = 14", desc: "Fixed product of hydrogen and hydroxide ion concentrations in pure water at room temperature." },
+        { name: "Henderson-Hasselbalch Equation", formula: "pH = pKₐ + log([A⁻]/[HA])", desc: "Calculates buffer solution pH from the ratio of conjugate base to weak acid concentrations." },
+        { name: "Acid Dissociation Constant", formula: "Kₐ = [H⁺][A⁻] / [HA]", desc: "Equilibrium constant quantifying how completely a weak acid ionizes in water." },
+        { name: "Solubility Product Constant", formula: "K_sp = [Aⁿ⁺]ᵃ[Bᵐ⁻]ᵇ", desc: "Equilibrium constant governing the maximum ion concentrations in a saturated sparingly-soluble salt solution." },
+        { name: "General Equilibrium Constant", formula: "K = [C]ᶜ[D]ᵈ / ([A]ᵃ[B]ᵇ)  for aA + bB ⇌ cC + dD", desc: "Ratio of product to reactant concentrations (raised to stoichiometric coefficients) at equilibrium." },
+      ]
+    },
+    {
+      category: "20. Colligative Properties & Coordination Chemistry",
+      items: [
+        { name: "Freezing Point Depression", formula: "ΔT_f = i · K_f · m", desc: "Solute particles lower a solvent's freezing point proportionally to molality and van 't Hoff factor i." },
+        { name: "Boiling Point Elevation", formula: "ΔT_b = i · K_b · m", desc: "Solute particles raise a solvent's boiling point proportionally to molality and van 't Hoff factor i." },
+        { name: "Osmotic Pressure", formula: "Π = i · M · R · T", desc: "Pressure required to stop osmotic solvent flow across a semipermeable membrane." },
+        { name: "Crystal Field Splitting Energy", formula: "Δ_o = E(eg) - E(t2g)", desc: "Energy gap between d-orbital sets in an octahedral transition-metal complex, set by ligand field strength." },
+        { name: "Spin-Only Magnetic Moment", formula: "μ_S = √[n(n + 2)] μ_B", desc: "Predicts a transition-metal complex's magnetic moment from its number of unpaired d-electrons n." },
+      ]
     }
   ];
 
-  function renderCheatSheet(filterText = "") {
+  function renderCheatSheet() {
     let html = "";
-    const query = filterText.toLowerCase().trim();
-    let totalMatches = 0;
-
     EXHAUSTIVE_CHEAT_SHEET.forEach(section => {
-      const filteredItems = section.items.filter(item => {
-        if (!query) return true;
-        return (
-          item.name.toLowerCase().includes(query) ||
-          item.formula.toLowerCase().includes(query) ||
-          item.desc.toLowerCase().includes(query)
-        );
-      });
-
-      if (filteredItems.length === 0) return;
-      totalMatches += filteredItems.length;
-
       html += `
         <div class="cs-category-block">
           <h3 class="cs-category-title">${escapeHtml(section.category)}</h3>
           <div class="cs-cards-grid">
       `;
-      filteredItems.forEach(item => {
+      section.items.forEach(item => {
         html += `
           <div class="cs-card">
             <div class="cs-card-name">${escapeHtml(item.name)}</div>
@@ -331,12 +352,7 @@
       });
       html += `</div></div>`;
     });
-
-    if (totalMatches === 0) {
-      els.contentHost.innerHTML = `<p class="cs-empty">No formulas or constants found matching "${escapeHtml(filterText)}".</p>`;
-    } else {
-      els.contentHost.innerHTML = html;
-    }
+    els.contentHost.innerHTML = html;
   }
 
   function escapeHtml(str) {
@@ -348,11 +364,7 @@
   function openCheatSheet() {
     els.overlay.classList.remove("hidden");
     els.overlay.setAttribute("aria-hidden", "false");
-    const searchInput = document.getElementById("csSearchInput");
-    if (searchInput) {
-      searchInput.value = "";
-    }
-    renderCheatSheet("");
+    renderCheatSheet();
   }
 
   function closeCheatSheet() {
@@ -360,29 +372,7 @@
     els.overlay.setAttribute("aria-hidden", "true");
   }
 
-  // Build the search bar dynamically into the modal header area upon load
-  function injectSearchBar() {
-    const headEl = els.overlay.querySelector(".ptable-head");
-    if (!headEl || document.getElementById("csSearchInput")) return;
-
-    const searchWrap = document.createElement("div");
-    searchWrap.className = "cs-search-wrap";
-    searchWrap.innerHTML = `
-      <input id="csSearchInput" type="search" placeholder="Search laws, constants, formulas..." autocomplete="off" spellcheck="false" />
-    `;
-    // Insert search bar right below the modal header row
-    els.overlay.querySelector(".ptable-panel").insertBefore(searchWrap, els.overlay.querySelector(".cs-body"));
-
-    const input = document.getElementById("csSearchInput");
-    input.addEventListener("input", (e) => {
-      renderCheatSheet(e.target.value);
-    });
-  }
-
-  els.toggle.addEventListener("click", () => {
-    openCheatSheet();
-    injectSearchBar();
-  });
+  els.toggle.addEventListener("click", openCheatSheet);
   els.close.addEventListener("click", closeCheatSheet);
   els.overlay.addEventListener("click", e => { if (e.target === els.overlay) closeCheatSheet(); });
 })();
