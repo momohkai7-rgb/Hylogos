@@ -509,21 +509,136 @@ const els = {
   factsBlurb: document.getElementById("factsBlurb"),
 };
 
-/* ===================== Search logic ===================== */
+/* ===================== Search logic with Autocomplete Dropdown ===================== */
 let searchDebounce = null;
+
 if (els.search) {
   els.search.style.color = "#10FF78"; // Emerald Text
+
+  // Create dropdown list container dynamically inside .horizon
+  const horizonEl = els.search.closest(".horizon");
+  const dropdownEl = document.createElement("div");
+  dropdownEl.className = "search-dropdown";
+  horizonEl.appendChild(dropdownEl);
+
+  // Helper to compile a master list of searchable terms from elements, molecules, and alloys
+  function getMatchingSuggestions(query) {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    
+    const matches = [];
+    const maxResults = 6;
+
+    // 1. Search Elements
+    if (typeof ELEMENTS !== "undefined") {
+      for (const [sym, el] of Object.entries(ELEMENTS)) {
+        if (sym.toLowerCase().includes(q) || el.name.toLowerCase().includes(q)) {
+          matches.unshift({ label: `${el.name} (${sym})`, type: 'element', queryKey: sym }); // exact/start matches pushed up
+          if (matches.length >= 20) break;
+        }
+      }
+    }
+
+    // 2. Search Molecules
+    if (typeof MOLECULES !== "undefined") {
+      for (const [key, mol] of Object.entries(MOLECULES)) {
+        if (key.toLowerCase().includes(q) || mol.name.toLowerCase().includes(q) || mol.formula.toLowerCase().includes(q)) {
+          matches.push({ label: `${mol.name} (${mol.formula})`, type: 'molecule', queryKey: key });
+        }
+      }
+    }
+
+    // 3. Search Alloys
+    if (typeof ALLOYS !== "undefined") {
+      for (const [key, alloy] of Object.entries(ALLOYS)) {
+        if (key.toLowerCase().includes(q) || alloy.name.toLowerCase().includes(q) || alloy.formula.toLowerCase().includes(q)) {
+          matches.push({ label: `${alloy.name} (${alloy.formula})`, type: 'alloy', queryKey: key });
+        }
+      }
+    }
+
+    // Deduplicate and slice top results
+    const unique = [];
+    const seenLabels = new Set();
+    for (const m of matches) {
+      if (!seenLabels.has(m.label)) {
+        seenLabels.add(m.label);
+        unique.push(m);
+      }
+    }
+    return unique.slice(0, maxResults);
+  }
+
+  function hideDropdown() {
+    dropdownEl.classList.remove("visible");
+    dropdownEl.innerHTML = "";
+  }
+
+  function renderDropdown(items) {
+    if (!items.length) {
+      hideDropdown();
+      return;
+    }
+
+    dropdownEl.innerHTML = "";
+    items.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "search-dropdown-item";
+      div.innerHTML = `<span>${item.label}</span><span class="item-type">${item.type}</span>`;
+      
+      div.addEventListener("mousedown", (e) => {
+        e.preventDefault(); // Prevent blur so click registers
+        els.search.value = item.queryKey;
+        hideDropdown();
+        const hit = resolveQuery(item.queryKey);
+        if (hit) showSubject(hit);
+      });
+
+      dropdownEl.appendChild(div);
+    });
+
+    dropdownEl.classList.add("visible");
+  }
 
   els.search.addEventListener("input", () => {
     const val = els.search.value;
     clearTimeout(searchDebounce);
-    if (!val.trim()) { els.suggestions.textContent = ""; return; }
+    
+    if (!val.trim()) {
+      hideDropdown();
+      els.suggestions.textContent = "";
+      return;
+    }
+
+    // Populate and show the autocomplete dropdown box
+    const suggestions = getMatchingSuggestions(val);
+    renderDropdown(suggestions);
+
+    // Existing single-hit resolution loop
     const hit = (typeof resolveQuery === "function") ? resolveQuery(val) : null;
     els.suggestions.textContent = hit ? `showing ${hit.data.name}…` : "scanning...";
-    if (hit) searchDebounce = setTimeout(() => showSubject(hit), 300);
+    
+    if (hit) {
+      searchDebounce = setTimeout(() => {
+        showSubject(hit);
+        hideDropdown();
+      }, 300);
+    }
   });
-}
 
+  // Hide dropdown when search bar loses focus
+  els.search.addEventListener("blur", () => {
+    setTimeout(hideDropdown, 200); // Small delay to allow click events to register first
+  });
+
+  // Re-open dropdown if focused and has text
+  els.search.addEventListener("focus", () => {
+    if (els.search.value.trim()) {
+      const suggestions = getMatchingSuggestions(els.search.value);
+      renderDropdown(suggestions);
+    }
+  });
+  }
 function showSubject(hit) {
   currentSubject = hit;
   els.empty.style.display = "none";
