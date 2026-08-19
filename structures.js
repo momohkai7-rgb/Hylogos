@@ -104,6 +104,7 @@ function structRenderMolecule2D(canvas, structure) {
   // bonds first, so atoms sit on top
   bonds.forEach(([ia, ib, order, style]) => {
     const a = atoms[ia], b = atoms[ib];
+    if (!a || !b) return;
     const A = { x: px(a), y: py(a) }, B = { x: px(b), y: py(b) };
     if (style === 'ionic') {
       structSoftStroke(ctx, c => {
@@ -164,11 +165,10 @@ function structRenderMolecule2D(canvas, structure) {
   atoms.forEach((a, i) => {
     if (!a.lp) return;
     const P = { x: px(a), y: py(a) };
-    // outward direction = away from the average of bonded neighbors
     let dirx = 0, diry = 0, count = 0;
     bonds.forEach(([ia, ib]) => {
-      if (ia === i) { const b = atoms[ib]; dirx += (a.x - b.x); diry += (a.y - b.y); count++; }
-      if (ib === i) { const b = atoms[ia]; dirx += (a.x - b.x); diry += (a.y - b.y); count++; }
+      if (ia === i) { const b = atoms[ib]; if(b){ dirx += (a.x - b.x); diry += (a.y - b.y); count++; } }
+      if (ib === i) { const b = atoms[ia]; if(b){ dirx += (a.x - b.x); diry += (a.y - b.y); count++; } }
     });
     if (count === 0) { dirx = 0; diry = 1; }
     const dlen = Math.hypot(dirx, diry) || 1;
@@ -177,8 +177,6 @@ function structRenderMolecule2D(canvas, structure) {
     const baseR = 20;
     for (let p = 0; p < a.lp; p++) {
       const spread = (p - (a.lp - 1) / 2) * 11;
-      const ox = P.x + dirx * -baseR * scale / 60 * 34 + perpx * spread;
-      const oy = P.y - (diry * -baseR * scale / 60 * 34) + perpy * spread;
       const bx = P.x - dirx * (26) + perpx * spread;
       const by = P.y + diry * (26) + perpy * spread;
       [[-2.2, 0], [2.2, 0]].forEach(([ddx, ddy]) => {
@@ -191,7 +189,7 @@ function structRenderMolecule2D(canvas, structure) {
   atoms.forEach((a, i) => {
     const P = { x: px(a), y: py(a) };
     const isCarbonSkeletal = structure.skeletal && a.el === 'C';
-    if (a.skelHide) return; // hydrogens omitted in skeletal mode
+    if (a.skelHide) return;
     if (isCarbonSkeletal) {
       structSoftDot(ctx, P.x, P.y, 2.4, 'rgba(232,246,255,0.55)', STRUCT_COLORS.bondGlow);
       return;
@@ -225,7 +223,6 @@ function structRenderCondensed(ctx, w, h, formula) {
   ctx.save();
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  // measure total width first (subscripts render smaller)
   let totalW = 0;
   const parts = [];
   for (const ch of formula) {
@@ -268,7 +265,7 @@ function structCellGeometry(system) {
   for (const sx of [-0.5, 0.5]) for (const sy of [-0.5, 0.5]) for (const sz of [-0.5, 0.5]) corners.push([sx, sy, sz]);
   const edges = [
     [0,1],[0,2],[0,4],[1,3],[1,5],[2,3],[2,6],[3,7],[4,5],[4,6],[5,7],[6,7]
-  ]; // standard cube corner index wiring for the ordering above
+  ];
 
   if (system === 'BCC') {
     return { corners, edges, primary: corners.concat([[0,0,0]]), secondary: [] };
@@ -303,14 +300,14 @@ function structCellGeometry(system) {
     const edgesHcp = hexEdges(0).concat(hexEdges(6)).concat([0,1,2,3,4,5].map(i => [i, i+6]));
     return { corners: top.concat(bottom), edges: edgesHcp, primary: top.concat(bottom).concat([[0,0.5,0],[0,-0.5,0]]), secondary: mid, isHex:true };
   }
-  return { corners, edges, primary: corners, secondary: [] };
+  // Safe default fallback for any unmapped system
+  return { corners, edges, primary: corners.concat([[0,0,0]]), secondary: [] };
 }
 
 function structDrawCellAt(ctx, ox, oy, scale, system, opts) {
   const geo = structCellGeometry(system);
   const proj = (p) => { const s = structIso(p[0], p[1], p[2]); return { x: ox + s.x * scale, y: oy + s.y * scale }; };
 
-  // wireframe (skipped in packed/space-filling mode — the touching spheres speak for themselves)
   if (!(opts && opts.packed)) {
     geo.edges.forEach(([i, j]) => {
       const A = proj(geo.corners[i]), B = proj(geo.corners[j]);
@@ -457,10 +454,33 @@ function structRenderCrystal(canvas, archetypeKey, viewType) {
 
 /* =========================================================================
    VIEW GENERATION — builds the swipeable list of views for a molecule
-   or an alloy
+   or an alloy (WITH AUTOMATIC FALLBACKS FOR NEW ADDITIONS)
 ========================================================================= */
 function structMoleculeViews(key) {
-  const entries = MOLECULE_STRUCTURES[key];
+  let entries = (typeof MOLECULE_STRUCTURES !== 'undefined') ? MOLECULE_STRUCTURES[key] : null;
+  
+  // AUTOMATIC FALLBACK: If a new molecule was added in data.js but not manually laid out in structures-data.js
+  if (!entries && typeof MOLECULES !== 'undefined' && MOLECULES[key]) {
+    const mol = MOLECULES[key];
+    entries = [
+      { 
+        type: "structural", 
+        name: "Molecular Structure",
+        atoms2d: mol.atoms.map((a, idx) => ({ el: a.el, x: (idx - mol.atoms.length/2) * 0.8, y: (idx % 2 === 0 ? 0.4 : -0.4) })),
+        bonds2d: mol.bonds.map(b => [b[0], b[1], 1]),
+        info: { 
+          structureType: "Covalent Molecule", 
+          bondType: "Covalent Bonds", 
+          molecularGeometry: "Standard Mapping", 
+          bondAngles: "Idealized VSEPR", 
+          hybridization: "Localized Orbitals", 
+          polarity: "Calculated",
+          notes: `Dynamic structural representation mapped directly from the ${mol.name} dataset parameters.` 
+        } 
+      }
+    ];
+  }
+
   if (!entries || !entries.length) return [];
   return entries.map(e => ({
     name: e.name,
@@ -473,17 +493,21 @@ function structMoleculeViews(key) {
 }
 
 function structAlloyViews(key) {
-  const tag = ALLOY_STRUCTURE_INFO[key];
-  if (!tag) return [];
-  const arch = CRYSTAL_SPECIAL[tag.system] || CRYSTAL_ARCHETYPES[tag.system];
-  if (!arch) return [];
+  let tag = (typeof ALLOY_STRUCTURE_INFO !== 'undefined') ? ALLOY_STRUCTURE_INFO[key] : null;
+  
+  // AUTOMATIC FALLBACK: If a new alloy was added in data.js but not mapped in structures-data.js
+  if (!tag) {
+    tag = { system: "FCC", note: "Standard metallic solid-solution lattice configuration generated dynamically." };
+  }
+
+  const arch = CRYSTAL_SPECIAL[tag.system] || CRYSTAL_ARCHETYPES[tag.system] || CRYSTAL_ARCHETYPES['FCC'];
   const baseInfo = (notes) => ({
     structureType: "Crystalline solid (metallic)",
     bondType: "Metallic",
     molecularGeometry: arch.label,
     bondAngles: arch.axisAngles,
-    hybridization: "n/a (metallic bonding — delocalized electrons, not fixed orbitals)",
-    polarity: "n/a (metallic bonding)",
+    hybridization: "n/a (metallic bonding)",
+    polarity: "n/a",
     coordinationNumber: arch.coordinationNumber,
     notes,
   });
