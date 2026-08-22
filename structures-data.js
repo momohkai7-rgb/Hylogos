@@ -1051,3 +1051,518 @@ const MOLECULE_STRUCTURES = {
         notes:"Four implicit carbon vertices in a zigzag — the standard shorthand for any straight-chain alkane." } },
     { type: "condensed", name: "Condensed Formula", formula:"CH₃CH₂CH₂CH₃",
       info: { structureType:"Condensed formula", bondType:"Nonpolar covalent", molecularGeometry:"Tetrahedral", bondAngles:"109.5°", hybridization:"sp³", p
+ALLOY_STRUCTURE_INFO.YELLOW_GOLD = { system: "FCC", note: "Gold's face-centered cubic lattice readily dissolves silver and copper atoms in solid solution, keeping the alloy soft and workable." };
+ALLOY_STRUCTURE_INFO.ELECTRUM = { system: "FCC", note: "Gold and silver share the same FCC structure and atomic size, so they mix seamlessly across almost any ratio." };
+ALLOY_STRUCTURE_INFO.NICHROME = { system: "FCC", note: "Chromium dissolves into nickel's FCC lattice; a thin, tightly-adherent chromium oxide layer forms at the surface and protects it from further oxidation, even white-hot." };
+ALLOY_STRUCTURE_INFO.CHROMEL = { system: "FCC", note: "A nickel-chromium solid solution tuned for a stable, predictable thermoelectric voltage rather than for strength." };
+ALLOY_STRUCTURE_INFO.ALUMEL = { system: "FCC", note: "Small amounts of aluminium, manganese, and silicon dissolve into nickel's FCC lattice without disrupting its predictable electrical behavior." };
+ALLOY_STRUCTURE_INFO.MUMETAL = { system: "FCC", note: "A nickel-iron-based FCC solid solution whose crystal structure gives it an unusually easy path for magnetic domains to align and redirect fields." };
+ALLOY_STRUCTURE_INFO.FERROCHROME = { system: "BCC", note: "Iron and chromium are both body-centered cubic, so they form a continuous BCC solid solution across a wide composition range." };
+ALLOY_STRUCTURE_INFO.SILICON_BRONZE = { system: "FCC", note: "Silicon dissolves into copper's FCC lattice, strengthening it while keeping the alloy highly weldable." };
+ALLOY_STRUCTURE_INFO.BELL_METAL = { system: "FCC", note: "A tin-rich bronze; the higher tin content stiffens copper's FCC lattice enough to ring with a clear, sustained tone." };
+ALLOY_STRUCTURE_INFO.SPECULUM_METAL = { system: "FCC", note: "A very tin-rich, brittle bronze — the high tin content that gives it a bright, polishable surface also makes it prone to cracking." };
+ALLOY_STRUCTURE_INFO.NICKEL_SILVER = { system: "FCC", note: "Nickel and zinc both dissolve into copper's FCC lattice; the nickel is what shifts the color from coppery to silvery-white." };
+ALLOY_STRUCTURE_INFO.TYPE_METAL = { system: "MULTIPHASE", note: "Lead, antimony, and tin form several distinct intermetallic phases; the antimony-rich phase is what makes the alloy expand slightly as it solidifies, sharpening cast letterforms." };
+ALLOY_STRUCTURE_INFO.ZAMAK = { system: "HCP", note: "Zinc's hexagonal lattice hosts a small amount of dissolved aluminium and copper, which raise its strength for die-casting." };
+ALLOY_STRUCTURE_INFO.AZ31_MAGNESIUM = { system: "HCP", note: "Magnesium's hexagonal structure has few easy slip directions, which is why this alloy is strong for its weight but must be worked carefully to avoid cracking." };
+ALLOY_STRUCTURE_INFO.BERYLLIUM_COPPER = { system: "FCC", note: "A small amount of beryllium dissolved in copper's FCC lattice can be aged to precipitate fine particles that dramatically boost strength." };
+ALLOY_STRUCTURE_INFO.TUNGSTEN_HEAVY_ALLOY = { system: "BCC", note: "Tungsten's dense body-centered cubic lattice makes up the bulk of the alloy, with nickel and iron acting as a binder holding the tungsten grains together." };
+ALLOY_STRUCTURE_INFO.PLATINUM_IRIDIUM = { system: "FCC", note: "Iridium dissolves into platinum's FCC lattice, and the resulting alloy resists the slow creep and wear that pure platinum alone would suffer over time." };
+ALLOY_STRUCTURE_INFO.FIELDS_METAL = { system: "MULTIPHASE", note: "A bismuth-indium-tin eutectic — the three elements form a fine mixture of phases that melts at an unusually sharp, low temperature." };
+ALLOY_STRUCTURE_INFO.ROSES_METAL = { system: "MULTIPHASE", note: "A bismuth-lead-tin eutectic whose multiple intermetallic phases give it a sharp, low melting point rather than a wide mushy range." };
+ALLOY_STRUCTURE_INFO.GALVALUME = { system: "MULTIPHASE", note: "A zinc-aluminium-silicon coating that solidifies into interlocking aluminium-rich and zinc-rich regions, combining both metals' protective strengths." };
+ALLOY_STRUCTURE_INFO.HADFIELD_STEEL = { system: "FCC", note: "Manganese stabilizes iron's face-centered cubic austenite phase down to room temperature — the same phase that lets the surface work-harden dramatically on impact." };
+ALLOY_STRUCTURE_INFO.MARAGING_STEEL = { system: "BCC", note: "Forms a carbon-free, body-centered martensite on cooling, which is then aged to precipitate strengthening particles without the brittleness of ordinary hardened steel." };
+ALLOY_STRUCTURE_INFO.WEATHERING_STEEL = { system: "BCC", note: "An ordinary body-centered cubic ferritic steel; its small copper, chromium, and nickel additions shape the rust layer into a dense, protective patina instead of flaking away." };
+ALLOY_STRUCTURE_INFO.DAMASCUS_STEEL = { system: "BCC", note: "Alternating bands of body-centered ferrite and hard iron carbide, folded and forge-welded together, are what produce its famous surface pattern." };
+ALLOY_STRUCTURE_INFO.BILLON = { system: "FCC", note: "Silver and copper share the same FCC structure but don't mix at all ratios; billon sits on the copper-rich end of that solid-solution range." };
+ALLOY_STRUCTURE_INFO.SHAKUDO = { system: "FCC", note: "A small amount of gold dissolved in copper's FCC lattice; a chemical patina treatment then colors the surface a deep blue-black." };
+ALLOY_STRUCTURE_INFO.COBALT_CHROME = { system: "MULTIPHASE", note: "Typically solidifies as a mixture of cobalt's usual hexagonal phase and a face-centered cubic phase, which together give it both hardness and toughness." };
+ALLOY_STRUCTURE_INFO.SOLDER_INDIUM = { system: "TETRAGONAL", note: "Indium's own body-centered tetragonal structure carries through into this soft, very low-melting solder alloy." };
+ALLOY_STRUCTURE_INFO.OSMIRIDIUM = { system: "HCP", note: "Dominated by osmium's dense hexagonal lattice — one of the reasons this alloy is so hard and wear-resistant despite being a simple two-metal mix." };
+
+ALLOY_STRUCTURE_INFO.PERMALLOY = { system: "FCC", note: "Nickel and iron form a continuous FCC solid solution at this composition, which is what gives it such an easy path for magnetic domains to realign." };
+ALLOY_STRUCTURE_INFO.SUPERMALLOY = { system: "FCC", note: "Adding molybdenum to permalloy's FCC nickel-iron lattice further smooths the way magnetic domains move through it." };
+ALLOY_STRUCTURE_INFO.SAMARIUM_COBALT = { system: "HCP", note: "The Sm-Co intermetallic compound has a hexagonal crystal structure whose strong internal magnetic anisotropy is what makes it such a powerful, heat-resistant magnet." };
+ALLOY_STRUCTURE_INFO.FERRONICKEL = { system: "BCC", note: "At this nickel content the alloy stays in iron's body-centered cubic ferrite phase, which is why it's added to molten steel as a nickel source rather than used alone." };
+ALLOY_STRUCTURE_INFO.COPPER_TUNGSTEN = { system: "MULTIPHASE", note: "Not a true solid solution — this is a composite of solid tungsten grains with copper infiltrated into the pores between them." };
+ALLOY_STRUCTURE_INFO.SILVER_TUNGSTEN = { system: "MULTIPHASE", note: "Like copper-tungsten, this is a composite: a solid tungsten skeleton infiltrated with silver, not a single blended lattice." };
+ALLOY_STRUCTURE_INFO.PLATINUM_RHODIUM = { system: "FCC", note: "Rhodium dissolves into platinum's FCC lattice; the resulting alloy resists oxidation and creep even when held at very high temperatures for years." };
+ALLOY_STRUCTURE_INFO.WOOTZ_STEEL = { system: "BCC", note: "A high-carbon steel whose slow, controlled cooling lets bands of hard iron carbide form within the body-centered ferrite, producing its famous surface pattern." };
+ALLOY_STRUCTURE_INFO.GALFAN = { system: "MULTIPHASE", note: "Sits near a zinc-aluminium eutectic point, solidifying into a fine interlocking mixture of zinc-rich and aluminium-rich phases." };
+ALLOY_STRUCTURE_INFO.WHITE_BRONZE = { system: "FCC", note: "Tin and zinc both dissolve into copper's FCC lattice; the higher tin content is what lightens the alloy's color toward silvery-white." };
+ALLOY_STRUCTURE_INFO.RED_BRASS = { system: "FCC", note: "A copper-rich FCC solid solution — less zinc than ordinary brass, which is what keeps its color warm and reddish." };
+ALLOY_STRUCTURE_INFO.MANGANESE_BRONZE = { system: "FCC", note: "A high-zinc brass strengthened by small manganese and iron additions dissolved into copper's FCC lattice." };
+ALLOY_STRUCTURE_INFO.ALUMINUM_BRASS = { system: "FCC", note: "A small amount of aluminium in copper's FCC lattice forms a thin, self-healing oxide film that resists seawater corrosion." };
+ALLOY_STRUCTURE_INFO.TOMBAC = { system: "FCC", note: "A very copper-rich brass; at this low zinc content the alloy stays a single FCC solid solution with a warm golden color." };
+ALLOY_STRUCTURE_INFO.ARGENTIUM_SILVER = { system: "FCC", note: "Germanium dissolved in silver's FCC lattice forms a thin, self-healing oxide layer at the surface that resists ordinary tarnishing." };
+ALLOY_STRUCTURE_INFO.PALLADIUM_SILVER = { system: "FCC", note: "Palladium and silver are both FCC and fully miscible, forming a single solid solution across this composition." };
+ALLOY_STRUCTURE_INFO.NIOBIUM_TITANIUM = { system: "BCC", note: "Niobium and titanium form a continuous body-centered cubic solid solution, which becomes superconducting when cooled near absolute zero." };
+ALLOY_STRUCTURE_INFO.BABBITT_LEAD = { system: "MULTIPHASE", note: "Hard antimony-tin intermetallic crystals are dispersed through a soft lead matrix, letting the bearing surface wear in smoothly against a shaft." };
+MOLECULE_STRUCTURES.KBR = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"K",x:-0.8,y:0,charge:"+"},{el:"Br",x:0.8,y:0,charge:"–"}],
+    bonds2d: [[0,1,1,"ionic"]],
+    info: { structureType:"Ionic compound", bondType:"Ionic", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a (ionic bonds aren't directional)", hybridization:"n/a", polarity:"n/a (ionic, not a covalent dipole)", coordinationNumber:"6",
+      notes:"Drawn here as an ion pair for simplicity — swipe to Crystal Lattice to see the real repeating structure." } },
+  { type: "structural", name: "Crystal Lattice", crystalSystem:"ROCKSALT",
+    info: { structureType:"Ionic crystal", bondType:"Ionic", molecularGeometry:"Rock salt (cubic)", bondAngles:"90°, 90°, 90°", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6:6",
+      notes:"Same rock-salt arrangement as table salt — each K⁺ surrounded by 6 Br⁻ and vice versa, extending indefinitely." } },
+  { type: "condensed", name: "Condensed Formula", formula:"KBr",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6",
+      notes:"The simplest whole-number ratio of ions (1:1), called a formula unit rather than a molecule." } },
+];
+
+MOLECULE_STRUCTURES.KI = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"K",x:-0.8,y:0,charge:"+"},{el:"I",x:0.8,y:0,charge:"–"}],
+    bonds2d: [[0,1,1,"ionic"]],
+    info: { structureType:"Ionic compound", bondType:"Ionic", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a (ionic bonds aren't directional)", hybridization:"n/a", polarity:"n/a (ionic, not a covalent dipole)", coordinationNumber:"6",
+      notes:"Drawn here as an ion pair for simplicity — swipe to Crystal Lattice to see the real repeating structure." } },
+  { type: "structural", name: "Crystal Lattice", crystalSystem:"ROCKSALT",
+    info: { structureType:"Ionic crystal", bondType:"Ionic", molecularGeometry:"Rock salt (cubic)", bondAngles:"90°, 90°, 90°", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6:6",
+      notes:"Each K⁺ is surrounded by 6 I⁻ and each I⁻ by 6 K⁺, the same pattern as ordinary table salt." } },
+  { type: "condensed", name: "Condensed Formula", formula:"KI",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6",
+      notes:"The simplest whole-number ratio of ions (1:1), called a formula unit rather than a molecule." } },
+];
+
+MOLECULE_STRUCTURES.NIO = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"Ni",x:-0.8,y:0,charge:"2+"},{el:"O",x:0.8,y:0,charge:"2–"}],
+    bonds2d: [[0,1,1,"ionic"]],
+    info: { structureType:"Ionic compound", bondType:"Ionic", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6",
+      notes:"Drawn here as an ion pair for simplicity — swipe to Crystal Lattice to see the real repeating structure." } },
+  { type: "structural", name: "Crystal Lattice", crystalSystem:"ROCKSALT",
+    info: { structureType:"Ionic crystal", bondType:"Ionic", molecularGeometry:"Rock salt (cubic)", bondAngles:"90°, 90°, 90°", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6:6",
+      notes:"NiO adopts the same rock-salt structure as NaCl, with Ni²⁺ and O²⁻ each surrounded by 6 opposite ions." } },
+  { type: "condensed", name: "Condensed Formula", formula:"NiO",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6",
+      notes:"The simplest whole-number ratio of ions (1:1), called a formula unit rather than a molecule." } },
+];
+
+MOLECULE_STRUCTURES.NAF = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"Na",x:-0.8,y:0,charge:"+"},{el:"F",x:0.8,y:0,charge:"–"}],
+    bonds2d: [[0,1,1,"ionic"]],
+    info: { structureType:"Ionic compound", bondType:"Ionic", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6",
+      notes:"Drawn here as an ion pair for simplicity — swipe to Crystal Lattice to see the real repeating structure." } },
+  { type: "structural", name: "Crystal Lattice", crystalSystem:"ROCKSALT",
+    info: { structureType:"Ionic crystal", bondType:"Ionic", molecularGeometry:"Rock salt (cubic)", bondAngles:"90°, 90°, 90°", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6:6",
+      notes:"The same rock-salt structure as NaCl, just with fluoride instead of chloride." } },
+  { type: "condensed", name: "Condensed Formula", formula:"NaF",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6",
+      notes:"The simplest whole-number ratio of ions (1:1), called a formula unit rather than a molecule." } },
+];
+
+MOLECULE_STRUCTURES.NABR = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"Na",x:-0.8,y:0,charge:"+"},{el:"Br",x:0.8,y:0,charge:"–"}],
+    bonds2d: [[0,1,1,"ionic"]],
+    info: { structureType:"Ionic compound", bondType:"Ionic", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6",
+      notes:"Drawn here as an ion pair for simplicity — swipe to Crystal Lattice to see the real repeating structure." } },
+  { type: "structural", name: "Crystal Lattice", crystalSystem:"ROCKSALT",
+    info: { structureType:"Ionic crystal", bondType:"Ionic", molecularGeometry:"Rock salt (cubic)", bondAngles:"90°, 90°, 90°", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6:6",
+      notes:"The same rock-salt structure as NaCl, just with bromide instead of chloride." } },
+  { type: "condensed", name: "Condensed Formula", formula:"NaBr",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6",
+      notes:"The simplest whole-number ratio of ions (1:1), called a formula unit rather than a molecule." } },
+];
+
+MOLECULE_STRUCTURES.NAI = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"Na",x:-0.8,y:0,charge:"+"},{el:"I",x:0.8,y:0,charge:"–"}],
+    bonds2d: [[0,1,1,"ionic"]],
+    info: { structureType:"Ionic compound", bondType:"Ionic", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6",
+      notes:"Drawn here as an ion pair for simplicity — swipe to Crystal Lattice to see the real repeating structure." } },
+  { type: "structural", name: "Crystal Lattice", crystalSystem:"ROCKSALT",
+    info: { structureType:"Ionic crystal", bondType:"Ionic", molecularGeometry:"Rock salt (cubic)", bondAngles:"90°, 90°, 90°", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6:6",
+      notes:"The same rock-salt structure as NaCl, just with iodide instead of chloride." } },
+  { type: "condensed", name: "Condensed Formula", formula:"NaI",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6",
+      notes:"The simplest whole-number ratio of ions (1:1), called a formula unit rather than a molecule." } },
+];
+
+MOLECULE_STRUCTURES.CDO = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"Cd",x:-0.8,y:0,charge:"2+"},{el:"O",x:0.8,y:0,charge:"2–"}],
+    bonds2d: [[0,1,1,"ionic"]],
+    info: { structureType:"Ionic compound", bondType:"Ionic", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6",
+      notes:"Drawn here as an ion pair for simplicity — swipe to Crystal Lattice to see the real repeating structure." } },
+  { type: "structural", name: "Crystal Lattice", crystalSystem:"ROCKSALT",
+    info: { structureType:"Ionic crystal", bondType:"Ionic", molecularGeometry:"Rock salt (cubic)", bondAngles:"90°, 90°, 90°", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6:6",
+      notes:"CdO adopts the same rock-salt structure as NaCl, with Cd²⁺ and O²⁻ each surrounded by 6 opposite ions." } },
+  { type: "condensed", name: "Condensed Formula", formula:"CdO",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6",
+      notes:"The simplest whole-number ratio of ions (1:1), called a formula unit rather than a molecule." } },
+];
+MOLECULE_STRUCTURES.CAF2 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"F",x:-1.1,y:0,charge:"–"},{el:"Ca",x:0,y:0,charge:"2+"},{el:"F",x:1.1,y:0,charge:"–"}],
+    bonds2d: [[1,0,1,"ionic"],[1,2,1,"ionic"]],
+    info: { structureType:"Ionic compound", bondType:"Ionic", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a (ionic bonds aren't directional)", hybridization:"n/a", polarity:"n/a", coordinationNumber:"8 (Ca²⁺), 4 (F⁻)",
+      notes:"Real CaF2 forms the fluorite structure, not rock salt — each Ca²⁺ is surrounded by 8 F⁻ ions, and each F⁻ by 4 Ca²⁺, reflecting the 1:2 ratio." } },
+  { type: "condensed", name: "Condensed Formula", formula:"CaF₂",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"8:4",
+      notes:"Two fluoride ions balance the 2+ charge on each calcium ion." } },
+];
+
+MOLECULE_STRUCTURES.MGF2 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"F",x:-1.1,y:0,charge:"–"},{el:"Mg",x:0,y:0,charge:"2+"},{el:"F",x:1.1,y:0,charge:"–"}],
+    bonds2d: [[1,0,1,"ionic"],[1,2,1,"ionic"]],
+    info: { structureType:"Ionic compound", bondType:"Ionic", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6 (Mg²⁺), 3 (F⁻)",
+      notes:"Real MgF2 adopts the rutile structure (the same arrangement as TiO2), with each Mg²⁺ surrounded by 6 F⁻." } },
+  { type: "condensed", name: "Condensed Formula", formula:"MgF₂",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6:3",
+      notes:"Two fluoride ions balance the 2+ charge on each magnesium ion." } },
+];
+
+MOLECULE_STRUCTURES.ALF3 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"F",x:0,y:1.1,charge:"–"},{el:"Al",x:0,y:0,charge:"3+"},{el:"F",x:-0.95,y:-0.55,charge:"–"},{el:"F",x:0.95,y:-0.55,charge:"–"}],
+    bonds2d: [[1,0,1,"ionic"],[1,2,1,"ionic"],[1,3,1,"ionic"]],
+    info: { structureType:"Ionic/network compound", bondType:"Ionic", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6 (Al³⁺)",
+      notes:"In the solid, each Al³⁺ is actually surrounded by 6 F⁻ in a corner-sharing octahedral network, rather than existing as separate AlF3 units." } },
+  { type: "condensed", name: "Condensed Formula", formula:"AlF₃",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6",
+      notes:"Three fluoride ions balance the 3+ charge on each aluminium ion." } },
+];
+
+MOLECULE_STRUCTURES.FECL2 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"Cl",x:-1.1,y:0,charge:"–"},{el:"Fe",x:0,y:0,charge:"2+"},{el:"Cl",x:1.1,y:0,charge:"–"}],
+    bonds2d: [[1,0,1,"ionic"],[1,2,1,"ionic"]],
+    info: { structureType:"Ionic compound", bondType:"Ionic", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6 (Fe²⁺), 3 (Cl⁻)",
+      notes:"Real FeCl2 forms a layered CdCl2-type structure, with sheets of edge-sharing FeCl6 octahedra stacked on top of each other." } },
+  { type: "condensed", name: "Condensed Formula", formula:"FeCl₂",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6:3",
+      notes:"Two chloride ions balance the 2+ charge on each iron(II) ion." } },
+];
+
+MOLECULE_STRUCTURES.MNO2 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"O",x:-1.1,y:0,charge:"2–"},{el:"Mn",x:0,y:0,charge:"4+"},{el:"O",x:1.1,y:0,charge:"2–"}],
+    bonds2d: [[1,0,1,"ionic"],[1,2,1,"ionic"]],
+    info: { structureType:"Ionic compound", bondType:"Ionic (with covalent character)", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6 (Mn⁴⁺), 3 (O²⁻)",
+      notes:"Real MnO2 adopts the rutile structure, the active material inside ordinary alkaline batteries." } },
+  { type: "condensed", name: "Condensed Formula", formula:"MnO₂",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6:3",
+      notes:"Two oxide ions balance the 4+ charge on each manganese ion." } },
+];
+
+MOLECULE_STRUCTURES.CACL2 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"Cl",x:-1.1,y:0,charge:"–"},{el:"Ca",x:0,y:0,charge:"2+"},{el:"Cl",x:1.1,y:0,charge:"–"}],
+    bonds2d: [[1,0,1,"ionic"],[1,2,1,"ionic"]],
+    info: { structureType:"Ionic compound", bondType:"Ionic", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6–8 (Ca²⁺)",
+      notes:"Real CaCl2 forms a distorted rutile-type structure, distinct from the simple cubic rock-salt arrangement of NaCl." } },
+  { type: "condensed", name: "Condensed Formula", formula:"CaCl₂",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6–8",
+      notes:"Two chloride ions balance the 2+ charge on each calcium ion." } },
+];
+
+MOLECULE_STRUCTURES.MGBR2 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"Br",x:-1.1,y:0,charge:"–"},{el:"Mg",x:0,y:0,charge:"2+"},{el:"Br",x:1.1,y:0,charge:"–"}],
+    bonds2d: [[1,0,1,"ionic"],[1,2,1,"ionic"]],
+    info: { structureType:"Ionic compound", bondType:"Ionic", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6 (Mg²⁺), 3 (Br⁻)",
+      notes:"Real MgBr2 forms a layered CdI2-type structure, similar in spirit to FeCl2's layered arrangement." } },
+  { type: "condensed", name: "Condensed Formula", formula:"MgBr₂",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"6:3",
+      notes:"Two bromide ions balance the 2+ charge on each magnesium ion." } },
+];
+
+MOLECULE_STRUCTURES.ZNCL2 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"Cl",x:-1.1,y:0,charge:"–"},{el:"Zn",x:0,y:0,charge:"2+"},{el:"Cl",x:1.1,y:0,charge:"–"}],
+    bonds2d: [[1,0,1,"ionic"],[1,2,1,"ionic"]],
+    info: { structureType:"Ionic/covalent compound", bondType:"Ionic (with significant covalent character)", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"4 (Zn²⁺, tetrahedral in most polymorphs)",
+      notes:"ZnCl2 has several different solid forms; most feature zinc in a tetrahedral coordination rather than the octahedral environment typical of many ionic salts." } },
+  { type: "condensed", name: "Condensed Formula", formula:"ZnCl₂",
+    info: { structureType:"Condensed formula", bondType:"Ionic/covalent", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"4",
+      notes:"Two chloride ions balance the 2+ charge on each zinc ion." } },
+];
+
+MOLECULE_STRUCTURES.PBCL2 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"Cl",x:-1.1,y:0,charge:"–"},{el:"Pb",x:0,y:0,charge:"2+"},{el:"Cl",x:1.1,y:0,charge:"–"}],
+    bonds2d: [[1,0,1,"ionic"],[1,2,1,"ionic"]],
+    info: { structureType:"Ionic compound", bondType:"Ionic", molecularGeometry:"n/a — not a discrete molecule", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"9 (Pb²⁺)",
+      notes:"Real PbCl2 adopts the cotunnite structure, an unusually high 9-coordinate arrangement for the lead ion." } },
+  { type: "condensed", name: "Condensed Formula", formula:"PbCl₂",
+    info: { structureType:"Condensed formula", bondType:"Ionic", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"n/a", coordinationNumber:"9",
+      notes:"Two chloride ions balance the 2+ charge on each lead(II) ion." } },
+];
+MOLECULE_STRUCTURES.HBR = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"H",x:-0.7,y:0},{el:"Br",x:0.7,y:0}], bonds2d: [[0,1,1,"plain"]],
+    info: { structureType:"Diatomic molecule", bondType:"Polar covalent", molecularGeometry:"Linear", bondAngles:"180°", hybridization:"s (H), p (Br)", polarity:"Polar", coordinationNumber:"1",
+      notes:"A strong acid in water; the H-Br bond is polar due to bromine's higher electronegativity." } },
+  { type: "condensed", name: "Condensed Formula", formula:"HBr",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Linear", bondAngles:"180°", hybridization:"n/a", polarity:"Polar", coordinationNumber:"1", notes:"A single covalent bond between hydrogen and bromine." } },
+];
+MOLECULE_STRUCTURES.HI = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"H",x:-0.7,y:0},{el:"I",x:0.7,y:0}], bonds2d: [[0,1,1,"plain"]],
+    info: { structureType:"Diatomic molecule", bondType:"Polar covalent", molecularGeometry:"Linear", bondAngles:"180°", hybridization:"s (H), p (I)", polarity:"Polar (weakly, due to iodine's lower electronegativity)", coordinationNumber:"1",
+      notes:"The strongest of the common hydrohalic acids in water, since the H-I bond is the weakest and breaks apart most readily." } },
+  { type: "condensed", name: "Condensed Formula", formula:"HI",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Linear", bondAngles:"180°", hybridization:"n/a", polarity:"Polar", coordinationNumber:"1", notes:"A single covalent bond between hydrogen and iodine." } },
+];
+MOLECULE_STRUCTURES.ICL = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"I",x:-0.8,y:0},{el:"Cl",x:0.8,y:0}], bonds2d: [[0,1,1,"plain"]],
+    info: { structureType:"Interhalogen molecule", bondType:"Polar covalent", molecularGeometry:"Linear", bondAngles:"180°", hybridization:"p (I), p (Cl)", polarity:"Polar", coordinationNumber:"1",
+      notes:"A compound between two different halogens; acts as a milder, more selective source of 'positive iodine' than iodine itself." } },
+  { type: "condensed", name: "Condensed Formula", formula:"ICl",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Linear", bondAngles:"180°", hybridization:"n/a", polarity:"Polar", coordinationNumber:"1", notes:"A single covalent bond between two different halogen atoms." } },
+];
+MOLECULE_STRUCTURES.KRF2 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"F",x:-1.3,y:0},{el:"Kr",x:0,y:0},{el:"F",x:1.3,y:0}], bonds2d: [[1,0,1,"plain"],[1,2,1,"plain"]],
+    info: { structureType:"Noble-gas compound", bondType:"Covalent (3-center-4-electron bonding)", molecularGeometry:"Linear (AX2)", bondAngles:"180°", hybridization:"sp³d (Kr)", polarity:"Nonpolar", coordinationNumber:"2",
+      notes:"One of only a handful of known krypton compounds — genuine proof that even 'inert' noble gases can bond under the right conditions." } },
+  { type: "condensed", name: "Condensed Formula", formula:"KrF₂",
+    info: { structureType:"Condensed formula", bondType:"Covalent", molecularGeometry:"Linear", bondAngles:"180°", hybridization:"n/a", polarity:"Nonpolar", coordinationNumber:"2", notes:"Two fluorine atoms bonded to a central krypton atom." } },
+];
+MOLECULE_STRUCTURES.HCLO = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"H",x:-0.9,y:0.6},{el:"O",x:0,y:0},{el:"Cl",x:1.1,y:-0.3}], bonds2d: [[0,1,1,"plain"],[1,2,1,"plain"]],
+    info: { structureType:"Small molecule (oxoacid)", bondType:"Polar covalent", molecularGeometry:"Bent at oxygen", bondAngles:"~103°", hybridization:"sp³ (O)", polarity:"Polar", coordinationNumber:"2 (O)",
+      notes:"The active disinfecting molecule in chlorinated pool water and bleach solutions — your own white blood cells make it too." } },
+  { type: "condensed", name: "Condensed Formula", formula:"HClO",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Bent", bondAngles:"~103°", hybridization:"n/a", polarity:"Polar", coordinationNumber:"2", notes:"Hydrogen and chlorine both bonded to a central oxygen." } },
+];
+MOLECULE_STRUCTURES.HBRO = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"H",x:-0.9,y:0.6},{el:"O",x:0,y:0},{el:"Br",x:1.2,y:-0.3}], bonds2d: [[0,1,1,"plain"],[1,2,1,"plain"]],
+    info: { structureType:"Small molecule (oxoacid)", bondType:"Polar covalent", molecularGeometry:"Bent at oxygen", bondAngles:"~103°", hybridization:"sp³ (O)", polarity:"Polar", coordinationNumber:"2 (O)",
+      notes:"A weak, unstable acid formed when bromine dissolves in water; used as a mild disinfectant and bleaching agent." } },
+  { type: "condensed", name: "Condensed Formula", formula:"HBrO",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Bent", bondAngles:"~103°", hybridization:"n/a", polarity:"Polar", coordinationNumber:"2", notes:"Hydrogen and bromine both bonded to a central oxygen." } },
+];
+MOLECULE_STRUCTURES.PF3 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"P",x:0,y:0.2},{el:"F",x:0,y:1.3},{el:"F",x:-1.1,y:-0.5},{el:"F",x:1.1,y:-0.5}], bonds2d: [[0,1,1,"plain"],[0,2,1,"plain"],[0,3,1,"plain"]],
+    info: { structureType:"Small molecule", bondType:"Polar covalent", molecularGeometry:"Trigonal pyramidal (AX3E)", bondAngles:"~97.8°", hybridization:"sp³ (P)", polarity:"Polar", coordinationNumber:"3",
+      notes:"Highly toxic in a similar way to carbon monoxide, since it also binds strongly to blood hemoglobin." } },
+  { type: "condensed", name: "Condensed Formula", formula:"PF₃",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Trigonal pyramidal", bondAngles:"~97.8°", hybridization:"n/a", polarity:"Polar", coordinationNumber:"3", notes:"Three fluorine atoms bonded to a central phosphorus, with one lone pair." } },
+];
+MOLECULE_STRUCTURES.PCL3 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"P",x:0,y:0.2},{el:"Cl",x:0,y:1.4},{el:"Cl",x:-1.2,y:-0.5},{el:"Cl",x:1.2,y:-0.5}], bonds2d: [[0,1,1,"plain"],[0,2,1,"plain"],[0,3,1,"plain"]],
+    info: { structureType:"Small molecule", bondType:"Polar covalent", molecularGeometry:"Trigonal pyramidal (AX3E)", bondAngles:"~100.3°", hybridization:"sp³ (P)", polarity:"Polar", coordinationNumber:"3",
+      notes:"A key industrial intermediate used to manufacture pesticides and flame retardants." } },
+  { type: "condensed", name: "Condensed Formula", formula:"PCl₃",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Trigonal pyramidal", bondAngles:"~100.3°", hybridization:"n/a", polarity:"Polar", coordinationNumber:"3", notes:"Three chlorine atoms bonded to a central phosphorus, with one lone pair." } },
+];
+MOLECULE_STRUCTURES.SBCL3 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"Sb",x:0,y:0.2},{el:"Cl",x:0,y:1.5},{el:"Cl",x:-1.3,y:-0.5},{el:"Cl",x:1.3,y:-0.5}], bonds2d: [[0,1,1,"plain"],[0,2,1,"plain"],[0,3,1,"plain"]],
+    info: { structureType:"Small molecule", bondType:"Polar covalent", molecularGeometry:"Trigonal pyramidal (AX3E)", bondAngles:"~97.2°", hybridization:"sp³ (Sb)", polarity:"Polar", coordinationNumber:"3",
+      notes:"A fuming solid used as a catalyst and as a starting material for other antimony compounds." } },
+  { type: "condensed", name: "Condensed Formula", formula:"SbCl₃",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Trigonal pyramidal", bondAngles:"~97.2°", hybridization:"n/a", polarity:"Polar", coordinationNumber:"3", notes:"Three chlorine atoms bonded to a central antimony, with one lone pair." } },
+];
+MOLECULE_STRUCTURES.XEO3 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"Xe",x:0,y:0.2},{el:"O",x:0,y:1.4},{el:"O",x:-1.2,y:-0.5},{el:"O",x:1.2,y:-0.5}], bonds2d: [[0,1,2,"plain"],[0,2,2,"plain"],[0,3,2,"plain"]],
+    info: { structureType:"Noble-gas oxide", bondType:"Polar covalent", molecularGeometry:"Trigonal pyramidal (AX3E)", bondAngles:"~103°", hybridization:"sp³ (Xe)", polarity:"Polar", coordinationNumber:"3",
+      notes:"A dangerously explosive solid — one of the few noble-gas compounds unstable enough to detonate." } },
+  { type: "condensed", name: "Condensed Formula", formula:"XeO₃",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Trigonal pyramidal", bondAngles:"~103°", hybridization:"n/a", polarity:"Polar", coordinationNumber:"3", notes:"Three oxygen atoms bonded to a central xenon, with one lone pair." } },
+];
+MOLECULE_STRUCTURES.SIF4 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"Si",x:0,y:0},{el:"F",x:0,y:1.3},{el:"F",x:0,y:-1.3},{el:"F",x:-1.2,y:0.4},{el:"F",x:1.2,y:-0.4}], bonds2d: [[0,1,1,"wedge"],[0,2,1,"dash"],[0,3,1,"plain"],[0,4,1,"plain"]],
+    info: { structureType:"Small molecule", bondType:"Polar covalent", molecularGeometry:"Tetrahedral (AX4)", bondAngles:"109.5°", hybridization:"sp³ (Si)", polarity:"Nonpolar (symmetric)", coordinationNumber:"4",
+      notes:"Released when hydrofluoric acid reacts with glass or sand; used industrially to make high-purity silicon." } },
+  { type: "condensed", name: "Condensed Formula", formula:"SiF₄",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Tetrahedral", bondAngles:"109.5°", hybridization:"n/a", polarity:"Nonpolar", coordinationNumber:"4", notes:"Four fluorine atoms bonded symmetrically to a central silicon." } },
+];
+MOLECULE_STRUCTURES.CLF3 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"F",x:-1.4,y:0},{el:"Cl",x:0,y:0},{el:"F",x:1.4,y:0},{el:"F",x:0,y:1.2}], bonds2d: [[1,0,1,"plain"],[1,2,1,"plain"],[1,3,1,"plain"]],
+    info: { structureType:"Interhalogen molecule", bondType:"Polar covalent", molecularGeometry:"T-shaped (AX3E2)", bondAngles:"~87.5°", hybridization:"sp³d (Cl)", polarity:"Polar", coordinationNumber:"3",
+      notes:"So reactive it can ignite sand, asbestos, and glass on contact; used to clean chemical vapor deposition chambers." } },
+  { type: "condensed", name: "Condensed Formula", formula:"ClF₃",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"T-shaped", bondAngles:"~87.5°", hybridization:"n/a", polarity:"Polar", coordinationNumber:"3", notes:"Three fluorine atoms bonded to a central chlorine, with two lone pairs." } },
+];
+MOLECULE_STRUCTURES.IF5 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"I",x:0,y:0},{el:"F",x:0,y:1.3},{el:"F",x:1.1,y:0.3},{el:"F",x:0.6,y:-1},{el:"F",x:-0.6,y:-1},{el:"F",x:-1.1,y:0.3}], bonds2d: [[0,1,1,"plain"],[0,2,1,"plain"],[0,3,1,"plain"],[0,4,1,"plain"],[0,5,1,"plain"]],
+    info: { structureType:"Small molecule", bondType:"Polar covalent", molecularGeometry:"Square pyramidal (AX5E)", bondAngles:"~90° (F-I-F within base), ~81° to apex", hybridization:"sp³d² (I)", polarity:"Polar", coordinationNumber:"5",
+      notes:"A powerful fluorinating agent used in organic synthesis to selectively introduce fluorine atoms." } },
+  { type: "condensed", name: "Condensed Formula", formula:"IF₅",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Square pyramidal", bondAngles:"~90°", hybridization:"n/a", polarity:"Polar", coordinationNumber:"5", notes:"Five fluorine atoms bonded to a central iodine, with one lone pair." } },
+];
+MOLECULE_STRUCTURES.PF5 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"P",x:0,y:0},{el:"F",x:0,y:1.3},{el:"F",x:0,y:-1.3},{el:"F",x:1.2,y:0.4},{el:"F",x:-0.6,y:1.0},{el:"F",x:-0.6,y:-1.0}], bonds2d: [[0,1,1,"wedge"],[0,2,1,"dash"],[0,3,1,"plain"],[0,4,1,"plain"],[0,5,1,"plain"]],
+    info: { structureType:"Small molecule", bondType:"Polar covalent", molecularGeometry:"Trigonal bipyramidal (AX5)", bondAngles:"90° (axial-equatorial), 120° (equatorial-equatorial)", hybridization:"sp³d (P)", polarity:"Nonpolar (symmetric)", coordinationNumber:"5",
+      notes:"A strong Lewis acid used as a catalyst and, notably, as a dopant to make conductive polymers." } },
+  { type: "condensed", name: "Condensed Formula", formula:"PF₅",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Trigonal bipyramidal", bondAngles:"90°, 120°", hybridization:"n/a", polarity:"Nonpolar", coordinationNumber:"5", notes:"Five fluorine atoms bonded symmetrically to a central phosphorus." } },
+];
+MOLECULE_STRUCTURES.N2O4 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"N",x:-0.7,y:0},{el:"N",x:0.7,y:0},{el:"O",x:-1.3,y:1},{el:"O",x:-1.3,y:-1},{el:"O",x:1.3,y:1},{el:"O",x:1.3,y:-1}],
+    bonds2d: [[0,1,1,"plain"],[0,2,2,"plain"],[0,3,2,"plain"],[1,4,2,"plain"],[1,5,2,"plain"]],
+    info: { structureType:"Small molecule", bondType:"Covalent (weak N-N single bond)", molecularGeometry:"Planar, two trigonal-planar N centers", bondAngles:"~120° at each N", hybridization:"sp² (N)", polarity:"Nonpolar (symmetric overall)", coordinationNumber:"3 (each N)",
+      notes:"Exists in equilibrium with reddish-brown NO2 gas — the balance between them shifts visibly with temperature, a classic chemistry demonstration." } },
+  { type: "condensed", name: "Condensed Formula", formula:"N₂O₄",
+    info: { structureType:"Condensed formula", bondType:"Covalent", molecularGeometry:"Planar", bondAngles:"~120°", hybridization:"n/a", polarity:"Nonpolar", coordinationNumber:"3", notes:"Two NO2 units joined by a single, unusually weak N-N bond." } },
+];
+MOLECULE_STRUCTURES.BCL3 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"B",x:0,y:0},{el:"Cl",x:0,y:1.3},{el:"Cl",x:-1.15,y:-0.65},{el:"Cl",x:1.15,y:-0.65}], bonds2d: [[0,1,1,"plain"],[0,2,1,"plain"],[0,3,1,"plain"]],
+    info: { structureType:"Small molecule", bondType:"Polar covalent", molecularGeometry:"Trigonal planar (AX3)", bondAngles:"120°", hybridization:"sp² (B)", polarity:"Nonpolar (symmetric)", coordinationNumber:"3",
+      notes:"A reactive gas that fumes in moist air; used as a catalyst and to make ultra-pure boron for semiconductors." } },
+  { type: "condensed", name: "Condensed Formula", formula:"BCl₃",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Trigonal planar", bondAngles:"120°", hybridization:"n/a", polarity:"Nonpolar", coordinationNumber:"3", notes:"Three chlorine atoms bonded symmetrically to a central boron, with no lone pair." } },
+];
+MOLECULE_STRUCTURES.BBR3 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"B",x:0,y:0},{el:"Br",x:0,y:1.4},{el:"Br",x:-1.25,y:-0.7},{el:"Br",x:1.25,y:-0.7}], bonds2d: [[0,1,1,"plain"],[0,2,1,"plain"],[0,3,1,"plain"]],
+    info: { structureType:"Small molecule", bondType:"Polar covalent", molecularGeometry:"Trigonal planar (AX3)", bondAngles:"120°", hybridization:"sp² (B)", polarity:"Nonpolar (symmetric)", coordinationNumber:"3",
+      notes:"A fuming, corrosive liquid used in organic chemistry to cleave certain ether bonds." } },
+  { type: "condensed", name: "Condensed Formula", formula:"BBr₃",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Trigonal planar", bondAngles:"120°", hybridization:"n/a", polarity:"Nonpolar", coordinationNumber:"3", notes:"Three bromine atoms bonded symmetrically to a central boron, with no lone pair." } },
+];
+MOLECULE_STRUCTURES.HIO3 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"I",x:0,y:0},{el:"O",x:0.8,y:0.9},{el:"O",x:0.8,y:-0.9},{el:"O",x:-1.2,y:0},{el:"H",x:-2.1,y:0.5}],
+    bonds2d: [[0,1,2,"plain"],[0,2,2,"plain"],[0,3,1,"plain"],[3,4,1,"plain"]],
+    info: { structureType:"Oxoacid", bondType:"Polar covalent", molecularGeometry:"Trigonal pyramidal (AX3E, at I)", bondAngles:"~100°", hybridization:"sp³ (I)", polarity:"Polar", coordinationNumber:"3",
+      notes:"A strong acid and oxidizer used in the classic 'iodine clock' chemistry demonstration." } },
+  { type: "condensed", name: "Condensed Formula", formula:"HIO₃",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Trigonal pyramidal", bondAngles:"~100°", hybridization:"n/a", polarity:"Polar", coordinationNumber:"3", notes:"Two double-bonded oxygens and one -OH group attached to a central iodine." } },
+];
+MOLECULE_STRUCTURES.SNCL2 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"Sn",x:0,y:0},{el:"Cl",x:-1,y:-1},{el:"Cl",x:1,y:-1}], bonds2d: [[0,1,1,"plain"],[0,2,1,"plain"]],
+    info: { structureType:"Small molecule", bondType:"Polar covalent", molecularGeometry:"Bent (AX2E)", bondAngles:"~95°", hybridization:"sp² (Sn)", polarity:"Polar", coordinationNumber:"2",
+      notes:"A common reducing agent in chemistry labs, and historically used to make the deep red pigment 'Purple of Cassius.'" } },
+  { type: "condensed", name: "Condensed Formula", formula:"SnCl₂",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"Bent", bondAngles:"~95°", hybridization:"n/a", polarity:"Polar", coordinationNumber:"2", notes:"Two chlorine atoms bonded to tin, with a lone pair giving the molecule its bent shape." } },
+];
+MOLECULE_STRUCTURES.N2O5 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"N",x:-1,y:0},{el:"O",x:0,y:0.6},{el:"N",x:1,y:0},{el:"O",x:-1.7,y:0.8},{el:"O",x:-1.7,y:-0.8},{el:"O",x:1.7,y:0.8},{el:"O",x:1.7,y:-0.8}],
+    bonds2d: [[0,1,1,"plain"],[1,2,1,"plain"],[0,3,2,"plain"],[0,4,1,"plain"],[2,5,2,"plain"],[2,6,1,"plain"]],
+    info: { structureType:"Small molecule (acid anhydride)", bondType:"Covalent", molecularGeometry:"Trigonal planar at each N, bent at the bridging O", bondAngles:"~120° (N), ~112° (bridging O)", hybridization:"sp² (N), sp³ (bridging O)", polarity:"Polar overall (asymmetric)", coordinationNumber:"3 (each N)",
+      notes:"The anhydride of nitric acid — two NO2 groups joined through a shared oxygen. A key nighttime reservoir molecule in atmospheric chemistry." } },
+  { type: "condensed", name: "Condensed Formula", formula:"N₂O₅",
+    info: { structureType:"Condensed formula", bondType:"Covalent", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"Polar", coordinationNumber:"3", notes:"Two nitro groups bridged by a single oxygen atom." } },
+];
+
+MOLECULE_STRUCTURES.CH3NH2 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"H",x:-1.6,y:0.6},{el:"H",x:-1.6,y:-0.6},{el:"H",x:-0.8,y:1.3},{el:"C",x:-0.7,y:0},{el:"N",x:0.7,y:0},{el:"H",x:1.3,y:0.8},{el:"H",x:1.3,y:-0.8}],
+    bonds2d: [[0,3,1,"plain"],[1,3,1,"plain"],[2,3,1,"plain"],[3,4,1,"plain"],[4,5,1,"plain"],[4,6,1,"plain"]],
+    info: { structureType:"Organic molecule (amine)", bondType:"Polar covalent (C-N, N-H)", molecularGeometry:"Tetrahedral (C), trigonal pyramidal (N)", bondAngles:"109.5° (C), ~107° (N)", hybridization:"sp³ (C and N)", polarity:"Polar", coordinationNumber:"4 (C), 3 (N)",
+      notes:"A fishy-smelling gas released by decaying organisms; also used to manufacture pesticides and pharmaceuticals." } },
+  { type: "skeletal", name: "Skeletal Formula",
+    atoms2d: [{el:"",x:-0.7,y:0,vertex:true},{el:"N",x:0.7,y:0,label:"NH₂"}],
+    bonds2d: [[0,1,1,"plain"]],
+    info: { structureType:"Skeletal formula", bondType:"Polar covalent", molecularGeometry:"n/a (simplified)", bondAngles:"n/a", hybridization:"n/a", polarity:"Polar", coordinationNumber:"n/a",
+      notes:"Carbon and its attached hydrogens are implied by the vertex; only the amine group is labeled explicitly." } },
+  { type: "condensed", name: "Condensed Formula", formula:"CH₃NH₂",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"Polar", coordinationNumber:"n/a", notes:"A methyl group attached to an amine group." } },
+];
+
+MOLECULE_STRUCTURES.C2H5NH2 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"C",x:-1.4,y:0},{el:"C",x:0,y:0.4},{el:"N",x:1.3,y:-0.2},{el:"H",x:1.9,y:0.5},{el:"H",x:1.9,y:-0.9}],
+    bonds2d: [[0,1,1,"plain"],[1,2,1,"plain"],[2,3,1,"plain"],[2,4,1,"plain"]],
+    info: { structureType:"Organic molecule (amine)", bondType:"Polar covalent", molecularGeometry:"Tetrahedral (C), trigonal pyramidal (N)", bondAngles:"109.5° (C), ~107° (N)", hybridization:"sp³ (C, N)", polarity:"Polar", coordinationNumber:"4 (C), 3 (N)",
+      notes:"A building block in pharmaceutical and pesticide synthesis, with a strong ammonia-like odor." } },
+  { type: "skeletal", name: "Skeletal Formula",
+    atoms2d: [{el:"",x:-1.2,y:0,vertex:true},{el:"",x:0,y:0.5,vertex:true},{el:"N",x:1.2,y:0,label:"NH₂"}],
+    bonds2d: [[0,1,1,"plain"],[1,2,1,"plain"]],
+    info: { structureType:"Skeletal formula", bondType:"Polar covalent", molecularGeometry:"n/a (simplified)", bondAngles:"n/a", hybridization:"n/a", polarity:"Polar", coordinationNumber:"n/a",
+      notes:"The two-carbon chain is implied by vertices and line ends; only the amine group is labeled." } },
+  { type: "condensed", name: "Condensed Formula", formula:"C₂H₅NH₂",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"Polar", coordinationNumber:"n/a", notes:"An ethyl group attached to an amine group." } },
+];
+
+MOLECULE_STRUCTURES.CH3CN = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"H",x:-1.7,y:0.6},{el:"H",x:-1.7,y:-0.6},{el:"H",x:-0.9,y:1.3},{el:"C",x:-0.8,y:0},{el:"C",x:0.5,y:0},{el:"N",x:1.7,y:0}],
+    bonds2d: [[0,3,1,"plain"],[1,3,1,"plain"],[2,3,1,"plain"],[3,4,1,"plain"],[4,5,3,"plain"]],
+    info: { structureType:"Organic molecule (nitrile)", bondType:"Polar covalent (C≡N triple bond)", molecularGeometry:"Tetrahedral (CH3), linear (C≡N)", bondAngles:"109.5° (CH3), 180° (nitrile)", hybridization:"sp³ (CH3 carbon), sp (nitrile carbon)", polarity:"Polar", coordinationNumber:"4, 2",
+      notes:"A common solvent in chemistry labs and HPLC analysis, prized for dissolving both polar and nonpolar compounds." } },
+  { type: "skeletal", name: "Skeletal Formula",
+    atoms2d: [{el:"",x:-0.7,y:0,vertex:true},{el:"",x:0.5,y:0,vertex:true},{el:"N",x:1.7,y:0}],
+    bonds2d: [[0,1,1,"plain"],[1,2,3,"plain"]],
+    info: { structureType:"Skeletal formula", bondType:"Polar covalent", molecularGeometry:"n/a (simplified)", bondAngles:"n/a", hybridization:"n/a", polarity:"Polar", coordinationNumber:"n/a",
+      notes:"The methyl carbon is an implied vertex; the triple bond to nitrogen is drawn explicitly since it's the defining feature." } },
+  { type: "condensed", name: "Condensed Formula", formula:"CH₃CN",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"Polar", coordinationNumber:"n/a", notes:"A methyl group attached to a nitrile (C≡N) group." } },
+];
+
+MOLECULE_STRUCTURES.GLYCINE = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"N",x:-1.6,y:0.4},{el:"H",x:-2.3,y:1},{el:"H",x:-2.3,y:-0.2},{el:"C",x:-0.5,y:0},{el:"H",x:-0.5,y:1.1},{el:"H",x:-0.5,y:-1.1},{el:"C",x:0.7,y:0.5},{el:"O",x:0.7,y:1.7},{el:"O",x:1.8,y:-0.1},{el:"H",x:2.6,y:0.5}],
+    bonds2d: [[0,1,1,"plain"],[0,2,1,"plain"],[0,3,1,"plain"],[3,4,1,"plain"],[3,5,1,"plain"],[3,6,1,"plain"],[6,7,2,"plain"],[6,8,1,"plain"],[8,9,1,"plain"]],
+    info: { structureType:"Organic molecule (amino acid)", bondType:"Polar covalent", molecularGeometry:"Tetrahedral (alpha C), trigonal planar (carboxyl C)", bondAngles:"109.5° / 120°", hybridization:"sp³ (alpha C), sp² (carboxyl C)", polarity:"Polar", coordinationNumber:"4 / 3",
+      notes:"The simplest amino acid and the only one that isn't chiral; a building block of proteins throughout the body." } },
+  { type: "skeletal", name: "Skeletal Formula",
+    atoms2d: [{el:"N",x:-1.6,y:0.4,label:"H₂N"},{el:"",x:-0.5,y:0,vertex:true},{el:"",x:0.7,y:0.5,vertex:true},{el:"O",x:0.7,y:1.7,label:"O"},{el:"O",x:1.8,y:-0.1,label:"OH"}],
+    bonds2d: [[0,1,1,"plain"],[1,2,1,"plain"],[2,3,2,"plain"],[2,4,1,"plain"]],
+    info: { structureType:"Skeletal formula", bondType:"Polar covalent", molecularGeometry:"n/a (simplified)", bondAngles:"n/a", hybridization:"n/a", polarity:"Polar", coordinationNumber:"n/a",
+      notes:"The central carbon is an implied vertex; the amine and carboxylic acid functional groups are labeled since they define the molecule's chemistry." } },
+  { type: "condensed", name: "Condensed Formula", formula:"NH₂CH₂COOH",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"Polar", coordinationNumber:"n/a", notes:"An amine group and a carboxylic acid group both attached to a central carbon." } },
+];
+
+MOLECULE_STRUCTURES.PYRIDINE = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"N",x:0,y:1.2},{el:"C",x:1.04,y:0.6},{el:"C",x:1.04,y:-0.6},{el:"C",x:0,y:-1.2},{el:"C",x:-1.04,y:-0.6},{el:"C",x:-1.04,y:0.6}],
+    bonds2d: [[0,1,1,"plain"],[1,2,2,"plain"],[2,3,1,"plain"],[3,4,2,"plain"],[4,5,1,"plain"],[5,0,2,"plain"]],
+    info: { structureType:"Aromatic heterocycle", bondType:"Aromatic (delocalized pi system)", molecularGeometry:"Planar hexagonal ring", bondAngles:"~120°", hybridization:"sp² (all ring atoms)", polarity:"Polar (nitrogen's lone pair sits in-plane, not delocalized)", coordinationNumber:"2–3 (ring atoms)",
+      notes:"A foul-smelling aromatic solvent; its ring structure appears throughout biology, including in vitamin B3 (niacin)." } },
+  { type: "resonance", name: "Resonance Structures",
+    variants: [
+      { atoms2d: [{el:"N",x:0,y:1.2},{el:"C",x:1.04,y:0.6},{el:"C",x:1.04,y:-0.6},{el:"C",x:0,y:-1.2},{el:"C",x:-1.04,y:-0.6},{el:"C",x:-1.04,y:0.6}],
+        bonds2d: [[0,1,1,"plain"],[1,2,2,"plain"],[2,3,1,"plain"],[3,4,2,"plain"],[4,5,1,"plain"],[5,0,2,"plain"]] },
+      { atoms2d: [{el:"N",x:0,y:1.2},{el:"C",x:1.04,y:0.6},{el:"C",x:1.04,y:-0.6},{el:"C",x:0,y:-1.2},{el:"C",x:-1.04,y:-0.6},{el:"C",x:-1.04,y:0.6}],
+        bonds2d: [[0,1,2,"plain"],[1,2,1,"plain"],[2,3,2,"plain"],[3,4,1,"plain"],[4,5,2,"plain"],[5,0,1,"plain"]] },
+    ],
+    info: { structureType:"Resonance structures", bondType:"Aromatic (delocalized pi system)", molecularGeometry:"Planar hexagonal ring", bondAngles:"~120°", hybridization:"sp²", polarity:"Polar", coordinationNumber:"2–3",
+      notes:"Like benzene, the true structure is a blend of these two alternating-bond patterns, not either one alone — the pi electrons are spread evenly around the ring." } },
+  { type: "condensed", name: "Condensed Formula", formula:"C₅H₅N",
+    info: { structureType:"Condensed formula", bondType:"Aromatic", molecularGeometry:"Planar hexagonal ring", bondAngles:"~120°", hybridization:"sp²", polarity:"Polar", coordinationNumber:"n/a", notes:"A six-membered aromatic ring with one carbon replaced by nitrogen." } },
+];
+
+MOLECULE_STRUCTURES.C3H7OH = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"C",x:-2,y:0},{el:"C",x:-0.7,y:0.5},{el:"C",x:0.6,y:0},{el:"O",x:1.9,y:0.5},{el:"H",x:2.6,y:0}],
+    bonds2d: [[0,1,1,"plain"],[1,2,1,"plain"],[2,3,1,"plain"],[3,4,1,"plain"]],
+    info: { structureType:"Organic molecule (alcohol)", bondType:"Polar covalent (C-O, O-H)", molecularGeometry:"Tetrahedral at each carbon", bondAngles:"109.5°", hybridization:"sp³ (C, O)", polarity:"Polar", coordinationNumber:"4",
+      notes:"A common solvent and rubbing-alcohol alternative, also used as a chemical feedstock for other propanol-based products." } },
+  { type: "skeletal", name: "Skeletal Formula",
+    atoms2d: [{el:"",x:-2,y:0,vertex:true},{el:"",x:-0.7,y:0.5,vertex:true},{el:"",x:0.6,y:0,vertex:true},{el:"O",x:1.9,y:0.5,label:"OH"}],
+    bonds2d: [[0,1,1,"plain"],[1,2,1,"plain"],[2,3,1,"plain"]],
+    info: { structureType:"Skeletal formula", bondType:"Polar covalent", molecularGeometry:"n/a (simplified)", bondAngles:"n/a", hybridization:"n/a", polarity:"Polar", coordinationNumber:"n/a",
+      notes:"The three-carbon zigzag chain is implied by vertices; only the hydroxyl group is labeled." } },
+  { type: "condensed", name: "Condensed Formula", formula:"CH₃CH₂CH₂OH",
+    info: { structureType:"Condensed formula", bondType:"Polar covalent", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"Polar", coordinationNumber:"n/a", notes:"A straight three-carbon chain ending in a hydroxyl group." } },
+];
+
+MOLECULE_STRUCTURES.C3H6 = [
+  { type: "structural", name: "Structural Formula",
+    atoms2d: [{el:"C",x:-1.4,y:0},{el:"C",x:0,y:0},{el:"C",x:1.2,y:0.6},{el:"H",x:-2,y:0.9},{el:"H",x:-2,y:-0.9},{el:"H",x:0.2,y:-1.1}],
+    bonds2d: [[0,1,2,"plain"],[1,2,1,"plain"],[0,3,1,"plain"],[0,4,1,"plain"],[1,5,1,"plain"]],
+    info: { structureType:"Organic molecule (alkene)", bondType:"Covalent (C=C double bond)", molecularGeometry:"Trigonal planar (double-bond carbons), tetrahedral (methyl)", bondAngles:"120° / 109.5°", hybridization:"sp² (C1, C2), sp³ (C3)", polarity:"Nonpolar", coordinationNumber:"3, 3, 4",
+      notes:"The building block of polypropylene, one of the most widely produced plastics in the world." } },
+  { type: "skeletal", name: "Skeletal Formula",
+    atoms2d: [{el:"",x:-1.4,y:0,vertex:true},{el:"",x:0,y:0,vertex:true},{el:"",x:1.2,y:0.6,vertex:true}],
+    bonds2d: [[0,1,2,"plain"],[1,2,1,"plain"]],
+    info: { structureType:"Skeletal formula", bondType:"Covalent", molecularGeometry:"n/a (simplified)", bondAngles:"n/a", hybridization:"n/a", polarity:"Nonpolar", coordinationNumber:"n/a",
+      notes:"All carbons and hydrogens are implied; only the double bond is drawn explicitly since it's the reactive site." } },
+  { type: "condensed", name: "Condensed Formula", formula:"CH₂=CHCH₃",
+    info: { structureType:"Condensed formula", bondType:"Covalent", molecularGeometry:"n/a", bondAngles:"n/a", hybridization:"n/a", polarity:"Nonpolar", coordinationNumber:"n/a", notes:"A three-carbon chain with a double bond between the first two carbons." } },
+];
