@@ -629,14 +629,16 @@ const ALLOYS = {
 };
 
 /* =========================================================================
-   CERTIFIED SCIENTIFIC & METALLURGICAL DATA REPOSITORY 
-   (Coordinates, Crystal Systems & VSEPR Data from PubChem, COD, & Materials Project)
+   SCIENTIFIC STRUCTURE & METALLURGICAL DATA REFERENCE
+   (Standard structural geometry, VSEPR data, and crystallographic reference
+   parameters — compiled from general chemistry/materials-science knowledge,
+   not extracted from a live external database.)
 ========================================================================= */
 const SCIENTIFIC_STRUCTURES = {
   H2O: {
     name: "Water",
     formula: "H₂O",
-    sourceDatabase: "NIH PubChem / NIST Reference Database",
+    sourceDatabase: "Standard spectroscopic reference geometry",
     representations: [
       {
         name: "VSEPR Molecular Topology",
@@ -646,7 +648,7 @@ const SCIENTIFIC_STRUCTURES = {
         angles: "104.5° (Experimental VSEPR)",
         hybridization: "sp³ Oxygen Center",
         coordination: "2 Ligands bound to central Oxygen",
-        notes: "Coordinates derived from NIST microwave spectroscopy. Rendered natively via Hylogos neon vector graphics.",
+        notes: "Based on water's well-established bent geometry and 104.5° bond angle. Rendered natively via Hylogos neon vector graphics.",
         coords: { atoms: [{el:'O', x:0, y:0}, {el:'H', x:60, y:50}, {el:'H', x:-60, y:50}], bonds: [[0,1],[0,2]] }
       },
       {
@@ -665,7 +667,7 @@ const SCIENTIFIC_STRUCTURES = {
   CO2: {
     name: "Carbon dioxide",
     formula: "CO₂",
-    sourceDatabase: "Crystallography Open Database (COD)",
+    sourceDatabase: "Standard gas-phase spectroscopic geometry",
     representations: [
       {
         name: "Linear Covalent Framework",
@@ -675,7 +677,7 @@ const SCIENTIFIC_STRUCTURES = {
         angles: "180.0° Perfect Symmetry",
         hybridization: "sp Carbon, sp² Oxygens",
         coordination: "2 Terminal Oxygens",
-        notes: "X-ray diffraction structural parameters from the Crystallography Open Database, styled with Hylogos neon lines.",
+        notes: "Based on CO2's well-established linear gas-phase geometry, determined by spectroscopy rather than X-ray diffraction (which characterizes solids, not gas-phase molecules). Styled with Hylogos neon lines.",
         coords: { atoms: [{el:'C', x:0, y:0}, {el:'O', x:80, y:0}, {el:'O', x:-80, y:0}], bonds: [[0,1],[0,2]], multiBond: true }
       }
     ]
@@ -683,17 +685,17 @@ const SCIENTIFIC_STRUCTURES = {
   STEEL: {
     name: "Steel",
     formula: "Fe–C",
-    sourceDatabase: "Materials Project / AFLOW Database",
+    sourceDatabase: "Standard crystallographic reference parameters",
     representations: [
       {
         name: "Bravais Crystal Lattice Matrix",
-        type: "Inorganic Crystal Structure Database (ICSD)",
+        type: "Body-Centered Cubic (BCC) Unit Cell",
         bonding: "Metallic Lattice Solution",
         geometry: "Body-Centered Cubic (BCC) $\alpha$-Ferrite",
         angles: "α = β = γ = 90.0°",
         hybridization: "Metallic Conduction Band",
         coordination: "Coordination Number 8",
-        notes: "Crystallographic lattice vectors extracted from Materials Project parameters and rendered natively as a Hylogos crystal grid.",
+        notes: "Based on the standard BCC lattice parameter for alpha-iron (~2.866 Å), rendered natively as a Hylogos crystal grid.",
         latticeType: "BCC", latticeParam: "a = 2.866 Å"
       },
       {
@@ -704,7 +706,7 @@ const SCIENTIFIC_STRUCTURES = {
         angles: "90.0° Isometric Cell",
         hybridization: "d-orbital metal overlap",
         coordination: "Nearest Neighbor Octahedral Sites",
-        notes: "Unit cell dimensions verified via AFLOW repository data, styled with Hylogos dark futuristic vector grids.",
+        notes: "Standard BCC unit cell dimensions for alpha-iron, styled with Hylogos dark futuristic vector grids.",
         latticeType: "UnitCell", latticeParam: "Space Group: Im-3m"
       }
     ]
@@ -715,7 +717,7 @@ const SCIENTIFIC_STRUCTURES = {
 ========================================================================= */
 const CERTIFIED_SCI_DB = {
   H2O: {
-    source: "NIST / PubChem Verified Database",
+    source: "Standard spectroscopic reference geometry",
     representations: [
       {
         name: "VSEPR Molecular Topology",
@@ -725,7 +727,7 @@ const CERTIFIED_SCI_DB = {
         angles: "104.5° (Experimental VSEPR)",
         hybridization: "sp³ Oxygen Center",
         coordination: "2 Ligands bound to central Oxygen",
-        notes: "Coordinates derived from NIST microwave spectroscopy. Rendered natively via Hylogos neon vector graphics.",
+        notes: "Based on water's well-established bent geometry and 104.5° bond angle. Rendered natively via Hylogos neon vector graphics.",
         atoms: [{el:'O', x:0, y:-10}, {el:'H', x:-60, y:45}, {el:'H', x:60, y:45}],
         bonds: [[0,1], [0,2]]
       },
@@ -745,7 +747,7 @@ const CERTIFIED_SCI_DB = {
     ]
   },
   CO2: {
-    source: "Crystallography Open Database (COD)",
+    source: "Standard gas-phase spectroscopic geometry",
     representations: [
       {
         name: "Linear Covalent Framework",
@@ -755,7 +757,7 @@ const CERTIFIED_SCI_DB = {
         angles: "180.0° Perfect Symmetry",
         hybridization: "sp Carbon, sp² Oxygens",
         coordination: "2 Terminal Oxygens",
-        notes: "X-ray diffraction structural parameters from the Crystallography Open Database, styled with Hylogos neon lines.",
+        notes: "Based on CO2's well-established linear gas-phase geometry, determined by spectroscopy rather than X-ray diffraction (which characterizes solids, not gas-phase molecules). Styled with Hylogos neon lines.",
         atoms: [{el:'O', x:-90, y:0}, {el:'C', x:0, y:0}, {el:'O', x:90, y:0}],
         bonds: [[0,1], [1,2]],
         doubleBonds: [[0,1], [1,2]]
@@ -764,17 +766,17 @@ const CERTIFIED_SCI_DB = {
   },
   STEEL: {
     name: "Steel", formula: "Fe–C", type: "Alloy",
-    source: "Materials Project / AFLOW Database",
+    source: "Standard crystallographic reference parameters",
     representations: [
       {
         name: "Bravais Crystal Lattice Matrix",
-        type: "Inorganic Crystal Structure Database (ICSD)",
+        type: "Body-Centered Cubic (BCC) Unit Cell",
         bonding: "Metallic Lattice Solution",
         geometry: "Body-Centered Cubic (BCC) $\alpha$-Ferrite",
         angles: "α = β = γ = 90.0°",
         hybridization: "Metallic Conduction Band",
         coordination: "Coordination Number 8",
-        notes: "Crystallographic lattice vectors extracted from Materials Project parameters and rendered natively as a Hylogos crystal grid.",
+        notes: "Based on the standard BCC lattice parameter for alpha-iron (~2.866 Å), rendered natively as a Hylogos crystal grid.",
         isLattice: true, latticeType: "BCC", latticeParam: "a = 2.866 Å"
       },
       {
@@ -785,9 +787,106 @@ const CERTIFIED_SCI_DB = {
         angles: "90.0° Isometric Cell",
         hybridization: "d-orbital metal overlap",
         coordination: "Nearest Neighbor Octahedral Sites",
-        notes: "Unit cell dimensions verified via AFLOW repository data, styled with Hylogos dark futuristic vector grids.",
+        notes: "Standard BCC unit cell dimensions for alpha-iron, styled with Hylogos dark futuristic vector grids.",
         isLattice: true, latticeType: "UnitCell", latticeParam: "Space Group: Im-3m"
       }
     ]
   }
 };
+
+
+// ===================== RESTORED EXPANSION (batch 2 + batch 3 fixes + batch 4) =====================
+
+// -- batch 3: blurb fixes for the original 49 molecules that had none --
+MOLECULE_BLURBS.HCN = "Extremely toxic even at tiny concentrations; also thought to have played a role in the early chemistry that led to life.";
+MOLECULE_BLURBS.H2CO = "Used to preserve biological specimens; also released in small amounts by some new furniture and building materials.";
+MOLECULE_BLURBS.PH3 = "Extremely toxic and can ignite spontaneously in air; sometimes discussed as a possible sign of biological activity elsewhere.";
+MOLECULE_BLURBS.F2 = "The most reactive element on the periodic table; so aggressive it was one of the last elements ever isolated.";
+MOLECULE_BLURBS.CL2 = "A toxic yellow-green gas used to disinfect drinking water and swimming pools worldwide.";
+MOLECULE_BLURBS.BR2 = "One of only two elements that are liquid at room temperature; a dense, corrosive reddish-brown liquid.";
+MOLECULE_BLURBS.SF6 = "Almost chemically inert and an excellent electrical insulator, but also one of the most potent greenhouse gases known.";
+MOLECULE_BLURBS.PCL5 = "A fuming solid used to convert carboxylic acids into more reactive acid chlorides.";
+MOLECULE_BLURBS.ALCL3 = "A classic catalyst for building carbon rings in organic chemistry; fumes on contact with moist air.";
+MOLECULE_BLURBS.SICL4 = "Reacts violently with water to release hydrochloric acid fumes; used to produce high-purity silicon and optical-fiber glass.";
+MOLECULE_BLURBS.NO = "A signaling molecule your own blood vessels produce to relax and widen; also a reactive air pollutant from combustion.";
+MOLECULE_BLURBS.H2SO4 = "The most-produced industrial chemical on Earth by mass; also the acid inside a car's lead-acid battery.";
+MOLECULE_BLURBS.HNO3 = "A major industrial acid used to manufacture both fertilizers and explosives.";
+MOLECULE_BLURBS.NAOH = "Known as lye or caustic soda; used in soap-making, drain cleaners, and paper production.";
+MOLECULE_BLURBS.FE2O3 = "Common rust — the reddish coating that forms when iron reacts slowly with oxygen and moisture.";
+MOLECULE_BLURBS.AL2O3 = "Known as alumina; extremely hard and heat-resistant, used as an abrasive and to produce aluminum metal itself.";
+MOLECULE_BLURBS.SIO2 = "The main component of ordinary sand and quartz; melted and cooled quickly, it becomes glass.";
+MOLECULE_BLURBS.TIO2 = "The most common white pigment in the world, found in paint, sunscreen, and even some candy coatings.";
+MOLECULE_BLURBS.ZNO = "The white pigment in mineral sunscreen and calamine lotion; also a widely used semiconductor material.";
+MOLECULE_BLURBS.CUO = "A black, brittle solid used as a pigment in ceramics and glass for centuries.";
+MOLECULE_BLURBS.AG2O = "A dark brown solid used in some silver-oxide batteries, prized for their long shelf life.";
+MOLECULE_BLURBS.MGCL2 = "Commonly spread on roads and sidewalks to melt ice at lower temperatures than road salt alone.";
+MOLECULE_BLURBS.FECL3 = "Used to etch copper circuit boards and to treat wastewater by clumping suspended particles together.";
+MOLECULE_BLURBS.CUCL2 = "Gives certain fireworks their blue-green color when burned; also used as a wood preservative.";
+MOLECULE_BLURBS.GEO2 = "A key raw material for making high-purity germanium used in fiber-optic cable cores and infrared optics.";
+MOLECULE_BLURBS.SNO2 = "A key component of transparent, electrically conductive coatings used on touchscreens and low-emissivity windows.";
+MOLECULE_BLURBS.CACO3 = "The main mineral in limestone, marble, and seashells; also the active ingredient in many antacid tablets.";
+MOLECULE_BLURBS.CF4 = "Extremely stable and non-flammable; used to etch silicon wafers during computer chip manufacturing.";
+MOLECULE_BLURBS.N2H4 = "A powerful reducing agent used as rocket propellant in the maneuvering thrusters of many spacecraft.";
+MOLECULE_BLURBS.C4H10 = "The fuel in disposable lighters and camping canisters, stored as a liquid under mild pressure.";
+MOLECULE_BLURBS.C5H12 = "A major component of gasoline; also used as a blowing agent to make foam insulation and packaging.";
+MOLECULE_BLURBS.C3H6O = "The solvent in most nail polish remover; your own body also produces small amounts of it naturally.";
+MOLECULE_BLURBS.C2H4O = "Formed naturally as fruit ripens; also produced in the body as an intermediate when metabolizing alcohol.";
+MOLECULE_BLURBS.C7H8 = "A common industrial solvent found in paint thinners and nail polish, with a distinctive sweet smell.";
+MOLECULE_BLURBS.C6H5OH = "A disinfectant strong enough to have been the first antiseptic used in surgery, back in the 1860s.";
+MOLECULE_BLURBS.HCOOH = "The compound responsible for the sting of ant bites and some nettle plants; also a food preservative.";
+MOLECULE_BLURBS.C2H6O = "An isomer of ethanol with completely different properties — a gas at room temperature, used as an aerosol propellant.";
+MOLECULE_BLURBS.NACO3 = "Known as soda ash or washing soda; a key ingredient in glass manufacturing and laundry detergents.";
+MOLECULE_BLURBS.NANO3 = "Known as Chile saltpeter; historically mined by the ton as a natural fertilizer and explosives ingredient.";
+MOLECULE_BLURBS.CASO4 = "Known as gypsum in its natural form; heated and ground into plaster of Paris for casts and drywall.";
+MOLECULE_BLURBS.HCLO4 = "One of the strongest acids known; also a powerful oxidizer that can react explosively with organic material.";
+MOLECULE_BLURBS.KHCO3 = "A gentler alternative to baking soda, used in some antacids and as a leavening agent in baking.";
+MOLECULE_BLURBS.CLCN = "A highly toxic gas historically stockpiled as a chemical weapon; today used in trace industrial synthesis.";
+MOLECULE_BLURBS.AUCL3 = "Used to gold-plate other metals and as a catalyst in some organic chemistry reactions.";
+MOLECULE_BLURBS.PTCL4 = "A key starting material for making cisplatin and related platinum-based cancer chemotherapy drugs.";
+MOLECULE_BLURBS.PBSO4 = "Forms on the plates of a car battery as it discharges, and dissolves back away as it recharges.";
+MOLECULE_BLURBS.CUSO4 = "Known as blue vitriol; used as a fungicide on crops and to keep swimming pools free of algae.";
+MOLECULE_BLURBS.FES = "Forms naturally in oxygen-poor environments like swamps and sewers, sometimes giving them a rotten-egg smell.";
+MOLECULE_BLURBS.LIBR = "Used in large industrial air-conditioning systems as an absorbent for water vapor.";
+
+
+// -- batch 3: alloy percentage corrections (bumped matrix element to reach 100%) --
+if (ALLOYS.INCONEL) ALLOYS.INCONEL.elements.Ni += 3.0;
+if (ALLOYS.HASTELLOY) ALLOYS.HASTELLOY.elements.Ni += 2.0;
+if (ALLOYS.NIMONIC) ALLOYS.NIMONIC.elements.Ni += 0.7;
+if (ALLOYS.M2_STEEL) ALLOYS.M2_STEEL.elements.Fe += 0.5;
+if (ALLOYS.D2_STEEL) ALLOYS.D2_STEEL.elements.Fe += 0.45;
+if (ALLOYS.WASPALOY) ALLOYS.WASPALOY.elements.Ni += 1.1;
+if (ALLOYS.HAYNES_230) ALLOYS.HAYNES_230.elements.Ni += 2.0;
+if (ALLOYS.AERMET_100) ALLOYS.AERMET_100.elements.Fe += 1.47;
+if (ALLOYS.GLIDCOP) ALLOYS.GLIDCOP.elements.Cu += 0.3;
+if (ALLOYS.RENE41) ALLOYS.RENE41.elements.Ni += 0.4;
+if (ALLOYS.FERRIUM_M54) ALLOYS.FERRIUM_M54.elements.Fe += 5.0;
+if (ALLOYS.ZERON_100) ALLOYS.ZERON_100.elements.Fe += 3.1;
+
+
+// -- batch 2: 25 new molecules --
+MOLECULE_BLURBS.HBR = "A strong acid in water; used industrially to make inorganic bromide compounds.";
+MOLECULE_BLURBS.HI = "The strongest of the hydrohalic acids; used to make some pharmaceuticals and as a reducing agent.";
+MOLECULE_BLURBS.ICL = "An interhalogen compound that acts as a milder, more selective iodinating agent than iodine itself.";
+MOLECULE_BLURBS.CAF2 = "Found naturally as the mineral fluorite; historically the main source of fluorine and hydrofluoric acid.";
+MOLECULE_BLURBS.MGF2 = "Highly transparent from the ultraviolet into the infrared, so it's used as a coating on camera and telescope lenses.";
+MOLECULE_BLURBS.ALF3 = "An intermediate in producing aluminum metal, added to the electrolysis bath to lower its melting point.";
+MOLECULE_BLURBS.KBR = "Once widely prescribed as a sedative and anticonvulsant before modern medications replaced it.";
+MOLECULE_BLURBS.KI = "Added to table salt to prevent iodine-deficiency disorders; also distributed near nuclear plants to block thyroid radiation uptake.";
+MOLECULE_BLURBS.FECL2 = "A common iron source in water treatment, used to help precipitate out other contaminants.";
+MOLECULE_BLURBS.NIO = "A dull green solid used as a pigment in ceramics and ceramic glazes for centuries.";
+MOLECULE_BLURBS.MNO2 = "The active material inside ordinary alkaline and zinc-carbon batteries.";
+MOLECULE_BLURBS.HCLO = "The active disinfecting molecule in chlorinated pool water and bleach solutions — your own white blood cells make it too.";
+MOLECULE_BLURBS.PF3 = "Highly toxic, similar in danger to carbon monoxide, since it also binds strongly to blood hemoglobin.";
+MOLECULE_BLURBS.PCL3 = "A key industrial intermediate used to manufacture pesticides and flame retardants.";
+MOLECULE_BLURBS.XEO3 = "A dangerously explosive solid — one of the few noble-gas compounds unstable enough to detonate.";
+MOLECULE_BLURBS.SIF4 = "Released when hydrofluoric acid reacts with glass or sand; used industrially to make high-purity silicon.";
+MOLECULE_BLURBS.CLF3 = "So reactive it can ignite sand, asbestos, and glass on contact; used to clean chemical vapor deposition chambers.";
+MOLECULE_BLURBS.IF5 = "A powerful fluorinating agent used in organic synthesis to selectively introduce fluorine atoms.";
+MOLECULE_BLURBS.N2O5 = "The anhydride of nitric acid; a key nighttime reservoir molecule in atmospheric chemistry.";
+MOLECULE_BLURBS.PF5 = "A strong Lewis acid used as a catalyst and, notably, as a dopant to make conductive polymers.";
+MOLECULE_BLURBS.CH3NH2 = "A fishy-smelling gas released by decaying organisms; also used to manufacture pesticides and pharmaceuticals.";
+MOLECULE_BLURBS.C2H5NH2 = "A building block in pharmaceutical and pesticide synthesis, with a strong ammonia-like odor.";
+MOLECULE_BLURBS.CH3CN = "A common solvent in chemistry labs and in HPLC analysis, prized for dissolving both polar and nonpolar compounds.";
+MOLECULE_BLURBS.GLYCINE = "The simplest amino acid and the only one that isn't chiral; a building block of proteins throughout the body.";
+MOLECULE_BLURBS.PYRIDINE = "A f
