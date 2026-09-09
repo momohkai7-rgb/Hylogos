@@ -330,6 +330,39 @@
         { name: "Crystal Field Splitting Energy", formula: "Δ_o = E(eg) - E(t2g)", desc: "Energy gap between d-orbital sets in an octahedral transition-metal complex, set by ligand field strength." },
         { name: "Spin-Only Magnetic Moment", formula: "μ_S = √[n(n + 2)] μ_B", desc: "Predicts a transition-metal complex's magnetic moment from its number of unpaired d-electrons n." },
       ]
+    },
+    {
+      category: "21. Structural Mechanics & Stability",
+      items: [
+        { name: "Euler's Critical Buckling Load", formula: "P_cr = π²EI / (KL)²", desc: "Load at which a slender column buckles; K is the effective-length factor set by the column's end conditions." },
+        { name: "Second Moment of Area (Rectangular Section)", formula: "I = bh³ / 12", desc: "Cross-sectional stiffness term about the centroidal axis; b = width, h = height." },
+        { name: "Flexural (Bending) Stress", formula: "σ = My / I", desc: "Bending stress at distance y from the neutral axis under bending moment M." },
+        { name: "Beam Deflection (Simply Supported, Center Load)", formula: "δ_max = PL³ / (48EI)", desc: "Maximum deflection at midspan of a simply supported beam under a central point load P." },
+        { name: "Torsional Shear Stress", formula: "τ = Tr / J", desc: "Shear stress at radius r in a shaft under torque T; J is the polar second moment of area." },
+        { name: "Radius of Gyration", formula: "r = √(I / A)", desc: "Effective distance over which a cross-section's area is concentrated for bending/buckling purposes." },
+        { name: "Slenderness Ratio", formula: "λ = KL / r", desc: "Column geometry parameter that determines whether failure is by buckling (high λ) or yielding (low λ)." },
+      ]
+    },
+    {
+      category: "22. Viscoelasticity & Polymer Dynamics",
+      items: [
+        { name: "Maxwell Model (Stress Relaxation)", formula: "σ(t) = σ₀ · exp(-t / τ)", desc: "Stress decay over time in a viscoelastic solid held at constant strain; spring and dashpot in series." },
+        { name: "Relaxation Time", formula: "τ = η / E", desc: "Characteristic timescale over which viscoelastic stress relaxes, set by viscosity and stiffness." },
+        { name: "Kelvin-Voigt Model (Creep Compliance)", formula: "ε(t) = (σ₀ / E) · [1 - exp(-t / τ)]", desc: "Strain growth over time under constant stress; spring and dashpot in parallel." },
+        { name: "Complex Modulus (Dynamic Mechanical Analysis)", formula: "E* = E′ + iE″", desc: "Splits a viscoelastic material's response to oscillatory load into elastic (storage, E′) and viscous (loss, E″) parts." },
+        { name: "Loss Tangent", formula: "tan δ = E″ / E′", desc: "Ratio of energy dissipated to energy stored per oscillation cycle — a standard DMA damping metric." },
+        { name: "WLF Equation (Time-Temperature Superposition)", formula: "log(a_T) = -C₁(T - T_ref) / [C₂ + (T - T_ref)]", desc: "Predicts how polymer relaxation timescales shift with temperature; universal constants C₁≈17.4, C₂≈51.6 K when T_ref = T_g." },
+      ]
+    },
+    {
+      category: "23. Energy Storage & Semiconductor Devices",
+      items: [
+        { name: "Shockley Diode Equation", formula: "I = I₀ · [exp(qV / kT) - 1]", desc: "Current-voltage relationship of an ideal p-n junction diode." },
+        { name: "Theoretical Specific Capacity (Battery Electrode)", formula: "Q_th = nF / (3.6M)  [mAh/g]", desc: "Maximum charge storable per gram of active material; n = electrons transferred, M = molar mass." },
+        { name: "C-Rate", formula: "C-rate = I / Q_nominal", desc: "Charge/discharge current normalized to the cell's rated capacity — a C-rate of 1C fully charges/discharges in one hour." },
+        { name: "Coulombic Efficiency", formula: "CE % = (Q_discharge / Q_charge) × 100", desc: "Fraction of charge recovered on discharge relative to charge put in — a key battery-cycling health metric." },
+        { name: "MOSFET Saturation Drain Current", formula: "I_D = (1/2) · μ_nC_ox · (W/L) · (V_GS - V_th)²", desc: "Drain current of a MOSFET operating in saturation, as a function of gate overdrive voltage." },
+      ]
     }
   ];
 
@@ -404,22 +437,53 @@
     // bracket-boundary scanning can't reattach. Safer to skip than show it.
     const isStraySuperscriptLetter = inner => inner.length === 1 && SUPERSCRIPT_LETTERS.has(inner);
 
+    // A trailing exponent directly after a closing paren — e.g. the "²" in
+    // "(KL)²" — belongs to that paren group. Without absorbing it, a
+    // denominator like "(KL)²" would resolve to just "KL" with the "²"
+    // left dangling outside the fraction, visually reading as if the whole
+    // fraction were squared rather than just the denominator.
+    const SUPERSCRIPT_RUN_AT_START = /^[⁰¹²³⁴⁵⁶⁷⁸⁹ⁿⁱ⁺⁻]+/;
+    const SUPERSCRIPT_RUN_AT_END = /[⁰¹²³⁴⁵⁶⁷⁸⁹ⁿⁱ⁺⁻]+$/;
+
     function resolveNumerator(s, numEnd) {
-      if (s[numEnd - 1] !== ")") return tokenBack(s, numEnd);
-      const base = parenBack(s, numEnd);
+      const supMatch = s.slice(0, numEnd).match(SUPERSCRIPT_RUN_AT_END);
+      const suffix = supMatch ? supMatch[0] : "";
+      const coreEnd = numEnd - suffix.length;
+
+      if (s[coreEnd - 1] !== ")") {
+        const t = tokenBack(s, coreEnd);
+        if (!t) return null;
+        return suffix ? { start: t.start, end: numEnd, inner: t.inner + suffix } : t;
+      }
+      const base = parenBack(s, coreEnd);
       if (!base) return null;
       let k = base.start;
       while (k > 0 && isPrefixChar(s[k - 1])) k--;
-      if (k < base.start) return { start: k, end: base.end, inner: `${s.slice(k, base.start)}(${base.inner})` };
-      return base;
+      const prefix = k < base.start ? s.slice(k, base.start) : "";
+      if (!prefix && !suffix) return base; // common case: strip redundant parens as before
+      return { start: k, end: numEnd, inner: `${prefix}(${base.inner})${suffix}` };
     }
     function resolveDenominator(s, denStart) {
-      if (s[denStart] === "(") return parenFwd(s, denStart);
+      function withTrailingSuperscript(base) {
+        const supMatch = s.slice(base.end).match(SUPERSCRIPT_RUN_AT_START);
+        if (!supMatch) return { base, suffix: "" };
+        return { base: { start: base.start, end: base.end + supMatch[0].length, inner: base.inner }, suffix: supMatch[0] };
+      }
+      if (s[denStart] === "(") {
+        const g = parenFwd(s, denStart);
+        if (!g) return null;
+        const { base, suffix } = withTrailingSuperscript(g);
+        return suffix ? { start: base.start, end: base.end, inner: `(${g.inner})${suffix}` } : g;
+      }
       let k = denStart;
       while (k < s.length && isPrefixChar(s[k])) k++;
       if (k > denStart && s[k] === "(") {
         const group = parenFwd(s, k);
-        if (group) return { start: denStart, end: group.end, inner: `${s.slice(denStart, k)}(${group.inner})` };
+        if (group) {
+          const { base, suffix } = withTrailingSuperscript(group);
+          const prefix = s.slice(denStart, k);
+          return { start: denStart, end: base.end, inner: `${prefix}(${group.inner})${suffix}` };
+        }
       }
       return tokenFwd(s, denStart);
     }
