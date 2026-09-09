@@ -1004,7 +1004,7 @@ footer {
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 1.05rem;
-  color: var(--text-main);
+  color: var(--photon-blue);
   letter-spacing: -0.01em;
 }
 
