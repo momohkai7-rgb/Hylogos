@@ -69,6 +69,8 @@
         { name: "Escape Velocity", formula: "v_esc = √(2GM / r)", desc: "Minimum speed needed to escape a gravitating body's pull from distance r, ignoring drag." },
         { name: "Kepler's Third Law (Circular Orbit)", formula: "T² = 4π²r³ / (GM)", desc: "Orbital period squared is proportional to orbital radius cubed, for a body orbiting mass M." },
         { name: "Moment of Inertia (Solid Sphere)", formula: "I = (2/5)MR²", desc: "Rotational inertia of a uniform solid sphere about an axis through its center." },
+        { name: "Rotational Kinetic Energy", formula: "KE_rot = (1/2)Iω²", desc: "Kinetic energy of a rotating rigid body, the rotational analog of (1/2)mv²." },
+        { name: "Parallel Axis Theorem", formula: "I = I_cm + Md²", desc: "Moment of inertia about any axis equals the centroidal moment of inertia plus Md² for an axis shifted by distance d." },
       ]
     },
     {
@@ -119,6 +121,11 @@
         { name: "Energy Stored in a Capacitor", formula: "U = (1/2)CV²", desc: "Electrical potential energy stored in a charged capacitor." },
         { name: "Energy Stored in an Inductor", formula: "U = (1/2)LI²", desc: "Magnetic energy stored in an inductor carrying current I." },
         { name: "Resonant Frequency (LC Circuit)", formula: "f = 1 / (2π√(LC))", desc: "Natural oscillation frequency of an inductor-capacitor circuit." },
+        { name: "Transformer Equation (Turns Ratio)", formula: "V_s / V_p = N_s / N_p", desc: "Secondary-to-primary voltage ratio in an ideal transformer equals the turns ratio." },
+        { name: "Magnetic Dipole Moment (Current Loop)", formula: "μ = NIA", desc: "Magnetic moment of a coil with N turns, current I, and enclosed area A." },
+        { name: "Poynting Vector", formula: "S = E × H", desc: "Power flux (energy per area per time) carried by an electromagnetic wave, in the direction of propagation." },
+        { name: "Gauss's Law for Magnetism", formula: "∮ B · dA = 0", desc: "No magnetic monopoles exist — magnetic field lines always close on themselves, so net magnetic flux through any closed surface is zero." },
+        { name: "Ampère-Maxwell Law", formula: "∮ B · dl = μ₀I_enc + μ₀ε₀(dΦ_E / dt)", desc: "Maxwell's correction to Ampère's law: a changing electric flux generates a magnetic field too, just as current does — the missing piece that predicts self-propagating electromagnetic waves." },
       ]
     },
     {
@@ -172,6 +179,8 @@
         { name: "Magnification (Thin Lens)", formula: "m = -d_i / d_o", desc: "Ratio of image height to object height; sign indicates upright (+) or inverted (-) image." },
         { name: "Critical Angle (Total Internal Reflection)", formula: "θ_c = sin⁻¹(n₂ / n₁)", desc: "Angle of incidence beyond which light is entirely reflected at an interface, going from denser to less dense medium." },
         { name: "Numerical Aperture", formula: "NA = n·sin(θ)", desc: "Measures a lens or fiber's light-gathering ability and resolving power." },
+        { name: "Fresnel Reflectance (Normal Incidence)", formula: "R = [(n₁ - n₂) / (n₁ + n₂)]²", desc: "Fraction of light intensity reflected at a boundary between two media, for light striking straight-on." },
+        { name: "Single-Slit Diffraction Minima", formula: "a·sin(θ) = mλ", desc: "Angles at which destructive interference produces dark fringes in single-slit diffraction; a = slit width." },
       ]
     },
     {
@@ -270,6 +279,7 @@
         { name: "Basquin's Law (Stress-Life Fatigue)", formula: "Δσ/2 = σ_f' · (2N_f)^b", desc: "Relates cyclic stress amplitude to fatigue life in the high-cycle regime." },
         { name: "Vickers Hardness Number", formula: "HV = 1.854·F / d²", desc: "Standard indentation hardness from applied load F (kgf) and mean diagonal length d (mm) of a diamond pyramid indent." },
         { name: "Ductility (Percent Elongation)", formula: "%EL = [(L_f - L₀) / L₀] × 100", desc: "Permanent tensile elongation at fracture, relative to the original gauge length L₀." },
+        { name: "Fatigue Endurance Ratio", formula: "endurance ratio = σ_e / σ_UTS", desc: "Ratio of a material's fatigue endurance limit to its ultimate tensile strength — typically ~0.4-0.5 for steels." },
       ]
     },
     {
