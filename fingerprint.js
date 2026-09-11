@@ -122,7 +122,7 @@ const SPECTRAL_LINES = {
       { wl: 516.89, intensity: 0.55, label: "b3" },
       { wl: 527.04, intensity: 0.65, label: "E2" },
     ],
-    note: "Iron has thousands of documented lines — these eight are the classic Fraunhofer absorption features named from the Sun's spectrum in the 1800s, long before their cause was understood. Renders as a continuous trace since real iron spectra are far denser than a barcode can show cleanly."
+    note: "Iron has thousands of documented lines — these eight are the classic Fraunhofer absorption features named from the Sun's spectrum in the 1800s, long before their cause was understood. This is a small, well-spaced sample of iron's real spectrum, not the full picture."
   },
   Ca: {
     lines: [
@@ -252,15 +252,21 @@ function wavelengthToRGB(wl) {
     return ((wl - VIS_MIN) / (VIS_MAX - VIS_MIN)) * 100;
   }
 
-  // Decide discrete vs trace: trace mode kicks in once there are enough
-  // lines that bars would start overlapping, or once lines sit close
-  // enough together (within 3nm) that even a modest count would collide.
+  // Decide discrete vs trace based on genuine crowding, not just line
+  // count or a single coincidentally-close pair. A handful of well-spaced
+  // lines (like iron's 8 Fraunhofer lines, ~20nm apart on average) should
+  // stay as clean discrete bars even if two of them happen to sit close —
+  // trace mode is for spectra that are actually dense throughout.
   function chooseMode(lines) {
-    if (lines.length > 12) return "trace";
+    if (lines.length < 4) return "discrete";
     const sorted = [...lines].sort((a, b) => a.wl - b.wl);
-    for (let i = 1; i < sorted.length; i++) {
-      if (sorted[i].wl - sorted[i - 1].wl < 3 && lines.length > 6) return "trace";
-    }
+    const gaps = [];
+    for (let i = 1; i < sorted.length; i++) gaps.push(sorted[i].wl - sorted[i - 1].wl);
+    const tightGaps = gaps.filter(g => g < 4).length;
+    // Trace mode only once a real majority of neighboring lines are tightly
+    // packed, or there are simply too many lines for bars to stay legible.
+    if (lines.length > 20) return "trace";
+    if (gaps.length > 0 && tightGaps / gaps.length > 0.5 && lines.length >= 8) return "trace";
     return "discrete";
   }
 
