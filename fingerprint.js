@@ -113,13 +113,16 @@ const SPECTRAL_LINES = {
   },
   Fe: {
     lines: [
-      { wl: 495.76, intensity: 0.5 },
-      { wl: 516.75, intensity: 0.4 },
-      { wl: 526.95, intensity: 0.45 },
-      { wl: 532.80, intensity: 0.55 },
-      { wl: 561.61, intensity: 0.35 },
+      { wl: 382.04, intensity: 0.35, label: "L" },
+      { wl: 430.79, intensity: 0.55, label: "G" },
+      { wl: 438.35, intensity: 0.4,  label: "e" },
+      { wl: 466.81, intensity: 0.45, label: "d" },
+      { wl: 495.76, intensity: 0.5,  label: "c" },
+      { wl: 516.73, intensity: 0.6,  label: "b4" },
+      { wl: 516.89, intensity: 0.55, label: "b3" },
+      { wl: 527.04, intensity: 0.65, label: "E2" },
     ],
-    note: "Iron produces thousands of spectral lines — this forest of them is a key tool for measuring the composition of stars, including our Sun."
+    note: "Iron has thousands of documented lines — these eight are the classic Fraunhofer absorption features named from the Sun's spectrum in the 1800s, long before their cause was understood. Renders as a continuous trace since real iron spectra are far denser than a barcode can show cleanly."
   },
   Ca: {
     lines: [
@@ -166,33 +169,72 @@ const SPECTRAL_LINES = {
     ],
     note: "Barium's blue-green lines are the classic ingredient behind the green shells in fireworks displays."
   },
+  Rb: {
+    lines: [
+      { wl: 780.0, intensity: 1.0, label: "D2" },
+      { wl: 794.8, intensity: 0.9, label: "D1" },
+    ],
+    note: "Rubidium's doublet sits at the deep-red edge of vision, giving its flame test a dim violet-red glow."
+  },
+  Cs: {
+    lines: [
+      { wl: 852.1, intensity: 1.0, label: "D2" },
+      { wl: 894.3, intensity: 0.8, label: "D1" },
+    ],
+    note: "These near-infrared D-lines are the basis of the cesium atomic clock that defines the SI second — barely visible to the eye as a faint red glow."
+  },
+  Mg: {
+    lines: [
+      { wl: 448.1, intensity: 0.4, label: "Mg II" },
+      { wl: 516.7, intensity: 0.3 },
+      { wl: 517.3, intensity: 0.55, label: "Mg b" },
+      { wl: 518.4, intensity: 1.0, label: "Mg b" },
+    ],
+    note: "The famous 'Mg b' triplet near 518nm is a standard yardstick astronomers use to measure how metal-rich a star or galaxy is."
+  },
 };
 
-// Convert a visible wavelength (nm, ~380-750) to an approximate RGB color
-// for rendering the barcode bar itself.
-function wavelengthToRGB(wl) {
+// Convert a wavelength (nm, ~380-900) to an approximate RGB color.
+// 750-900nm is technically near-infrared (invisible to the eye) but
+// rendered as a fading deep red so the bar still reads as "this end of
+// the spectrum" rather than turning gray.
+function wavelengthToRGBArr(wl) {
   let r=0,g=0,b=0;
   if (wl >= 380 && wl < 440) { r = -(wl-440)/(440-380); g = 0; b = 1; }
   else if (wl >= 440 && wl < 490) { r = 0; g = (wl-440)/(490-440); b = 1; }
   else if (wl >= 490 && wl < 510) { r = 0; g = 1; b = -(wl-510)/(510-490); }
   else if (wl >= 510 && wl < 580) { r = (wl-510)/(580-510); g = 1; b = 0; }
   else if (wl >= 580 && wl < 645) { r = 1; g = -(wl-645)/(645-580); b = 0; }
-  else if (wl >= 645 && wl <= 750) { r = 1; g = 0; b = 0; }
+  else if (wl >= 645 && wl <= 900) { r = 1; g = 0; b = 0; }
   else { r=0.5; g=0.5; b=0.5; }
-  // Intensity falloff near the visible edges
+  // Intensity falloff near the visible edges (fades toward violet <420nm
+  // and deep into near-IR >700nm, reaching a dim glow by 900nm)
   let factor = 1;
   if (wl >= 380 && wl < 420) factor = 0.3 + 0.7*(wl-380)/(420-380);
-  else if (wl > 700 && wl <= 750) factor = 0.3 + 0.7*(750-wl)/(750-700);
+  else if (wl > 700 && wl <= 900) factor = 0.55 - 0.4*(wl-700)/(900-700);
   const gamma = 0.8;
   const toByte = c => Math.round(255 * Math.pow(Math.max(0,c*factor), gamma));
-  return `rgb(${toByte(r)},${toByte(g)},${toByte(b)})`;
+  return [toByte(r), toByte(g), toByte(b)];
+}
+function wavelengthToRGB(wl) {
+  const [r, g, b] = wavelengthToRGBArr(wl);
+  return `rgb(${r},${g},${b})`;
 }
 
 // ─── Rendering ──────────────────────────────────────────────────────────────
 // Self-contained module, mirrors structures.js's show/hide pattern.
+//
+// Two display modes, chosen automatically per element:
+//  - "discrete": individual glowing bars, for sparse/simple spectra (Na, Ca...)
+//  - "trace":    a continuous intensity curve, for dense spectra (Fe, and any
+//                future transition-metal / lanthanide data) where individual
+//                bars would overlap into an unreadable smear. Each line
+//                contributes a small Gaussian peak; peaks are summed into one
+//                curve — the same technique real spectrometers use to render
+//                spectra too dense to resolve into separate lines.
 
 (function () {
-  const VIS_MIN = 380, VIS_MAX = 750;
+  const VIS_MIN = 380, VIS_MAX = 900;
 
   function els() {
     return {
@@ -210,6 +252,107 @@ function wavelengthToRGB(wl) {
     return ((wl - VIS_MIN) / (VIS_MAX - VIS_MIN)) * 100;
   }
 
+  // Decide discrete vs trace: trace mode kicks in once there are enough
+  // lines that bars would start overlapping, or once lines sit close
+  // enough together (within 3nm) that even a modest count would collide.
+  function chooseMode(lines) {
+    if (lines.length > 12) return "trace";
+    const sorted = [...lines].sort((a, b) => a.wl - b.wl);
+    for (let i = 1; i < sorted.length; i++) {
+      if (sorted[i].wl - sorted[i - 1].wl < 3 && lines.length > 6) return "trace";
+    }
+    return "discrete";
+  }
+
+  function renderDiscrete(host, tooltip, lines) {
+    host.innerHTML = "";
+    lines.forEach(line => {
+      const bar = document.createElement("div");
+      bar.className = "fp-line";
+      const leftPct = pctFromWavelength(line.wl);
+      bar.style.left = `${leftPct}%`;
+      bar.style.height = `${Math.max(18, line.intensity * 100)}%`;
+      const color = wavelengthToRGB(line.wl);
+      bar.style.background = color;
+      bar.style.boxShadow = `0 0 10px ${color}, 0 0 22px ${color}`;
+
+      bar.addEventListener("mouseenter", () => {
+        tooltip.textContent = line.label
+          ? `${line.wl.toFixed(1)} nm · ${line.label}`
+          : `${line.wl.toFixed(1)} nm`;
+        tooltip.style.left = `${leftPct}%`;
+        tooltip.classList.add("visible");
+      });
+      bar.addEventListener("mouseleave", () => {
+        tooltip.classList.remove("visible");
+      });
+
+      host.appendChild(bar);
+    });
+  }
+
+  function renderTrace(host, lines) {
+    host.innerHTML = "";
+    const canvas = document.createElement("canvas");
+    canvas.className = "fp-trace-canvas";
+    host.appendChild(canvas);
+
+    // Layout must be settled before reading clientWidth/Height, otherwise
+    // they can read 0 and silently draw nothing.
+    requestAnimationFrame(() => {
+      const w = canvas.clientWidth || host.clientWidth || 660;
+      const h = canvas.clientHeight || host.clientHeight || 150;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      canvas.width = Math.max(1, Math.round(w * dpr));
+      canvas.height = Math.max(1, Math.round(h * dpr));
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+
+      const N = 400;
+      const sigma = 1.6;
+      const intensityAt = new Array(N).fill(0);
+
+      lines.forEach(l => {
+        const centerBin = ((l.wl - VIS_MIN) / (VIS_MAX - VIS_MIN)) * N;
+        const spread = Math.ceil(sigma * 4);
+        const loBin = Math.max(0, Math.floor(centerBin - spread));
+        const hiBin = Math.min(N - 1, Math.ceil(centerBin + spread));
+        for (let b = loBin; b <= hiBin; b++) {
+          const d = b - centerBin;
+          intensityAt[b] += l.intensity * Math.exp(-(d * d) / (2 * sigma * sigma));
+        }
+      });
+
+      const maxI = Math.max(...intensityAt, 0.001);
+
+      for (let b = 0; b < N; b++) {
+        const wl = VIS_MIN + (b / N) * (VIS_MAX - VIS_MIN);
+        const norm = Math.min(1, intensityAt[b] / maxI);
+        const barH = norm * (h - 10);
+        const x = (b / N) * w;
+        const [r, g, bch] = wavelengthToRGBArr(wl);
+        const grad = ctx.createLinearGradient(0, h, 0, h - barH);
+        grad.addColorStop(0, `rgba(${r},${g},${bch},${0.15 + norm * 0.55})`);
+        grad.addColorStop(1, `rgba(${r},${g},${bch},${0.5 + norm * 0.5})`);
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, h - barH, w / N + 0.5, barH);
+      }
+
+      ctx.beginPath();
+      for (let b = 0; b < N; b++) {
+        const norm = Math.min(1, intensityAt[b] / maxI);
+        const x = (b / N) * w;
+        const y = h - norm * (h - 10);
+        if (b === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = "rgba(255,255,255,0.55)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+  }
+
   window.fingerprintShow = function (symbol) {
     const e = els();
     if (!e.section) return;
@@ -222,40 +365,22 @@ function wavelengthToRGB(wl) {
 
     e.section.classList.remove("hidden");
     const elName = (typeof ELEMENTS !== "undefined" && ELEMENTS[symbol]) ? ELEMENTS[symbol].name : symbol;
+    const mode = chooseMode(data.lines);
     e.title.textContent = `${elName} — atomic fingerprint`;
-    e.count.textContent = `${data.lines.length} line${data.lines.length === 1 ? "" : "s"}`;
+    e.count.textContent = mode === "trace"
+      ? `${data.lines.length} lines · dense spectrum`
+      : `${data.lines.length} line${data.lines.length === 1 ? "" : "s"}`;
 
-    // Barcode bars
-    e.barcode.innerHTML = "";
-    data.lines.forEach(line => {
-      const bar = document.createElement("div");
-      bar.className = "fp-line";
-      const leftPct = pctFromWavelength(line.wl);
-      bar.style.left = `${leftPct}%`;
-      bar.style.height = `${Math.max(18, line.intensity * 100)}%`;
-      const color = (typeof wavelengthToRGB === "function") ? wavelengthToRGB(line.wl) : "#fff";
-      bar.style.background = color;
-      bar.style.boxShadow = `0 0 10px ${color}, 0 0 22px ${color}`;
-      bar.dataset.wl = line.wl.toFixed(1);
-      bar.dataset.label = line.label || "";
-
-      bar.addEventListener("mouseenter", () => {
-        e.tooltip.textContent = line.label
-          ? `${line.wl.toFixed(1)} nm · ${line.label}`
-          : `${line.wl.toFixed(1)} nm`;
-        e.tooltip.style.left = `${leftPct}%`;
-        e.tooltip.classList.add("visible");
-      });
-      bar.addEventListener("mouseleave", () => {
-        e.tooltip.classList.remove("visible");
-      });
-
-      e.barcode.appendChild(bar);
-    });
+    e.tooltip.classList.remove("visible");
+    if (mode === "discrete") {
+      renderDiscrete(e.barcode, e.tooltip, data.lines);
+    } else {
+      renderTrace(e.barcode, data.lines);
+    }
 
     // Ruler ticks every 50nm
     e.ruler.innerHTML = "";
-    for (let wl = 400; wl <= 700; wl += 50) {
+    for (let wl = 400; wl <= 900; wl += 50) {
       const tick = document.createElement("span");
       tick.className = "fp-tick";
       tick.style.left = `${pctFromWavelength(wl)}%`;
