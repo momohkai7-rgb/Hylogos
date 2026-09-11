@@ -8,6 +8,7 @@
     overlay: document.getElementById("cheatSheetOverlay"),
     close: document.getElementById("cheatSheetClose"),
     contentHost: document.getElementById("csContentHost"),
+    search: document.getElementById("csSearchInput"),
   };
 
   if (!els.toggle || !els.overlay) return;
@@ -670,8 +671,9 @@
           <div class="cs-category-items">
       `;
       section.items.forEach(item => {
+        const searchBlob = escapeHtml(`${item.name} ${item.formula} ${item.desc}`.toLowerCase());
         html += `
-            <div class="cs-item">
+            <div class="cs-item" data-search="${searchBlob}">
               <div class="cs-item-name">${escapeHtml(item.name)}</div>
               <div class="cs-item-formula mono">${prettifyFormula(item.formula)}</div>
               <div class="cs-item-desc">${escapeHtml(item.desc)}</div>
@@ -686,12 +688,59 @@
   function openCheatSheet() {
     els.overlay.classList.remove("hidden");
     els.overlay.setAttribute("aria-hidden", "false");
+    if (els.search) els.search.value = "";
     renderCheatSheet();
   }
 
   function closeCheatSheet() {
     els.overlay.classList.add("hidden");
     els.overlay.setAttribute("aria-hidden", "true");
+  }
+
+  // Live search: filters items by substring match against name+formula+desc,
+  // auto-expands any category that has a match, and hides categories with
+  // none. Clearing the box restores the normal fully-collapsed state.
+  function filterCheatSheet(query) {
+    const q = query.trim().toLowerCase();
+    const blocks = els.contentHost.querySelectorAll(".cs-category-block");
+    let anyMatch = false;
+
+    blocks.forEach(block => {
+      const items = block.querySelectorAll(".cs-item");
+      let blockHasMatch = false;
+      items.forEach(item => {
+        const match = !q || (item.dataset.search || "").includes(q);
+        item.classList.toggle("cs-hidden", !match);
+        if (match) blockHasMatch = true;
+      });
+      block.classList.toggle("cs-hidden", !blockHasMatch);
+      if (blockHasMatch) anyMatch = true;
+
+      const header = block.querySelector(".cs-category-header");
+      if (q) {
+        block.classList.toggle("open", blockHasMatch);
+        if (header) header.setAttribute("aria-expanded", blockHasMatch ? "true" : "false");
+      } else {
+        block.classList.remove("open");
+        if (header) header.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    let emptyMsg = els.contentHost.querySelector(".cs-empty");
+    if (q && !anyMatch) {
+      if (!emptyMsg) {
+        emptyMsg = document.createElement("div");
+        emptyMsg.className = "cs-empty";
+        els.contentHost.appendChild(emptyMsg);
+      }
+      emptyMsg.textContent = `No formulas match "${query.trim()}"`;
+    } else if (emptyMsg) {
+      emptyMsg.remove();
+    }
+  }
+
+  if (els.search) {
+    els.search.addEventListener("input", () => filterCheatSheet(els.search.value));
   }
 
   // Event delegation: category headers and the expand/collapse-all toolbar
