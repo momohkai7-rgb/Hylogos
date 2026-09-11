@@ -69,6 +69,19 @@
       <p id="structureNotes" class="struct-notes"></p>
     </div>
 
+    <div id="fingerprintSection" class="panel fingerprint-panel hidden">
+      <div class="panel-head">
+        <span id="fingerprintTitle">Atomic Fingerprint</span>
+        <span id="fingerprintCount" class="mono">—</span>
+      </div>
+      <div class="fp-host">
+        <div id="fingerprintBarcode" class="fp-barcode"></div>
+        <div id="fingerprintTooltip" class="fp-tooltip"></div>
+        <div id="fingerprintRuler" class="fp-ruler"></div>
+      </div>
+      <p id="fingerprintNote" class="viewer-note"></p>
+    </div>
+
     <div class="panel chat-panel">
       <div class="panel-head"><span>Ask Hylogos</span><span class="mono" id="chatModel">groq · gpt-oss-120b</span></div>
       <div id="chatLog" class="chat-log">
@@ -198,6 +211,7 @@
 <script src="atom3d.js"></script>
 <script src="Compounds3d.js"></script>
 <script src="structures.js"></script>
+<script src="fingerprint.js"></script>
 <script src="discoverer.js"></script>
 <script src="ptable.js"></script>
 <script src="quiz.js"></script>
