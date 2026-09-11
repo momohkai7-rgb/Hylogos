@@ -589,6 +589,7 @@ function showSubject(hit) {
     if (typeof discovererShow === "function") discovererShow(hit.key);
     if (typeof window.pulseElementMote === "function") window.pulseElementMote(hit.key);
     if (typeof compound3dHideSpecsCard === "function") compound3dHideSpecsCard();
+    if (typeof fingerprintShow === "function") fingerprintShow(hit.key);
   } 
   else if (hit.type === "molecule") {
     els.subjectName.textContent = `${hit.data.name} (${hit.data.formula})`;
@@ -598,6 +599,7 @@ function showSubject(hit) {
     }
     if (typeof structuresShow === "function") structuresShow("molecule", hit.key);
     if (typeof discovererHide === "function") discovererHide();
+    if (typeof fingerprintHide === "function") fingerprintHide();
   } 
   else if (hit.type === "alloy") {
     els.subjectName.textContent = hit.data.name;
@@ -605,6 +607,7 @@ function showSubject(hit) {
     if (typeof drawAlloy3D === "function") drawAlloy3D(hit.key, hit.data);
     if (typeof structuresShow === "function") structuresShow("alloy", hit.key);
     if (typeof discovererHide === "function") discovererHide();
+    if (typeof fingerprintHide === "function") fingerprintHide();
   }
 
   showFacts(hit);
