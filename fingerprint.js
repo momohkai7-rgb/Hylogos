@@ -130,6 +130,42 @@ const SPECTRAL_LINES = {
     ],
     note: "Calcium's strong violet line and the nearby H & K absorption lines are landmarks in stellar spectroscopy."
   },
+  Li: {
+    lines: [
+      { wl: 670.8, intensity: 1.0,  label: "resonance line" },
+      { wl: 610.4, intensity: 0.3 },
+      { wl: 812.6, intensity: 0.15 },
+    ],
+    note: "The intense red 670.8nm line is why lithium burns a vivid carmine-red in a flame test."
+  },
+  K: {
+    lines: [
+      { wl: 766.5, intensity: 1.0, label: "D2" },
+      { wl: 769.9, intensity: 0.9, label: "D1" },
+    ],
+    note: "Potassium's doublet sits at the red edge of vision — its pale lilac flame is often masked by trace sodium contamination."
+  },
+  Sr: {
+    lines: [
+      { wl: 407.8, intensity: 1.0 },
+      { wl: 421.6, intensity: 0.7 },
+      { wl: 460.7, intensity: 1.0, label: "resonance line" },
+      { wl: 481.2, intensity: 0.35 },
+      { wl: 496.2, intensity: 0.12 },
+    ],
+    note: "The strong 460.7nm blue-violet line combines with red ionic lines to give strontium salts their signature crimson firework color."
+  },
+  Ba: {
+    lines: [
+      { wl: 455.4, intensity: 1.0, label: "Ba II" },
+      { wl: 493.4, intensity: 0.3 },
+      { wl: 553.5, intensity: 1.0, label: "Ba I" },
+      { wl: 585.4, intensity: 0.2 },
+      { wl: 614.2, intensity: 0.25 },
+      { wl: 649.7, intensity: 0.25 },
+    ],
+    note: "Barium's blue-green lines are the classic ingredient behind the green shells in fireworks displays."
+  },
 };
 
 // Convert a visible wavelength (nm, ~380-750) to an approximate RGB color
