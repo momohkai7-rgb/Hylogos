@@ -122,7 +122,8 @@ const SPECTRAL_LINES = {
       { wl: 516.89, intensity: 0.55, label: "b3" },
       { wl: 527.04, intensity: 0.65, label: "E2" },
     ],
-    note: "Iron has thousands of documented lines — these eight are the classic Fraunhofer absorption features named from the Sun's spectrum in the 1800s, long before their cause was understood. This is a small, well-spaced sample of iron's real spectrum, not the full picture."
+    forceMode: "trace",
+    note: "Iron has thousands of documented lines — these eight are the classic Fraunhofer absorption features named from the Sun's spectrum in the 1800s, long before their cause was understood. Shown as a rolling curve through these verified points, not a dense scan of iron's full real spectrum."
   },
   Ca: {
     lines: [
@@ -252,12 +253,13 @@ function wavelengthToRGB(wl) {
     return ((wl - VIS_MIN) / (VIS_MAX - VIS_MIN)) * 100;
   }
 
-  // Decide discrete vs trace based on genuine crowding, not just line
-  // count or a single coincidentally-close pair. A handful of well-spaced
-  // lines (like iron's 8 Fraunhofer lines, ~20nm apart on average) should
-  // stay as clean discrete bars even if two of them happen to sit close —
-  // trace mode is for spectra that are actually dense throughout.
-  function chooseMode(lines) {
+  // Decide discrete vs trace. An element's data can force this explicitly
+  // via `forceMode: "trace"` — used for elements like iron that are known
+  // to have genuinely dense real spectra even though the small, verified
+  // sample of lines we have for them isn't itself densely packed. Absent
+  // that override, mode is inferred from actual crowding in the data.
+  function chooseMode(lines, forceMode) {
+    if (forceMode === "trace" || forceMode === "discrete") return forceMode;
     if (lines.length < 4) return "discrete";
     const sorted = [...lines].sort((a, b) => a.wl - b.wl);
     const gaps = [];
@@ -317,7 +319,12 @@ function wavelengthToRGB(wl) {
       ctx.scale(dpr, dpr);
 
       const N = 400;
-      const sigma = 1.6;
+      // Peak width adapts to how sparse the data is: dense forests (many
+      // real lines close together) use a narrow sigma so real peaks stay
+      // distinct; sparse data (a handful of real, well-spaced lines) uses
+      // a much wider sigma so each one draws as a proper rolling "mountain"
+      // rather than a thin spike with dead flat canvas around it.
+      const sigma = lines.length >= 20 ? 1.6 : 9;
       const intensityAt = new Array(N).fill(0);
 
       lines.forEach(l => {
@@ -371,7 +378,7 @@ function wavelengthToRGB(wl) {
 
     e.section.classList.remove("hidden");
     const elName = (typeof ELEMENTS !== "undefined" && ELEMENTS[symbol]) ? ELEMENTS[symbol].name : symbol;
-    const mode = chooseMode(data.lines);
+    const mode = chooseMode(data.lines, data.forceMode);
     e.title.textContent = `${elName} — atomic fingerprint`;
     e.count.textContent = mode === "trace"
       ? `${data.lines.length} lines · dense spectrum`
