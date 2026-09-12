@@ -89,6 +89,7 @@
   const MOLECULE_KEYS = (typeof MOLECULES !== "undefined") ? Object.keys(MOLECULES) : [];
   const ALLOY_KEYS = (typeof ALLOYS !== "undefined") ? Object.keys(ALLOYS) : [];
   const CATEGORY_KEYS = (typeof CATEGORY_META !== "undefined") ? Object.keys(CATEGORY_META) : [];
+  const ELEMENT_USES_KEYS = (typeof ELEMENT_USES !== "undefined") ? Object.keys(ELEMENT_USES) : [];
 
   const elementName = sym => ELEMENTS[sym].name;
   const moleculeName = key => MOLECULES[key].name;
@@ -479,12 +480,62 @@
     return { text: `Which alloy is this? "${a.blurb}"`, choices, correctIndex, explain: `${a.name} (${a.formula})` };
   }
 
+  /* ---------- REAL-WORLD USES GENERATORS (Object <-> Material) ---------- */
+  // Reads from ELEMENT_USES (pasted separately into data.js). Each entry
+  // carries its own difficulty tag, so these generators filter the pool by
+  // tier rather than being a single fixed-difficulty question type.
+  function usesKeysFor(difficulty) {
+    return ELEMENT_USES_KEYS.filter(k => ELEMENT_USES[k].difficulty === difficulty);
+  }
+
+  function q_objectToMaterial(difficulty) {
+    const candidates = usesKeysFor(difficulty);
+    if (!candidates.length) return null;
+    const sym = pick(candidates);
+    const use = ELEMENT_USES[sym];
+    const correct = elementName(sym);
+    const distractors = shuffle(use.distractors).slice(0, 3);
+    if (distractors.length < 3) return null;
+    const { choices, correctIndex } = buildChoices(correct, distractors);
+    return {
+      text: `What material is a ${use.object} primarily made of?`,
+      choices, correctIndex,
+      explain: `${correct} (${sym}) is used for this because of its specific properties — ${ELEMENTS[sym].blurb || "see its element page for details."}`
+    };
+  }
+
+  function q_materialToObject(difficulty) {
+    const candidates = usesKeysFor(difficulty);
+    if (candidates.length < 2) return null;
+    const sym = pick(candidates);
+    const use = ELEMENT_USES[sym];
+    const correct = use.object;
+    // Distractor objects: other real ELEMENT_USES objects, so every choice
+    // is a genuine object-material pairing, not an invented wrong answer.
+    const otherKeys = candidates.filter(k => k !== sym);
+    const distractorObjects = shuffle(otherKeys).slice(0, 3).map(k => ELEMENT_USES[k].object);
+    if (distractorObjects.length < 3) return null;
+    const { choices, correctIndex } = buildChoices(correct, distractorObjects);
+    return {
+      text: `Which everyday object is typically made primarily of ${elementName(sym)} (${sym})?`,
+      choices, correctIndex,
+      explain: `${elementName(sym)} is used for the ${correct} — the other options are real objects, just made of different materials.`
+    };
+  }
+
+  function q_objectToMaterialEasy() { return q_objectToMaterial("easy"); }
+  function q_objectToMaterialMedium() { return q_objectToMaterial("medium"); }
+  function q_objectToMaterialHard() { return q_objectToMaterial("hard"); }
+  function q_materialToObjectEasy() { return q_materialToObject("easy"); }
+  function q_materialToObjectMedium() { return q_materialToObject("medium"); }
+  function q_materialToObjectHard() { return q_materialToObject("hard"); }
+
   /* ---------- DIFFICULTY TIERS (Progressive Challenge) ---------- */
   const DIFFICULTY_TIERS = {
     elements: {
-      easy: [q_symbolToName, q_nameToSymbol, q_trueFalse, q_fillBlank],
-      medium: [q_category, q_phase, q_atomicNumber, q_mathMass],
-      hard: [q_meltCompare, q_densityCompare, q_sorting, q_elementBlurb, q_oddOneOut]
+      easy: [q_symbolToName, q_nameToSymbol, q_trueFalse, q_fillBlank, q_objectToMaterialEasy, q_materialToObjectEasy],
+      medium: [q_category, q_phase, q_atomicNumber, q_mathMass, q_objectToMaterialMedium, q_materialToObjectMedium],
+      hard: [q_meltCompare, q_densityCompare, q_sorting, q_elementBlurb, q_oddOneOut, q_objectToMaterialHard, q_materialToObjectHard]
     },
     compounds: {
       easy: [q_formulaToName, q_nameToFormula, q_trueFalse, q_fillBlank],
