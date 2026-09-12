@@ -1006,3 +1006,75 @@ ALLOYS.ARGENTIUM_SILVER = { name:"Argentium silver", category:"precious", formul
 ALLOYS.PALLADIUM_SILVER = { name:"Palladium-silver", category:"precious", formula:"Ag–Pd", elements:{Ag:70.0,Pd:30.0}, blurb:"A biocompatible alloy used in dental crowns and bridges, chosen for its stability and resistance to tarnish in the mouth." };
 ALLOYS.NIOBIUM_TITANIUM = { name:"Niobium-titanium", category:"titanium", formula:"Nb–Ti", elements:{Nb:47.0,Ti:53.0}, blurb:"The standard superconducting wire alloy, wound into the powerful magnet coils inside MRI machines and particle accelerators." };
 ALLOYS.BABBITT_LEAD = { name:"Lead-based babbitt", category:"low-melt", formula:"Pb–Sb–Sn", elements:{Pb:80.0,Sb:15.0,Sn:5.0}, blurb:"A cheaper, softer bearing alloy than tin-based babbitt, historically common in heavy industrial and railway machinery." };
+// Hylogos: real-world "what is this made of" quiz data.
+// Paste this into data.js (or keep as its own file and load it before quiz.js).
+// Each entry: { object: "everyday item", difficulty: "easy"|"medium"|"hard",
+//               distractors: [plausible wrong materials, same object] }
+// "difficulty" reflects how obvious/well-known the pairing is, not the
+// chemistry itself. Only elements with a genuinely well-known, verifiable
+// primary use are included here — this is a starting set, not all 118.
+
+const ELEMENT_USES = {
+  // ---- EASY: common knowledge, most people could guess these ----
+  Al: { object: "soda can", difficulty: "easy", distractors: ["Steel", "Copper", "Tin"] },
+  Fe: { object: "kitchen skillet (cast iron)", difficulty: "easy", distractors: ["Aluminum", "Copper", "Nickel"] },
+  Cu: { object: "electrical wiring", difficulty: "easy", distractors: ["Iron", "Aluminum", "Zinc"] },
+  Au: { object: "wedding ring", difficulty: "easy", distractors: ["Silver", "Platinum", "Tin"] },
+  Ag: { object: "silverware", difficulty: "easy", distractors: ["Tin", "Nickel", "Aluminum"] },
+  C: { object: "pencil \"lead\" (graphite)", difficulty: "easy", distractors: ["Lead", "Silicon", "Iron"] },
+  He: { object: "party balloon that floats", difficulty: "easy", distractors: ["Hydrogen", "Neon", "Nitrogen"] },
+  O: { object: "the air you breathe to live", difficulty: "easy", distractors: ["Nitrogen", "Carbon dioxide", "Argon"] },
+  Pb: { object: "old car battery plates", difficulty: "easy", distractors: ["Zinc", "Iron", "Nickel"] },
+  Sn: { object: "tin can coating (steel underneath)", difficulty: "easy", distractors: ["Zinc", "Aluminum", "Nickel"] },
+  Ni: { object: "US five-cent \"nickel\" coin", difficulty: "easy", distractors: ["Zinc", "Tin", "Copper"] },
+  Na: { object: "table salt (with chlorine)", difficulty: "easy", distractors: ["Potassium", "Calcium", "Magnesium"] },
+  Cl: { object: "swimming pool disinfectant", difficulty: "easy", distractors: ["Fluorine", "Bromine", "Iodine"] },
+
+  // ---- MEDIUM: known, but requires a bit more real-world familiarity ----
+  Si: { object: "computer chip", difficulty: "medium", distractors: ["Carbon", "Germanium", "Aluminum"] },
+  W: { object: "incandescent light bulb filament", difficulty: "medium", distractors: ["Carbon", "Nickel", "Iron"] },
+  Ti: { object: "hip replacement implant", difficulty: "medium", distractors: ["Stainless steel", "Aluminum", "Cobalt"] },
+  Ne: { object: "glowing neon sign", difficulty: "medium", distractors: ["Argon", "Helium", "Xenon"] },
+  Zn: { object: "galvanized (rust-proof) coating on steel", difficulty: "medium", distractors: ["Tin", "Chromium", "Nickel"] },
+  Pt: { object: "catalytic converter in a car", difficulty: "medium", distractors: ["Palladium", "Gold", "Nickel"] },
+  Li: { object: "rechargeable phone/EV battery", difficulty: "medium", distractors: ["Nickel", "Cobalt", "Cadmium"] },
+  Cr: { object: "shiny chrome car bumper", difficulty: "medium", distractors: ["Nickel", "Zinc", "Tin"] },
+  Ar: { object: "gas filling inside an incandescent bulb", difficulty: "medium", distractors: ["Neon", "Nitrogen", "Helium"] },
+  Mg: { object: "lightweight laptop/camera body", difficulty: "medium", distractors: ["Aluminum", "Titanium", "Zinc"] },
+  Co: { object: "blue pigment in old pottery glaze", difficulty: "medium", distractors: ["Copper", "Manganese", "Chromium"] },
+  Mn: { object: "steel-hardening additive (rebar, rail)", difficulty: "medium", distractors: ["Chromium", "Nickel", "Vanadium"] },
+  Kr: { object: "gas in some high-efficiency window panes", difficulty: "medium", distractors: ["Argon", "Xenon", "Nitrogen"] },
+  I: { object: "iodized table salt / antiseptic", difficulty: "medium", distractors: ["Chlorine", "Bromine", "Fluorine"] },
+  Xe: { object: "high-intensity car headlight (HID) bulb", difficulty: "medium", distractors: ["Krypton", "Neon", "Argon"] },
+  Cd: { object: "older rechargeable NiCd battery", difficulty: "medium", distractors: ["Lithium", "Lead", "Nickel"] },
+  B: { object: "borosilicate (Pyrex) glass", difficulty: "medium", distractors: ["Silicon", "Aluminum", "Calcium"] },
+  F: { object: "toothpaste's cavity-fighting ingredient", difficulty: "medium", distractors: ["Chlorine", "Calcium", "Iodine"] },
+
+  // ---- HARD: real but less commonly known applications ----
+  Ta: { object: "compact capacitor inside a smartphone", difficulty: "hard", distractors: ["Niobium", "Tungsten", "Tin"] },
+  Hf: { object: "control rods in a nuclear reactor", difficulty: "hard", distractors: ["Cadmium", "Boron", "Tungsten"] },
+  Ir: { object: "spark plug electrode tip", difficulty: "hard", distractors: ["Platinum", "Tungsten", "Nickel"] },
+  Ga: { object: "LED light source", difficulty: "hard", distractors: ["Silicon", "Germanium", "Indium"] },
+  Rh: { object: "catalytic converter's NOx-reducing coating", difficulty: "hard", distractors: ["Platinum", "Palladium", "Iridium"] },
+  Cs: { object: "atomic clock defining the second", difficulty: "hard", distractors: ["Rubidium", "Strontium", "Hydrogen"] },
+  Sm: { object: "high-strength permanent magnet (with cobalt)", difficulty: "hard", distractors: ["Neodymium", "Iron", "Nickel"] },
+  Re: { object: "jet engine turbine blade superalloy", difficulty: "hard", distractors: ["Tungsten", "Tantalum", "Niobium"] },
+  Nd: { object: "powerful magnet in headphones/hard drives", difficulty: "hard", distractors: ["Samarium", "Iron", "Cobalt"] },
+  Pd: { object: "hydrogen-storage / catalytic converter core", difficulty: "hard", distractors: ["Platinum", "Rhodium", "Nickel"] },
+  Ge: { object: "early transistor / fiber-optic cable lens", difficulty: "hard", distractors: ["Silicon", "Gallium", "Indium"] },
+  Be: { object: "lightweight aerospace/X-ray window material", difficulty: "hard", distractors: ["Magnesium", "Titanium", "Aluminum"] },
+  V: { object: "high-strength steel alloy for tools", difficulty: "hard", distractors: ["Chromium", "Manganese", "Molybdenum"] },
+  Mo: { object: "high-temperature furnace/engine part alloy", difficulty: "hard", distractors: ["Tungsten", "Tantalum", "Vanadium"] },
+  Zr: { object: "nuclear fuel rod cladding", difficulty: "hard", distractors: ["Hafnium", "Titanium", "Niobium"] },
+  Nb: { object: "superconducting MRI-magnet wire", difficulty: "hard", distractors: ["Tantalum", "Titanium", "Tin"] },
+  Y: { object: "red phosphor in old CRT televisions", difficulty: "hard", distractors: ["Europium", "Terbium", "Cerium"] },
+  Eu: { object: "red/blue phosphor in LED and euro banknotes", difficulty: "hard", distractors: ["Yttrium", "Cerium", "Terbium"] },
+  Th: { object: "old gas lantern mantle (historical use)", difficulty: "hard", distractors: ["Uranium", "Cerium", "Radium"] },
+  U: { object: "nuclear reactor fuel", difficulty: "hard", distractors: ["Plutonium", "Thorium", "Radium"] },
+  Pu: { object: "nuclear weapon / spacecraft power source", difficulty: "hard", distractors: ["Uranium", "Americium", "Thorium"] },
+  Am: { object: "smoke detector's ionization source", difficulty: "hard", distractors: ["Radium", "Uranium", "Plutonium"] },
+  Ra: { object: "old glow-in-the-dark watch dials (historical, now banned)", difficulty: "hard", distractors: ["Uranium", "Thorium", "Polonium"] },
+  Po: { object: "anti-static brush for camera lenses/film", difficulty: "hard", distractors: ["Radium", "Americium", "Uranium"] },
+  Sc: { object: "lightweight aluminum-scandium alloy in bike frames", difficulty: "hard", distractors: ["Titanium", "Yttrium", "Magnesium"] },
+};
+
