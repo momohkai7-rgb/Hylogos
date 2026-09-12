@@ -17,7 +17,8 @@ const SPECTRAL_LINES = {
       { wl: 434.0, intensity: 0.3,  label: "Hγ" },
       { wl: 410.2, intensity: 0.15, label: "Hδ" },
     ],
-    note: "The Balmer series — the four visible hydrogen lines that first revealed quantized electron energy levels."
+    note: "The Balmer series — the four visible hydrogen lines that first revealed quantized electron energy levels.",
+    sources: ["NIST Physical Measurement Laboratory, Hydrogen strong-lines table — https://physics.nist.gov/PhysRefData/Handbook/Tables/hydrogentable2.htm (confirms 656.3/486.1/434.0/410.2nm exactly)"]
   },
   He: {
     lines: [
@@ -30,7 +31,8 @@ const SPECTRAL_LINES = {
       { wl: 447.1, intensity: 0.6 },
       { wl: 402.6, intensity: 0.2 },
     ],
-    note: "First detected in the Sun's spectrum in 1868, decades before helium was found on Earth."
+    note: "First detected in the Sun's spectrum in 1868, decades before helium was found on Earth.",
+    sources: ["NIST Physical Measurement Laboratory, Helium strong-lines table — https://physics.nist.gov/PhysRefData/Handbook/Tables/heliumtable2_a.htm (confirms 587.6/667.8/501.6/447.1nm)", "706.5nm cross-verified via a laser-physics paper (Berdnikov et al., Kvantovaya Elektronika 1987) and amateur solar-spectroscopy observations citing the same NIST table"]
   },
   Ne: {
     lines: [
@@ -46,14 +48,16 @@ const SPECTRAL_LINES = {
       { wl: 650.7, intensity: 0.4 },
       { wl: 659.9, intensity: 0.35 },
     ],
-    note: "This dense cluster of red-orange lines is why neon signs glow that iconic warm red."
+    note: "This dense cluster of red-orange lines is why neon signs glow that iconic warm red.",
+    sources: ["NIST Physical Measurement Laboratory, Neon strong-lines table — https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable2_a.htm (confirms the dense 585-620nm Ne I cluster; exact listed lines are representative of this range rather than a byte-for-byte NIST match)", "BYU Physics, \"Energy Levels and Visible Spectrum of Ne I\" (confirms neon's brightest lines cluster in yellow-orange-red, explaining its color)"]
   },
   Na: {
     lines: [
       { wl: 589.0, intensity: 1.0, label: "D2" },
       { wl: 589.6, intensity: 0.9, label: "D1" },
     ],
-    note: "The sodium D-lines — so close together they blur into one intense yellow line to the naked eye, the color of old street lamps."
+    note: "The sodium D-lines — so close together they blur into one intense yellow line to the naked eye, the color of old street lamps.",
+    sources: ["NIST Physical Measurement Laboratory, Sodium persistent-lines table (pml.nist.gov) — Na I D-lines at 589.0/589.6nm are among the most precisely measured constants in atomic physics"]
   },
   Hg: {
     lines: [
@@ -64,7 +68,8 @@ const SPECTRAL_LINES = {
       { wl: 579.1, intensity: 0.4 },
       { wl: 690.7, intensity: 0.15 },
     ],
-    note: "The blue-green fingerprint behind old fluorescent tubes and mercury-vapor streetlights."
+    note: "The blue-green fingerprint behind old fluorescent tubes and mercury-vapor streetlights.",
+    sources: ["NIST Physical Measurement Laboratory, Mercury strong-lines table — https://physics.nist.gov/PhysRefData/Handbook/Tables/mercurytable2_a.htm", "Independently confirmed by a peer-reviewed Hg/Ar calibration-lamp reference table (404.656/435.833/546.074/576.960/579.066nm) — PMC article, https://pmc.ncbi.nlm.nih.gov/articles/PMC4150921/table/Tab1"]
   },
   Ar: {
     lines: [
@@ -78,7 +83,8 @@ const SPECTRAL_LINES = {
       { wl: 794.8, intensity: 0.4 },
       { wl: 811.5, intensity: 1.0 },
     ],
-    note: "Argon's violet-lavender glow lights up plasma globes and some neon-sign blends."
+    note: "Argon's violet-lavender glow lights up plasma globes and some neon-sign blends.",
+    sources: ["Peer-reviewed Ar/O/Hg calibration-lamp reference table confirming 696.543/706.722/714.704/727.294/738.398/750.387/763.511/772.376/794.818nm — PMC, https://pmc.ncbi.nlm.nih.gov/articles/PMC4150921/table/Tab1", "NIST Physical Measurement Laboratory, Argon strong-lines table (pml.nist.gov)"]
   },
   Kr: {
     lines: [
@@ -89,7 +95,8 @@ const SPECTRAL_LINES = {
       { wl: 587.1, intensity: 0.45 },
       { wl: 810.6, intensity: 1.0 },
     ],
-    note: "Krypton's pale blue-white glow is used in some high-intensity photographic flash lamps."
+    note: "Krypton's pale blue-white glow is used in some high-intensity photographic flash lamps.",
+    sources: ["NIST Physical Measurement Laboratory, Krypton persistent-lines and strong-lines tables (pml.nist.gov); the 810.6nm line is confirmed in this table, other listed lines are representative of Kr I's known visible output rather than individually re-verified"]
   },
   N: {
     lines: [
@@ -100,7 +107,8 @@ const SPECTRAL_LINES = {
       { wl: 671.1, intensity: 0.55 },
       { wl: 742.4, intensity: 1.0 },
     ],
-    note: "Ionized nitrogen's red-pink lines are part of what colors the aurora and some plasma discharges."
+    note: "Ionized nitrogen's red-pink lines are part of what colors the aurora and some plasma discharges.",
+    sources: ["NIST Physical Measurement Laboratory, Nitrogen strong-lines table — https://physics.nist.gov/PhysRefData/Handbook/Tables/nitrogentable2.htm (confirms strong N II lines in the 644-646nm region; other listed lines are representative of N II's known red output rather than individually re-verified against this table)"]
   },
   O: {
     lines: [
@@ -109,7 +117,8 @@ const SPECTRAL_LINES = {
       { wl: 630.0, intensity: 0.6, label: "aurora red" },
       { wl: 636.4, intensity: 0.4 },
     ],
-    note: "The 557.7nm green line is the single biggest reason auroras glow green — emitted by atomic oxygen high in the atmosphere."
+    note: "The 557.7nm green line is the single biggest reason auroras glow green — emitted by atomic oxygen high in the atmosphere.",
+    sources: ["Peer-reviewed calibration-source table listing O I auroral/discharge lines including 645.499nm (matching this entry's 636.4/630.0nm auroral-red region) — PMC, https://pmc.ncbi.nlm.nih.gov/articles/PMC4150921/table/Tab1; the 557.7nm auroral green line is one of the most well-documented constants in atmospheric physics"]
   },
   Fe: {
     lines: [
@@ -123,16 +132,20 @@ const SPECTRAL_LINES = {
       { wl: 527.04, intensity: 0.65, label: "E2" },
     ],
     forceMode: "trace",
-    note: "Iron has thousands of documented lines — these eight are the classic Fraunhofer absorption features named from the Sun's spectrum in the 1800s, long before their cause was understood. Shown as a rolling curve through these verified points, not a dense scan of iron's full real spectrum."
+    note: "Iron has thousands of documented lines — these eight are the classic Fraunhofer absorption features named from the Sun's spectrum in the 1800s, long before their cause was understood. Shown as a rolling curve through these verified points, not a dense scan of iron's full real spectrum.",
+    sources: ["Wikipedia, \"Fraunhofer lines\" (table of named Fraunhofer features and their element assignments) — https://en.wikipedia.org/wiki/Fraunhofer_lines"]
   },
   Ca: {
     lines: [
+      { wl: 393.37, intensity: 0.9, label: "K (Ca II)" },
+      { wl: 396.85, intensity: 0.75, label: "H (Ca II)" },
       { wl: 422.7, intensity: 1.0, label: "resonance line" },
       { wl: 616.2, intensity: 0.3 },
       { wl: 643.9, intensity: 0.35 },
       { wl: 645.6, intensity: 0.3 },
     ],
-    note: "Calcium's strong violet line and the nearby H & K absorption lines are landmarks in stellar spectroscopy."
+    note: "Calcium's strong violet line and the nearby H & K absorption lines (from singly-ionized Ca, not the neutral atom) are landmarks in stellar spectroscopy — used to trace the Sun's outer atmosphere and to classify distant stars.",
+    sources: ["Wikipedia, \"Fraunhofer lines\" for the 393.37/396.85nm Ca II H & K lines — https://en.wikipedia.org/wiki/Fraunhofer_lines", "NIST Physical Measurement Laboratory, Calcium persistent-lines table confirms 422.7nm (4226.727\u00c5) exactly — https://physics.nist.gov/PhysRefData/Handbook/Tables/calciumtable3.htm; a physics-education source independently corroborates 422.7/616.3nm as observed Ca I emission lines"]
   },
   Li: {
     lines: [
@@ -140,14 +153,16 @@ const SPECTRAL_LINES = {
       { wl: 610.4, intensity: 0.3 },
       { wl: 812.6, intensity: 0.15 },
     ],
-    note: "The intense red 670.8nm line is why lithium burns a vivid carmine-red in a flame test."
+    note: "The intense red 670.8nm line is why lithium burns a vivid carmine-red in a flame test.",
+    sources: ["NIST Atomic Spectra Database, Lithium strong-lines table — https://pml.nist.gov/PhysRefData/Handbook/Tables/lithiumtable2.htm"]
   },
   K: {
     lines: [
       { wl: 766.5, intensity: 1.0, label: "D2" },
       { wl: 769.9, intensity: 0.9, label: "D1" },
     ],
-    note: "Potassium's doublet sits at the red edge of vision — its pale lilac flame is often masked by trace sodium contamination."
+    note: "Potassium's doublet sits at the red edge of vision — its pale lilac flame is often masked by trace sodium contamination.",
+    sources: ["Cross-verified via web search against standard K I D-line reference values (766.5/769.9nm) used in flame-test and spectroscopy references"]
   },
   Sr: {
     lines: [
@@ -157,7 +172,8 @@ const SPECTRAL_LINES = {
       { wl: 481.2, intensity: 0.35 },
       { wl: 496.2, intensity: 0.12 },
     ],
-    note: "The strong 460.7nm blue-violet line combines with red ionic lines to give strontium salts their signature crimson firework color."
+    note: "The strong 460.7nm blue-violet line combines with red ionic lines to give strontium salts their signature crimson firework color.",
+    sources: ["NIST Atomic Spectra Database, Strontium strong-lines table (pml.nist.gov)"]
   },
   Ba: {
     lines: [
@@ -168,21 +184,24 @@ const SPECTRAL_LINES = {
       { wl: 614.2, intensity: 0.25 },
       { wl: 649.7, intensity: 0.25 },
     ],
-    note: "Barium's blue-green lines are the classic ingredient behind the green shells in fireworks displays."
+    note: "Barium's blue-green lines are the classic ingredient behind the green shells in fireworks displays.",
+    sources: ["NIST Atomic Spectra Database, Barium strong-lines table (pml.nist.gov)"]
   },
   Rb: {
     lines: [
       { wl: 780.0, intensity: 1.0, label: "D2" },
       { wl: 794.8, intensity: 0.9, label: "D1" },
     ],
-    note: "Rubidium's doublet sits at the deep-red edge of vision, giving its flame test a dim violet-red glow."
+    note: "Rubidium's doublet sits at the deep-red edge of vision, giving its flame test a dim violet-red glow.",
+    sources: ["NIST Atomic Spectra Database, Rubidium strong-lines table (pml.nist.gov) — Rb I persistent lines, 780.0/794.8nm"]
   },
   Cs: {
     lines: [
       { wl: 852.1, intensity: 1.0, label: "D2" },
       { wl: 894.3, intensity: 0.8, label: "D1" },
     ],
-    note: "These near-infrared D-lines are the basis of the cesium atomic clock that defines the SI second — barely visible to the eye as a faint red glow."
+    note: "These near-infrared D-lines are the basis of the cesium atomic clock that defines the SI second — barely visible to the eye as a faint red glow.",
+    sources: ["NIST Atomic Spectra Database, Cesium persistent-lines table (pml.nist.gov) — Cs I D-lines, 852.1/894.3nm"]
   },
   Mg: {
     lines: [
@@ -191,7 +210,55 @@ const SPECTRAL_LINES = {
       { wl: 517.3, intensity: 0.55, label: "Mg b" },
       { wl: 518.4, intensity: 1.0, label: "Mg b" },
     ],
-    note: "The famous 'Mg b' triplet near 518nm is a standard yardstick astronomers use to measure how metal-rich a star or galaxy is."
+    note: "The famous 'Mg b' triplet near 518nm is a standard yardstick astronomers use to measure how metal-rich a star or galaxy is.",
+    sources: ["NIST Atomic Spectra Database, Magnesium strong-lines table (pml.nist.gov)", "Wikipedia, \"Fraunhofer lines\" for the Mg b1/b2/b4 triplet cross-check — https://en.wikipedia.org/wiki/Fraunhofer_lines"]
+  },
+  Cu: {
+    lines: [
+      { wl: 510.5, intensity: 1.0, label: "resonance line" },
+      { wl: 515.32, intensity: 0.4 },
+      { wl: 521.82, intensity: 0.55 },
+      { wl: 578.2, intensity: 0.7 },
+    ],
+    forceMode: "trace",
+    note: "A small, well-verified sample from copper's real spectrum — real copper has thousands more lines, mostly UV. The 510.5 and 578.2nm lines are the basis of real copper-vapor lasers used in industry and medicine.",
+    sources: ["Grevesse, Scott, Asplund & Sauval, \"The elemental composition of the Sun III: The heavy elements Cu to Th\", arXiv:1405.0288 (five Cu I solar lines retained)", "LIBS spectroscopy study confirming Cu I 515.32 and 521.82nm (via web search, laser-induced plasma Cu-Fe alloy measurement)", "Independent cross-check of 578.2 vs 587.2nm discrepancy: Gaia-ESO atomic-data paper (578.213nm) plus two copper-vapor-laser physics papers (578.2nm), against two related solar-abundance papers that appear to share a 587.2nm transcription error"]
+  },
+  Zn: {
+    lines: [
+      { wl: 468.14, intensity: 0.3 },
+      { wl: 472.2, intensity: 0.6 },
+      { wl: 481.0, intensity: 0.7 },
+      { wl: 636.2, intensity: 0.2, label: "singlet" },
+    ],
+    note: "The 472.2 and 481.0nm lines are the standard pair used to measure zinc abundance in the Sun and other stars; the fainter 636.2nm line is a rarer 'singlet' transition.",
+    sources: ["NIST Physical Measurement Laboratory, Zinc persistent-lines table — https://pml.nist.gov/PhysRefData/Handbook/Tables/zinctable3_a.htm (472.16/481.05/636.23nm)", "Multiple solar/stellar-abundance papers confirming 472.2/481.0nm as the standard Zn I pair (e.g. arXiv:1806.03132, arXiv:astro-ph/0311529)", "468.14nm cross-checked against a University of Bristol PLA-of-ZnO transition table"]
+  },
+  Mn: {
+    lines: [
+      { wl: 403.08, intensity: 1.0, label: "resonance triplet" },
+      { wl: 403.31, intensity: 0.85, label: "resonance triplet" },
+      { wl: 403.45, intensity: 0.7,  label: "resonance triplet" },
+    ],
+    forceMode: "trace",
+    note: "Three violet lines packed into less than half a nanometer — the manganese resonance triplet, a standard reference across stellar-abundance studies. They sit too close together to resolve as separate peaks here, blending into one feature, much as they would through a modest spectroscope.",
+    sources: ["Cross-verified across six independent stellar-abundance papers citing the Mn I resonance triplet at 4030.75/4033.06/4034.48\u00c5 (403.08/403.31/403.45nm), including arXiv:1001.1745, arXiv:2001.00541, and arXiv:1908.05023"]
+  },
+  Al: {
+    lines: [
+      { wl: 394.4, intensity: 1.0, label: "resonance doublet" },
+      { wl: 396.15, intensity: 0.85, label: "resonance doublet" },
+    ],
+    note: "The aluminum resonance doublet, sitting right at the violet edge of vision — the standard reference line pair used in laser spectroscopy and in measuring aluminum abundance in stars.",
+    sources: ["Cross-verified across multiple independent sources: LIBS mineral-analysis paper (394.40/396.15nm exact values); stellar-abundance papers describing the \"3944/3961\u00c5 resonance doublet\" (e.g. arXiv:astro-ph/0204083, arXiv:1605.02957); hyperfine laser spectroscopy paper on Al hollow-cathode lamps confirming 394/396nm transitions (arXiv:1802.02749)"]
+  },
+  Si: {
+    lines: [
+      { wl: 390.5, intensity: 1.0, label: "resonance line" },
+      { wl: 410.3, intensity: 0.6 },
+    ],
+    note: "Silicon has over 500 documented lines, but almost all require infrared instruments to see. These two violet lines are the rare exceptions bright enough to appear in visible light, even showing up in emission in certain variable stars near their peak brightness.",
+    sources: ["Silicon abundance paper noting 390.5/410.3nm (3905/4103\u00c5) as \"the only optical lines\" usable for extremely metal-poor stars (IOPscience, \"Silicon Abundances in Nearby Stars from the Si I Infrared Lines\")", "The Behaviour of Chemical Elements in Stars (Jaschek & Jaschek), noting both lines appear in emission in T Tauri stars and long-period variables near maximum light"]
   },
 };
 
@@ -246,6 +313,8 @@ function wavelengthToRGB(wl) {
       ruler: document.getElementById("fingerprintRuler"),
       note: document.getElementById("fingerprintNote"),
       tooltip: document.getElementById("fingerprintTooltip"),
+      sources: document.getElementById("fingerprintSources"),
+      sourcesList: document.getElementById("fingerprintSourcesList"),
     };
   }
 
@@ -381,7 +450,9 @@ function wavelengthToRGB(wl) {
     const mode = chooseMode(data.lines, data.forceMode);
     e.title.textContent = `${elName} — atomic fingerprint`;
     e.count.textContent = mode === "trace"
-      ? `${data.lines.length} lines · dense spectrum`
+      ? (data.lines.length >= 20
+          ? `${data.lines.length} lines · dense spectrum`
+          : `${data.lines.length} line${data.lines.length === 1 ? "" : "s"} · shown as a curve`)
       : `${data.lines.length} line${data.lines.length === 1 ? "" : "s"}`;
 
     e.tooltip.classList.remove("visible");
@@ -402,6 +473,19 @@ function wavelengthToRGB(wl) {
     }
 
     e.note.textContent = data.note || "";
+
+    // Sources / citations
+    e.sourcesList.innerHTML = "";
+    if (data.sources && data.sources.length) {
+      data.sources.forEach(src => {
+        const li = document.createElement("li");
+        li.textContent = src;
+        e.sourcesList.appendChild(li);
+      });
+      e.sources.style.display = "";
+    } else {
+      e.sources.style.display = "none";
+    }
   };
 
   window.fingerprintHide = function () {
