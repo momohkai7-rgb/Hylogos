@@ -76,6 +76,15 @@
     return div.innerHTML;
   }
 
+  function pluralizeLabel(label) {
+    const l = label.toLowerCase();
+    return /gas$/.test(l) ? l + "es" : l + "s";
+  }
+
+  function articleFor(word) {
+    return /^[aeiou]/i.test(word) ? "an" : "a";
+  }
+
   const ELEMENT_SYMS = (typeof ELEMENTS !== "undefined") ? Object.keys(ELEMENTS) : [];
   const MOLECULE_KEYS = (typeof MOLECULES !== "undefined") ? Object.keys(MOLECULES) : [];
   const ALLOY_KEYS = (typeof ALLOYS !== "undefined") ? Object.keys(ALLOYS) : [];
@@ -144,7 +153,7 @@
   function q_mathMass() {
     const targetMolecules = ["H2O", "CO2", "CH4", "NaCl"];
     const key = pick(targetMolecules);
-    if (!MOLECULES[key]) return q_symbolToName();
+    if (!MOLECULES[key]) return null;
     let mass = 18;
     if (key === "H2O") mass = 18;
     else if (key === "CO2") mass = 44;
@@ -177,16 +186,29 @@
 
   /* ---------- SORTING / ORDERING GENERATOR ---------- */
   function q_sorting() {
+    const pool = shuffle(ELEMENT_SYMS).slice(0, 3);
+    if (pool.length < 3) return null;
+    const sorted = [...pool].sort((a, b) => ELEMENTS[a].z - ELEMENTS[b].z);
+    const label = s => `${elementName(s)} (${ELEMENTS[s].z})`;
+    const correct = sorted.map(label).join(" → ");
+
+    // Build 3 wrong orderings from permutations of the same 3 elements
+    const perms = [
+      [sorted[0], sorted[2], sorted[1]],
+      [sorted[1], sorted[0], sorted[2]],
+      [sorted[2], sorted[1], sorted[0]],
+      [sorted[2], sorted[0], sorted[1]],
+      [sorted[1], sorted[2], sorted[0]],
+    ].map(p => p.map(label).join(" → "));
+    const wrongChoices = shuffle(perms.filter(p => p !== correct)).slice(0, 3);
+    if (wrongChoices.length < 3) return null;
+
+    const { choices, correctIndex } = buildChoices(correct, wrongChoices);
     return {
       text: "Which option lists these elements in correct order of increasing Atomic Number (Z)?",
-      choices: [
-        "Lithium (3) → Carbon (6) → Neon (10)",
-        "Carbon (6) → Lithium (3) → Neon (10)",
-        "Neon (10) → Carbon (6) → Lithium (3)",
-        "Lithium (3) → Neon (10) → Carbon (6)"
-      ],
-      correctIndex: 0,
-      explain: "Atomic numbers increase sequentially: Li (3), C (6), Ne (10)."
+      choices,
+      correctIndex,
+      explain: `Atomic numbers increase sequentially: ${sorted.map(s => `${elementName(s)} (${ELEMENTS[s].z})`).join(", ")}.`
     };
   }
 
@@ -294,6 +316,63 @@
     if (!distractors) return null;
     const { choices, correctIndex } = buildChoices(correct, distractors);
     return { text: `Which element is this? "${ELEMENTS[sym].blurb}"`, choices, correctIndex, explain: `${correct} (${sym})` };
+  }
+
+  /* ---------- ODD ONE OUT GENERATOR ---------- */
+  // Groups elements by a shared property (category or phase), picks 3 that
+  // share it plus 1 that doesn't, and asks which one breaks the pattern.
+  function q_oddOneOut() {
+    const useCategory = Math.random() < 0.6;
+
+    if (useCategory) {
+      const groups = {};
+      ELEMENT_SYMS.forEach(s => {
+        const cat = ELEMENTS[s].category;
+        if (!CATEGORY_KEYS.includes(cat)) return;
+        (groups[cat] = groups[cat] || []).push(s);
+      });
+      const eligibleCats = Object.keys(groups).filter(c => groups[c].length >= 3);
+      if (!eligibleCats.length) return q_oddOneOutByPhase();
+      const cat = pick(eligibleCats);
+      const inGroup = shuffle(groups[cat]).slice(0, 3);
+      const outsidePool = ELEMENT_SYMS.filter(s => ELEMENTS[s].category !== cat && CATEGORY_KEYS.includes(ELEMENTS[s].category));
+      if (!outsidePool.length) return q_oddOneOutByPhase();
+      const outsider = pick(outsidePool);
+      const four = shuffle([...inGroup, outsider]);
+      const correctIndex = four.indexOf(outsider);
+      const catLabel = CATEGORY_META[cat] ? CATEGORY_META[cat].label : cat;
+      const outsiderCatLabel = CATEGORY_META[ELEMENTS[outsider].category] ? CATEGORY_META[ELEMENTS[outsider].category].label : ELEMENTS[outsider].category;
+      return {
+        text: `Odd one out: three of these share a category. Which one doesn't belong?`,
+        choices: four.map(s => `${elementName(s)} (${s})`),
+        correctIndex,
+        explain: `${inGroup.map(elementName).join(", ")} are all ${pluralizeLabel(catLabel)}. ${elementName(outsider)} is ${articleFor(outsiderCatLabel)} ${outsiderCatLabel.toLowerCase()}.`
+      };
+    }
+    return q_oddOneOutByPhase();
+  }
+
+  function q_oddOneOutByPhase() {
+    const groups = { Solid: [], Liquid: [], Gas: [] };
+    ELEMENT_SYMS.forEach(s => {
+      const p = ELEMENTS[s].phase;
+      if (groups[p]) groups[p].push(s);
+    });
+    const eligiblePhases = Object.keys(groups).filter(p => groups[p].length >= 3);
+    if (!eligiblePhases.length) return null;
+    const phase = pick(eligiblePhases);
+    const inGroup = shuffle(groups[phase]).slice(0, 3);
+    const otherPhases = Object.keys(groups).filter(p => p !== phase && groups[p].length > 0);
+    if (!otherPhases.length) return null;
+    const outsider = pick(groups[pick(otherPhases)]);
+    const four = shuffle([...inGroup, outsider]);
+    const correctIndex = four.indexOf(outsider);
+    return {
+      text: `Odd one out: three of these share the same phase at room temperature. Which one doesn't belong?`,
+      choices: four.map(s => `${elementName(s)} (${s})`),
+      correctIndex,
+      explain: `${inGroup.map(elementName).join(", ")} are ${pluralizeLabel(phase)} at room temperature. ${elementName(outsider)} is ${articleFor(ELEMENTS[outsider].phase)} ${ELEMENTS[outsider].phase.toLowerCase()}.`
+    };
   }
 
   /* ---------- COMPOUND question generators ---------- */
@@ -405,7 +484,7 @@
     elements: {
       easy: [q_symbolToName, q_nameToSymbol, q_trueFalse, q_fillBlank],
       medium: [q_category, q_phase, q_atomicNumber, q_mathMass],
-      hard: [q_meltCompare, q_densityCompare, q_sorting, q_elementBlurb]
+      hard: [q_meltCompare, q_densityCompare, q_sorting, q_elementBlurb, q_oddOneOut]
     },
     compounds: {
       easy: [q_formulaToName, q_nameToFormula, q_trueFalse, q_fillBlank],
