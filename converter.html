@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Unit converter — Hylogos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+#conv{max-width:560px}
+#conv .hero{margin-bottom:1.5rem}
+.cv-back{display:inline-block;margin-top:0;text-decoration:none}
+#cats{display:flex;gap:.5rem;overflow-x:auto;padding:.25rem .1rem .9rem;margin-top:1.25rem;scrollbar-width:none}
+#cats::-webkit-scrollbar{display:none}
+#cats button{flex:none;font-family:var(--font-body);font-size:.82rem;color:var(--text-dim);background:transparent;border:1px solid var(--line);border-radius:999px;padding:.5rem 1rem;cursor:pointer;transition:border-color .2s,color .2s,background .2s,box-shadow .2s}
+#cats button:hover{color:var(--text-main);border-color:rgba(66,255,176,.5)}
+#cats button[aria-pressed="true"]{color:var(--struct-green);background:rgba(66,255,176,.12);border-color:rgba(66,255,176,.7);box-shadow:0 0 14px rgba(66,255,176,.22)}
+.cv-panel{padding:1.1rem 1.1rem 1.25rem}
+.cv-row{display:flex;flex-direction:column;gap:.6rem}
+.cv-row input{width:100%;height:3.6rem;border-radius:999px;border:1px solid rgba(66,255,176,.45);background:rgba(16,12,28,.72);color:var(--text-main);font-family:var(--font-mono);font-size:1.4rem;font-variant-numeric:tabular-nums;padding:0 1.4rem;outline:none;min-width:0;box-shadow:inset 0 0 24px rgba(0,0,0,.35),0 0 16px rgba(66,255,176,.14);transition:border-color .2s,box-shadow .2s}
+.cv-row input:focus{border-color:rgba(66,255,176,.85);box-shadow:inset 0 0 24px rgba(0,0,0,.35),0 0 0 3px rgba(66,255,176,.25),0 0 26px rgba(66,255,176,.35)}
+.cv-row select{width:100%;background:var(--void-2);color:var(--text-main);border:1px solid var(--line);border-radius:12px;padding:.75rem .9rem;font-family:var(--font-body);font-size:.95rem}
+.cv-row select:focus-visible,#cats button:focus-visible,.cv-swap:focus-visible,.cv-back:focus-visible{outline:2px solid var(--photon-blue);outline-offset:2px}
+.cv-swap{display:block;margin:.9rem auto;width:46px;height:46px;border-radius:50%;border:1px solid rgba(127,217,255,.5);background:rgba(127,217,255,.08);color:var(--photon-blue);font-size:1.2rem;cursor:pointer;box-shadow:0 0 14px rgba(127,217,255,.18);transition:box-shadow .2s,border-color .2s}
+.cv-swap:hover{border-color:rgba(127,217,255,.9);box-shadow:0 0 22px rgba(127,217,255,.4)}
+.cv-note{text-align:center;margin:1.1rem 0 0;min-height:1.2em}
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<main id="conv">
+  <a class="ptable-toggle cv-back" href="index.html">← Back to Hylogos</a>
+  <header class="hero" style="margin-top:1.5rem">
+    <div style="text-align:center;margin-bottom:12px">
+      <img src="logo.png" alt="Hylogos" style="max-width:300px;width:100%;height:auto;display:block;margin:0 auto;mix-blend-mode:screen" />
+    </div>
+    <p class="tagline">Unit converter. Type a value and see it in any other unit, instantly.</p>
+  </header>
+
+  <div id="cats" role="group" aria-label="Category"></div>
+
+  <section class="panel cv-panel">
+    <div class="cv-row"><input id="a" inputmode="decimal" value="1" aria-label="Value" autocomplete="off"><select id="ua" aria-label="From unit"></select></div>
+    <button class="cv-swap" id="swap" type="button" aria-label="Swap units">⇅</button>
+    <div class="cv-row"><input id="b" inputmode="decimal" aria-label="Result" autocomplete="off"><select id="ub" aria-label="To unit"></select></div>
+    <p class="mono cv-note" id="note"></p>
+  </section>
+</main>
+
+<footer>
+  <span>Hylogos — a free, open materials science explorer</span>
+</footer>
+
+<script>
+// Each unit: [name, symbol, size in the base unit]. Lists run smallest → biggest.
+const PI=Math.PI;
+const D={
+Length:{base:"m",u:[["Picometer","pm",1e-12],["Ångström","Å",1e-10],["Nanometer","nm",1e-9],["Micrometer","µm",1e-6],["Mil (thou)","mil",2.54e-5],["Millimeter","mm",1e-3],["Centimeter","cm",1e-2],["Inch","in",.0254],["Foot","ft",.3048],["Yard","yd",.9144],["Meter","m",1],["Kilometer","km",1e3],["Mile","mi",1609.344],["Nautical mile","nmi",1852],["Astronomical unit","AU",149597870700],["Light-year","ly",9460730472580800],["Parsec","pc",3.0856775814913673e16]]},
+Area:{base:"m²",u:[["Square millimeter","mm²",1e-6],["Square centimeter","cm²",1e-4],["Square inch","in²",6.4516e-4],["Square foot","ft²",.09290304],["Square yard","yd²",.83612736],["Square meter","m²",1],["Acre","acre",4046.8564224],["Hectare","ha",1e4],["Square kilometer","km²",1e6],["Square mile","mi²",2589988.110336]]},
+Volume:{base:"m³",u:[["Microliter","µL",1e-9],["Milliliter","mL",1e-6],["Cubic centimeter","cm³",1e-6],["Cubic inch","in³",1.6387064e-5],["US fluid ounce","fl oz",2.95735295625e-5],["US cup","cup",2.365882365e-4],["US pint","pt",4.73176473e-4],["US quart","qt",9.46352946e-4],["Liter","L",1e-3],["US gallon","gal",3.785411784e-3],["Imperial gallon","imp gal",4.54609e-3],["Cubic foot","ft³",.028316846592],["Oil barrel","bbl",.158987294928],["Cubic meter","m³",1],["Cubic kilometer","km³",1e9]]},
+Mass:{base:"kg",u:[["Atomic mass unit","u",1.66053906660e-27],["Microgram","µg",1e-9],["Milligram","mg",1e-6],["Gram","g",1e-3],["Ounce","oz",.028349523125],["Pound","lb",.45359237],["Kilogram","kg",1],["Short ton (US)","short ton",907.18474],["Metric ton","t",1e3],["Long ton (UK)","long ton",1016.0469088]]},
+Time:{base:"s",u:[["Nanosecond","ns",1e-9],["Microsecond","µs",1e-6],["Millisecond","ms",1e-3],["Second","s",1],["Minute","min",60],["Hour","h",3600],["Day","d",86400],["Week","wk",604800],["Year (365.25 d)","yr",31557600]]},
+Temperature:{temp:1,u:[["Celsius","°C"],["Kelvin","K"],["Fahrenheit","°F"],["Rankine","°R"]]},
+Speed:{base:"m/s",u:[["Kilometer/hour","km/h",1/3.6],["Foot/second","ft/s",.3048],["Mile/hour","mph",.44704],["Knot","kn",1852/3600],["Meter/second","m/s",1],["Speed of light","c",299792458]]},
+Force:{base:"N",u:[["Dyne","dyn",1e-5],["Millinewton","mN",1e-3],["Newton","N",1],["Pound-force","lbf",4.4482216152605],["Kilogram-force","kgf",9.80665],["Kilonewton","kN",1e3],["Meganewton","MN",1e6]]},
+"Pressure / stress":{base:"Pa",u:[["Pascal","Pa",1],["Millibar","mbar",100],["Torr (mmHg)","Torr",101325/760],["Kilopascal","kPa",1e3],["PSI","psi",6894.757293168],["Bar","bar",1e5],["Atmosphere","atm",101325],["Megapascal (N/mm²)","MPa",1e6],["Kilopound/in²","ksi",6894757.293168],["Gigapascal","GPa",1e9]]},
+Energy:{base:"J",u:[["Millielectronvolt","meV",1.602176634e-22],["Electronvolt","eV",1.602176634e-19],["Kiloelectronvolt","keV",1.602176634e-16],["Megaelectronvolt","MeV",1.602176634e-13],["Erg","erg",1e-7],["Joule","J",1],["Calorie","cal",4.184],["Kilojoule","kJ",1e3],["BTU","BTU",1055.05585262],["Watt-hour","Wh",3600],["Kilocalorie","kcal",4184],["Megajoule","MJ",1e6],["Kilowatt-hour","kWh",3.6e6],["Gigajoule","GJ",1e9]]},
+Power:{base:"W",u:[["Milliwatt","mW",1e-3],["BTU/hour","BTU/h",.29307107],["Watt","W",1],["Metric horsepower","PS",735.49875],["Horsepower","hp",745.69987158227],["Kilowatt","kW",1e3],["Megawatt","MW",1e6],["Gigawatt","GW",1e9]]},
+Density:{base:"kg/m³",u:[["Kilogram/m³","kg/m³",1],["Pound/ft³","lb/ft³",16.01846337396],["Gram/cm³ (g/mL)","g/cm³",1e3],["Pound/in³","lb/in³",27679.9047102]]},
+Angle:{base:"rad",u:[["Arcsecond","″",PI/648000],["Arcminute","′",PI/10800],["Gradian","grad",PI/200],["Degree","°",PI/180],["Radian","rad",1],["Revolution","rev",2*PI]]},
+Frequency:{base:"Hz",u:[["Revolutions/min","rpm",1/60],["Hertz","Hz",1],["Kilohertz","kHz",1e3],["Megahertz","MHz",1e6],["Gigahertz","GHz",1e9],["Terahertz","THz",1e12]]}
+};
+const T={ // temperature via Kelvin
+ "°C":[v=>v+273.15,k=>k-273.15],"K":[v=>v,k=>k],
+ "°F":[v=>(v-32)*5/9+273.15,k=>(k-273.15)*9/5+32],"°R":[v=>v*5/9,k=>k*9/5]};
+const $=id=>document.getElementById(id);
+let cat="Length";
+
+function convert(v,from,to){
+ const c=D[cat];
+ if(c.temp)return T[to][1](T[from][0](v));
+ const f=c.u.find(x=>x[1]===from)[2],t=c.u.find(x=>x[1]===to)[2];
+ return v*f/t;
+}
+function fmt(x){
+ if(!isFinite(x))return"";
+ if(x===0)return"0";
+ const n=Number(x.toPrecision(12)),a=Math.abs(n);
+ return(a<1e-6||a>=1e15)?n.toExponential():String(n);
+}
+function read(id){
+ const s=$(id).value.trim().replace(",",".");
+ return s===""||s==="-"?NaN:Number(s);
+}
+function run(from){ // from = "a" or "b": the box the person is typing in
+ const src=from==="a"?"a":"b",dst=from==="a"?"b":"a";
+ const v=read(src);
+ $(dst).value=isNaN(v)?"":fmt(convert(v,$("u"+src).value,$("u"+dst).value));
+}
+function fill(sel,units,pick){
+ sel.innerHTML=units.map(u=>`<option value="${u[1]}">${u[0]} (${u[1]})</option>`).join("");
+ sel.value=pick;
+}
+function setCat(name){
+ cat=name;
+ const u=D[name].u;
+ const i=Math.max(0,u.findIndex(x=>x[1]===(D[name].base||"°C")));
+ const j=i+1<u.length?i+1:Math.max(0,i-1);
+ fill($("ua"),u,u[i][1]);fill($("ub"),u,u[j][1]);
+ document.querySelectorAll("#cats button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.c===name));
+ $("note").textContent=D[name].temp?"":"Base unit: "+D[name].base;
+ run("a");
+}
+$("cats").innerHTML=Object.keys(D).map(k=>`<button data-c="${k}" aria-pressed="false">${k}</button>`).join("");
+$("cats").onclick=e=>{if(e.target.dataset.c)setCat(e.target.dataset.c)};
+$("a").oninput=()=>run("a");
+$("b").oninput=()=>run("b");
+$("ua").onchange=()=>run("a");
+$("ub").onchange=()=>run("a");
+$("swap").onclick=()=>{
+ const x=$("ua").value;$("ua").value=$("ub").value;$("ub").value=x;
+ $("a").value=$("b").value;run("a");
+};
+setCat("Length");
+</script>
+<script>
+// Static starfield, same palette as the main page
+(function(){
+ const c=document.getElementById("starfield"),x=c.getContext("2d");
+ const cols=["255,255,255","255,180,84","127,217,255"];
+ function draw(){
+  c.width=innerWidth;c.height=innerHeight;
+  for(let i=0;i<Math.round(c.width*c.height/7000);i++){
+   x.fillStyle="rgba("+cols[Math.random()<.8?0:1+(Math.random()<.5|0)]+","+(.25+Math.random()*.6)+")";
+   x.beginPath();x.arc(Math.random()*c.width,Math.random()*c.height,Math.random()*1.3+.2,0,6.2832);x.fill();
+  }
+ }
+ draw();addEventListener("resize",draw);
+})();
+</script>
+</body>
+</html>
