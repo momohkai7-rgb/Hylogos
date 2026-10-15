@@ -1303,3 +1303,18 @@ body {
   border-radius: 4px;
   border: 1px solid var(--line);
   }
+
+/* ===== Unit converter toggle (violet accent, mirrors .ptable-toggle) ===== */
+.converter-toggle {
+  margin-top: 0.65rem;
+  background: rgba(190, 150, 255, 0.08);
+  border-color: rgba(190, 150, 255, 0.5);
+  color: #c4a1ff;
+  box-shadow: 0 0 14px rgba(190, 150, 255, 0.22), inset 0 0 10px rgba(190, 150, 255, 0.06);
+}
+.converter-toggle:hover, .converter-toggle:active {
+  color: var(--text-main);
+  background: rgba(190, 150, 255, 0.14);
+  border-color: rgba(190, 150, 255, 0.85);
+  box-shadow: 0 0 22px rgba(190, 150, 255, 0.4), inset 0 0 14px rgba(190, 150, 255, 0.1);
+}
