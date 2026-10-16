@@ -55,24 +55,34 @@
 </footer>
 
 <script>
-// Each unit: [name, symbol, size in the base unit]. Lists run smallest → biggest.
+// Each unit: [name, symbol, size in the base unit]. Lists are sorted smallest → biggest automatically.
 const PI=Math.PI;
+// Every SI prefix, so each metric unit gets its full ladder (… milli, centi, deci, unit, deca, hecto, kilo …)
+const P=[["yocto","y",-24],["zepto","z",-21],["atto","a",-18],["femto","f",-15],["pico","p",-12],["nano","n",-9],["micro","µ",-6],["milli","m",-3],["centi","c",-2],["deci","d",-1],["","",0],["deca","da",1],["hecto","h",2],["kilo","k",3],["mega","M",6],["giga","G",9],["tera","T",12],["peta","P",15],["exa","E",18],["zetta","Z",21],["yotta","Y",24]];
+const SM=["n","µ","m","c","d","","da","h","k"]; // prefixes that make sense for m² and m³
+const cap=x=>x.charAt(0).toUpperCase()+x.slice(1);
+// o.pw: power (2 = square, 3 = cubic); o.pre: name prefix; o.only: allowed prefixes; o.m/o.me: exact mantissa/exponent of the unit itself
+function L(word,sym,off,o={}){
+ const pw=o.pw||1,pre=o.pre||"",m=o.m||"1",me=o.me||0;
+ return P.filter(p=>!o.only||o.only.includes(p[1])).map(p=>[cap(pre+p[0]+word),p[1]+sym+(pw==2?"²":pw==3?"³":""),Number(m+"e"+(p[2]*pw+off+me))]);
+}
 const D={
-Length:{base:"m",u:[["Picometer","pm",1e-12],["Ångström","Å",1e-10],["Nanometer","nm",1e-9],["Micrometer","µm",1e-6],["Mil (thou)","mil",2.54e-5],["Millimeter","mm",1e-3],["Centimeter","cm",1e-2],["Inch","in",.0254],["Foot","ft",.3048],["Yard","yd",.9144],["Meter","m",1],["Kilometer","km",1e3],["Mile","mi",1609.344],["Nautical mile","nmi",1852],["Astronomical unit","AU",149597870700],["Light-year","ly",9460730472580800],["Parsec","pc",3.0856775814913673e16]]},
-Area:{base:"m²",u:[["Square millimeter","mm²",1e-6],["Square centimeter","cm²",1e-4],["Square inch","in²",6.4516e-4],["Square foot","ft²",.09290304],["Square yard","yd²",.83612736],["Square meter","m²",1],["Acre","acre",4046.8564224],["Hectare","ha",1e4],["Square kilometer","km²",1e6],["Square mile","mi²",2589988.110336]]},
-Volume:{base:"m³",u:[["Microliter","µL",1e-9],["Milliliter","mL",1e-6],["Cubic centimeter","cm³",1e-6],["Cubic inch","in³",1.6387064e-5],["US fluid ounce","fl oz",2.95735295625e-5],["US cup","cup",2.365882365e-4],["US pint","pt",4.73176473e-4],["US quart","qt",9.46352946e-4],["Liter","L",1e-3],["US gallon","gal",3.785411784e-3],["Imperial gallon","imp gal",4.54609e-3],["Cubic foot","ft³",.028316846592],["Oil barrel","bbl",.158987294928],["Cubic meter","m³",1],["Cubic kilometer","km³",1e9]]},
-Mass:{base:"kg",u:[["Atomic mass unit","u",1.66053906660e-27],["Microgram","µg",1e-9],["Milligram","mg",1e-6],["Gram","g",1e-3],["Ounce","oz",.028349523125],["Pound","lb",.45359237],["Kilogram","kg",1],["Short ton (US)","short ton",907.18474],["Metric ton","t",1e3],["Long ton (UK)","long ton",1016.0469088]]},
-Time:{base:"s",u:[["Nanosecond","ns",1e-9],["Microsecond","µs",1e-6],["Millisecond","ms",1e-3],["Second","s",1],["Minute","min",60],["Hour","h",3600],["Day","d",86400],["Week","wk",604800],["Year (365.25 d)","yr",31557600]]},
-Temperature:{temp:1,u:[["Celsius","°C"],["Kelvin","K"],["Fahrenheit","°F"],["Rankine","°R"]]},
-Speed:{base:"m/s",u:[["Kilometer/hour","km/h",1/3.6],["Foot/second","ft/s",.3048],["Mile/hour","mph",.44704],["Knot","kn",1852/3600],["Meter/second","m/s",1],["Speed of light","c",299792458]]},
-Force:{base:"N",u:[["Dyne","dyn",1e-5],["Millinewton","mN",1e-3],["Newton","N",1],["Pound-force","lbf",4.4482216152605],["Kilogram-force","kgf",9.80665],["Kilonewton","kN",1e3],["Meganewton","MN",1e6]]},
-"Pressure / stress":{base:"Pa",u:[["Pascal","Pa",1],["Millibar","mbar",100],["Torr (mmHg)","Torr",101325/760],["Kilopascal","kPa",1e3],["PSI","psi",6894.757293168],["Bar","bar",1e5],["Atmosphere","atm",101325],["Megapascal (N/mm²)","MPa",1e6],["Kilopound/in²","ksi",6894757.293168],["Gigapascal","GPa",1e9]]},
-Energy:{base:"J",u:[["Millielectronvolt","meV",1.602176634e-22],["Electronvolt","eV",1.602176634e-19],["Kiloelectronvolt","keV",1.602176634e-16],["Megaelectronvolt","MeV",1.602176634e-13],["Erg","erg",1e-7],["Joule","J",1],["Calorie","cal",4.184],["Kilojoule","kJ",1e3],["BTU","BTU",1055.05585262],["Watt-hour","Wh",3600],["Kilocalorie","kcal",4184],["Megajoule","MJ",1e6],["Kilowatt-hour","kWh",3.6e6],["Gigajoule","GJ",1e9]]},
-Power:{base:"W",u:[["Milliwatt","mW",1e-3],["BTU/hour","BTU/h",.29307107],["Watt","W",1],["Metric horsepower","PS",735.49875],["Horsepower","hp",745.69987158227],["Kilowatt","kW",1e3],["Megawatt","MW",1e6],["Gigawatt","GW",1e9]]},
-Density:{base:"kg/m³",u:[["Kilogram/m³","kg/m³",1],["Pound/ft³","lb/ft³",16.01846337396],["Gram/cm³ (g/mL)","g/cm³",1e3],["Pound/in³","lb/in³",27679.9047102]]},
-Angle:{base:"rad",u:[["Arcsecond","″",PI/648000],["Arcminute","′",PI/10800],["Gradian","grad",PI/200],["Degree","°",PI/180],["Radian","rad",1],["Revolution","rev",2*PI]]},
-Frequency:{base:"Hz",u:[["Revolutions/min","rpm",1/60],["Hertz","Hz",1],["Kilohertz","kHz",1e3],["Megahertz","MHz",1e6],["Gigahertz","GHz",1e9],["Terahertz","THz",1e12]]}
+Length:{base:"m",def:["m","ft"],u:[...L("meter","m",0),["Ångström","Å",1e-10],["Mil (thou)","mil",2.54e-5],["Inch","in",.0254],["Foot","ft",.3048],["Yard","yd",.9144],["Mile","mi",1609.344],["Nautical mile","nmi",1852],["Astronomical unit","AU",149597870700],["Light-year","ly",9460730472580800],["Parsec","pc",3.0856775814913673e16]]},
+Area:{base:"m²",def:["m²","ft²"],u:[...L("meter","m",0,{pw:2,pre:"Square ",only:SM}),["Square inch","in²",6.4516e-4],["Square foot","ft²",.09290304],["Square yard","yd²",.83612736],["Acre","acre",4046.8564224],["Hectare","ha",1e4],["Square mile","mi²",2589988.110336]]},
+Volume:{base:"m³",def:["m³","L"],u:[...L("liter","L",-3),...L("meter","m",0,{pw:3,pre:"Cubic ",only:SM}),["Cubic inch","in³",1.6387064e-5],["US fluid ounce","fl oz",2.95735295625e-5],["US cup","cup",2.365882365e-4],["US pint","pt",4.73176473e-4],["US quart","qt",9.46352946e-4],["US gallon","gal",3.785411784e-3],["Imperial gallon","imp gal",4.54609e-3],["Cubic foot","ft³",.028316846592],["Oil barrel","bbl",.158987294928]]},
+Mass:{base:"kg",def:["kg","lb"],u:[...L("gram","g",-3),["Atomic mass unit","u",1.66053906660e-27],["Ounce","oz",.028349523125],["Pound","lb",.45359237],["Short ton (US)","short ton",907.18474],["Metric ton","t",1e3],["Long ton (UK)","long ton",1016.0469088]]},
+Time:{base:"s",def:["h","min"],u:[...L("second","s",0,{only:["y","z","a","f","p","n","µ","m",""]}),["Minute","min",60],["Hour","h",3600],["Day","d",86400],["Week","wk",604800],["Year (365.25 d)","yr",31557600]]},
+Temperature:{temp:1,def:["°C","°F"],u:[["Celsius","°C"],["Kelvin","K"],["Fahrenheit","°F"],["Rankine","°R"]]},
+Speed:{base:"m/s",def:["km/h","mph"],u:[["Millimeter/second","mm/s",1e-3],["Centimeter/second","cm/s",1e-2],["Kilometer/hour","km/h",1/3.6],["Foot/second","ft/s",.3048],["Mile/hour","mph",.44704],["Knot","kn",1852/3600],["Meter/second","m/s",1],["Speed of light","c",299792458]]},
+Force:{base:"N",def:["N","lbf"],u:[...L("newton","N",0),["Dyne","dyn",1e-5],["Pound-force","lbf",4.4482216152605],["Kilogram-force","kgf",9.80665]]},
+"Pressure / stress":{base:"Pa",def:["MPa","ksi"],u:[...L("pascal","Pa",0),["Millibar","mbar",100],["Torr (mmHg)","Torr",101325/760],["PSI","psi",6894.757293168],["Bar","bar",1e5],["Kilobar","kbar",1e8],["Atmosphere","atm",101325],["Kilopound/in²","ksi",6894757.293168]]},
+Energy:{base:"J",def:["kJ","kcal"],u:[...L("joule","J",0),...L("electronvolt","eV",0,{m:"1.602176634",me:-19,only:["µ","m","","k","M","G","T"]}),["Erg","erg",1e-7],["Calorie","cal",4.184],["Kilocalorie","kcal",4184],["BTU","BTU",1055.05585262],["Watt-hour","Wh",3600],["Kilowatt-hour","kWh",3.6e6]]},
+Power:{base:"W",def:["kW","hp"],u:[...L("watt","W",0),["BTU/hour","BTU/h",.29307107],["Metric horsepower","PS",735.49875],["Horsepower","hp",745.69987158227]]},
+Density:{base:"kg/m³",def:["g/cm³","kg/m³"],u:[["Kilogram/m³","kg/m³",1],["Gram/liter","g/L",1],["Pound/ft³","lb/ft³",16.01846337396],["Gram/cm³","g/cm³",1e3],["Kilogram/liter","kg/L",1e3],["Pound/in³","lb/in³",27679.9047102]]},
+Angle:{base:"rad",def:["°","rad"],u:[["Microradian","µrad",1e-6],["Milliradian","mrad",1e-3],["Arcsecond","″",PI/648000],["Arcminute","′",PI/10800],["Gradian","grad",PI/200],["Degree","°",PI/180],["Radian","rad",1],["Revolution","rev",2*PI]]},
+Frequency:{base:"Hz",def:["kHz","Hz"],u:[...L("hertz","Hz",0),["Revolutions/min","rpm",1/60]]}
 };
+Object.values(D).forEach(c=>{if(!c.temp)c.u.sort((x,y)=>x[2]-y[2])});
 const T={ // temperature via Kelvin
  "°C":[v=>v+273.15,k=>k-273.15],"K":[v=>v,k=>k],
  "°F":[v=>(v-32)*5/9+273.15,k=>(k-273.15)*9/5+32],"°R":[v=>v*5/9,k=>k*9/5]};
@@ -106,12 +116,10 @@ function fill(sel,units,pick){
 }
 function setCat(name){
  cat=name;
- const u=D[name].u;
- const i=Math.max(0,u.findIndex(x=>x[1]===(D[name].base||"°C")));
- const j=i+1<u.length?i+1:Math.max(0,i-1);
- fill($("ua"),u,u[i][1]);fill($("ub"),u,u[j][1]);
+ const c=D[name],u=c.u,d=c.def;
+ fill($("ua"),u,d[0]);fill($("ub"),u,d[1]);
  document.querySelectorAll("#cats button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.c===name));
- $("note").textContent=D[name].temp?"":"Base unit: "+D[name].base;
+ $("note").textContent=c.temp?"":"Base unit: "+c.base;
  run("a");
 }
 $("cats").innerHTML=Object.keys(D).map(k=>`<button data-c="${k}" aria-pressed="false">${k}</button>`).join("");
